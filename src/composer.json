@@ -1,0 +1,17 @@
+{
+    "name": "socius/registrationform",
+    "description": "A registration form.",
+    "authors": [
+        {
+            "name": "Austin Herman",
+            "email": "aherman@sociusmarketing.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+      "psr-4": {
+            "Socius\\": "socius/",
+            "FloridaSwim\\": "floridaswim/"
+        }
+    }
+}
