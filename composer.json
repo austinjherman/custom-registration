@@ -10,8 +10,8 @@
     "require": {},
     "autoload": {
       "psr-4": {
-            "Socius\\": "socius/",
-            "FloridaSwim\\": "floridaswim/"
+            "Socius\\": "src/socius/",
+            "FloridaSwim\\": "src/floridaswim/"
         }
     }
 }

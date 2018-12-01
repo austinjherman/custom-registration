@@ -1,18 +1,4 @@
-<!doctype html>
-<html lang="en-us">
-
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Registration Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="main.css" />
-</head>
-
-<body>
-
-  <form class="form--registration" method="post" action="processor.php">
+<form id="fscrForm" class="form--registration" method="post" action="processor.php">
 
     <fieldset class="fieldset fieldset--contact">
 
@@ -23,35 +9,35 @@
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">First Name <span class="field--required">*</span></span>
-          <input name="first_name" type="text">
+          <input name="first_name" type="text" v-model="formFields.firstName">
         </label>
       </div>
 
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">Last Name <span class="field--required">*</span></span>
-          <input name="last_name" type="text">
+          <input name="last_name" type="text" v-model="formFields.lastName">
         </label>
       </div>
 
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">Email Address <span class="field--required">*</span></span>
-          <input name="email" type="email">
+          <input name="email" type="email" v-model="formFields.email" v-on:input="foo">
         </label>
       </div>
 
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">Phone Number <span class="field--required">*</span></span>
-          <input name="phone" type="tel">
+          <input name="phone" type="tel" v-model="formFields.phone">
         </label>
       </div>
 
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">ZIP Code <span class="field--required">*</span></span>
-          <input name="zip" type="tel">
+          <input name="zip" type="tel" v-model="formFields.zipCode">
         </label>
       </div>
 
@@ -60,18 +46,20 @@
         <label class="d-inline-block">
           <span class="d-block custom-radio custom-radio--square" tabindex="0">
             <span class="d-block">Yes</span>
-            <input name="pool_access" type="radio" value="true">
+            <input name="pool_access" type="radio" value="true" v-model="formFields.poolAccess">
           </span>
         </label>
         <label class="d-inline-block">
           <span class="d-inline-block custom-radio custom-radio--square" tabindex="0">
             <span class="d-block">No</span>
-            <input name="pool_access" type="radio" value="false">
+            <input name="pool_access" type="radio" value="false" v-model="formFields.poolAccess">
           </span>
         </label>
       </fieldset>
 
     </fieldset>
+
+    <button type="button" v-on:click="handleFirstPage">Next</button>
 
     <fieldset class="fieldset fieldset--student-info">
 
@@ -214,11 +202,3 @@
     <input type="submit" value="submit">
 
   </form>
-
-  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  
-</body>
-</html>
-
-
-

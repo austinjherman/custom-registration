@@ -43,11 +43,12 @@ class FloridaSwimCustomRegistration {
   public function createPublicFormPage() {
     $post = array(
       'post_title'    => wp_strip_all_tags( 'Florida Swim Custom Registration' ),
-      'post_content'  => '',
+      'post_content'  => '[fscr_form]',
       'post_status'   => 'publish',
       'post_author'   => 1,
       'post_type'     => 'page',
     );
+    //update_post_meta( $id, '_wp_page_template', 'new_template.php' );
     $pageId = wp_insert_post( $post );
     if($pageId > 0) {
       add_option('fscr_public_form_page_id', $pageId);
