@@ -16,6 +16,11 @@ defined( 'ABSPATH' ) or die();
 require __DIR__ . '/vendor/autoload.php';
 
 use FloridaSwim\FloridaSwimCustomRegistration;
+use FloridaSwim\Controllers\RegistrantController;
+use FloridaSwim\Models\Person;
+
+//var_dump(Person::find());
+//exit;
 
 global $fscr_plugin;
 $fscr_plugin = new FloridaSwimCustomRegistration();
@@ -44,25 +49,15 @@ add_shortcode( 'fscr_form', 'fscr_public_shortcode' );
 
 // enqueue scripts
 function fscr_enqueue_script() {   
-  wp_enqueue_script( 'vue-js', '//cdn.jsdelivr.net/npm/vue/dist/vue.js', array('jquery'), '1.0', true );
-  wp_enqueue_script( 'fscr_javascript', plugin_dir_url( __FILE__ ) . '/public/assets/js/main.js', array('vue-js'), '1.0', true );
+  wp_enqueue_script( 'vue-js', '//cdn.jsdelivr.net/npm/vue/dist/vue.js', [], '1.0', true );
+  wp_enqueue_script( 'axios-js', '//unpkg.com/axios/dist/axios.min.js', [], '1.0', true );
+  wp_enqueue_script( 'fscr_javascript', plugin_dir_url( __FILE__ ) . '/public/assets/js/main.js', array('vue-js', 'axios-js'), '1.0', true );
 }
 add_action('wp_enqueue_scripts', 'fscr_enqueue_script');
 
 // add api routes
-function fscr_api_person_create($data) {
-  //PersonController::create($data);
+function fscr_api_register_routes() {
+  $registrantController = new RegistrantController();
+  $registrantController->registerRoutes();
 }
-add_action( 'rest_api_init', function () {
-  register_rest_route( 'fscr/v1', '/person/create', array(
-    'methods' => 'GET, POST',
-    'callback' => 'fscr_api_person_create',
-    'args' => array(
-      'id' => array(
-        'validate_callback' => function($param, $request, $key) {
-          return is_numeric( $param );
-        }
-      ),
-    ),
-  ) );
-} );
+add_action( 'rest_api_init', 'fscr_api_register_routes' );
