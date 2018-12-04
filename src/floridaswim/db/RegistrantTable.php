@@ -19,6 +19,7 @@ class RegistrantTable extends Table {
       email_address VARCHAR(50) NOT NULL,
       phone_number VARCHAR(25) NOT NULL,
       zip_code VARCHAR(25) NOT NULL,
+      pool_access BOOLEAN NOT NULL,
       created_at TIMESTAMP
     ');
   }

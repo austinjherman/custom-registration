@@ -1,4 +1,4 @@
-<form id="fscrForm" class="form--registration" method="post" action="processor.php">
+<form id="fscrForm" class="form--registration" method="post">
 
     <fieldset class="fieldset fieldset--contact">
 
@@ -9,6 +9,7 @@
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">First Name <span class="field--required">*</span></span>
+          <span class="fwcr__form__error">{{ errors.first_name }}</span>
           <input name="first_name" type="text" v-model="formFields.firstName">
         </label>
       </div>
@@ -16,6 +17,7 @@
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">Last Name <span class="field--required">*</span></span>
+          <span class="fwcr__form__error">{{ errors.last_name }}</span>
           <input name="last_name" type="text" v-model="formFields.lastName">
         </label>
       </div>
@@ -23,6 +25,7 @@
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">Email Address <span class="field--required">*</span></span>
+          <span class="fwcr__form__error">{{ errors.email_address }}</span>
           <input name="email" type="email" v-model="formFields.email" v-on:input="foo">
         </label>
       </div>
@@ -30,6 +33,7 @@
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">Phone Number <span class="field--required">*</span></span>
+          <span class="fwcr__form__error">{{ errors.phone_number }}</span>
           <input name="phone" type="tel" v-model="formFields.phone">
         </label>
       </div>
@@ -37,20 +41,22 @@
       <div class="input-wrap input--half">
         <label class="input-container">
           <span class="d-block">ZIP Code <span class="field--required">*</span></span>
+          <span class="fwcr__form__error">{{ errors.zip_code }}</span>
           <input name="zip" type="tel" v-model="formFields.zipCode">
         </label>
       </div>
 
       <fieldset class="fieldset fieldset--pool-access">
         <legend class="label">Do you have access to a pool? <span class="field--required">*</span></legend>
+        <span class="fwcr__form__error">{{ errors.pool_access }}</span>
         <label class="d-inline-block">
-          <span class="d-block custom-radio custom-radio--square" tabindex="0">
+          <span class="d-block custom-radio custom-radio--square">
             <span class="d-block">Yes</span>
             <input name="pool_access" type="radio" value="true" v-model="formFields.poolAccess">
           </span>
         </label>
         <label class="d-inline-block">
-          <span class="d-inline-block custom-radio custom-radio--square" tabindex="0">
+          <span class="d-inline-block custom-radio custom-radio--square">
             <span class="d-block">No</span>
             <input name="pool_access" type="radio" value="false" v-model="formFields.poolAccess">
           </span>
@@ -71,8 +77,8 @@
         <div class="input-container">
           <label>
             <span class="d-block">How many students are you enrolling? <span class="field--required">*</span></span>
-            <select name="number_students_enrolling">
-              <option value="">Please Select</option>
+            <select name="number_students_enrolling" v-model.number="formFields.numberStudentsEnrolling">
+              <option value="" default selected></option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -89,20 +95,20 @@
       <br>
 
       <div class="students-container">
-        <div class="input--student">
+        <div class="input--student" v-for="n in formFields.numberStudentsEnrolling">
           <div class="input-wrap input--half">
             <div class="input-container">
               <label>
-                <span class="d-block">Student <span class="student-number"></span> Name <span class="field--required">*</span></span>
-                <input type="text">
+                <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
+                <input type="text" @input="updateStudentObjectName($event, n)">
               </label>
             </div>
           </div>
           <div class="input-wrap input--half">
             <div class="input-container">
               <label>
-                <span class="d-block">Student <span class="student-number"></span> DOB <span class="field--required">*</span></span>
-                <input type="text">
+                <span class="d-block">Student {{ n }} DOB <span class="field--required">*</span></span>
+                <input type="text" @input="updateStudentObjectDob($event, n)">
               </label>
             </div>
           </div>
@@ -136,6 +142,8 @@
       </fieldset>
 
     </fieldset>
+
+    <button type="button" v-on:click="handleSecondPage">Next</button>
 
     <fieldset class="fieldset">
 

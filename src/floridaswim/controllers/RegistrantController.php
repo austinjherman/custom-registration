@@ -43,7 +43,7 @@ class RegistrantController extends \WP_REST_Controller {
     $registrant = Registrant::where('email_address', $request['email_address']);
     if($registrant) {
       return new \WP_REST_Response(['errors' => [
-        'email' => "Sorry, that email address is already in use."
+        'email_address' => ["Sorry, that email address is already in use."]
       ]], 400);
     }
 
