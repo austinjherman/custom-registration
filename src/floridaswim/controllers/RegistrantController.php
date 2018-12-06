@@ -12,6 +12,12 @@ class RegistrantController extends \WP_REST_Controller {
   protected $resource_name = 'registrants';
 
   public function registerRoutes() {
+    register_rest_route($this->namespace, '/registrants', array(
+      'methods'             => \WP_REST_Server::READABLE,
+      'callback'            => array( $this, 'index' ),
+      //'permission_callback' => array( $this, 'create_item_permissions_check' ),
+      //'args'                => $this->get_endpoint_args_for_item_schema( true ),
+    ));
     register_rest_route($this->namespace, '/registrants/create', array(
       'methods'             => \WP_REST_Server::CREATABLE,
       'callback'            => array( $this, 'create' ),
@@ -20,7 +26,12 @@ class RegistrantController extends \WP_REST_Controller {
     ));
   }
 
-  public static function create($request) {
+  public function index(\WP_REST_Request $request) {
+    $registrants = Registrant::all();
+    return $registrants;
+  }
+
+  public function create(\WP_REST_Request $request) {
     
     // get json params from request
     $request = $request->get_json_params();
@@ -40,25 +51,27 @@ class RegistrantController extends \WP_REST_Controller {
     }
 
     // check that email address is unique
-    $registrant = Registrant::where('email_address', $request['email_address']);
+    /*$registrant = Registrant::where('email_address', $request['email_address']);
     if($registrant) {
       return new \WP_REST_Response(['errors' => [
         'email_address' => ["Sorry, that email address is already in use."]
       ]], 400);
-    }
+    }*/
 
     $person = new Person();
     $person->first_name = $request['first_name'];
     $person->last_name = $request['last_name'];
+    $person->phone_number = $request['phone_number'];
+    $person->email_address = $request['email_address'];
+    $person->zip_code = $request['zip_code'];
+    $person->pool_access = $request['pool_access'];
     $person->save();
     if(!$person->id) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
+
     $registrant = new Registrant();
     $registrant->person_id = $person->id;
-    $registrant->email_address = $request['email_address'];
-    $registrant->phone_number = $request['phone_number'];
-    $registrant->zip_code = $request['zip_code'];
     $registrant->save();
     if(!$registrant->id) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);

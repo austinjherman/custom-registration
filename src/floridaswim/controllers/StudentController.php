@@ -18,4 +18,22 @@ class StudentController extends \WP_REST_Controller {
     ));
   }
 
+  public function create(\WP_REST_Request $request) {
+
+    // get json params from request
+    $request = $request->get_json_params();
+
+    // validate these params
+    $v = new Validator($request);
+    $v->rules([
+      'required' => [
+        'name', 'date_of_birth'
+      ]
+    ]);
+    if (!$v->validate()) {
+      return new \WP_REST_Response(['errors' => $v->errors()], 400);
+    }
+
+  }
+
 }

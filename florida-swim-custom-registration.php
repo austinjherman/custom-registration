@@ -47,13 +47,20 @@ function fscr_public_shortcode() {
 }
 add_shortcode( 'fscr_form', 'fscr_public_shortcode' );
 
+// enqueue styles
+/*function fscr_enqueue_styles() {   
+  wp_enqueue_style( 'flatpickr-css', '//cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', [], false, 'all' );
+}
+add_action('wp_enqueue_scripts', 'fscr_enqueue_styles');*/
+
 // enqueue scripts
-function fscr_enqueue_script() {   
-  wp_enqueue_script( 'vue-js', '//cdn.jsdelivr.net/npm/vue/dist/vue.js', [], '1.0', false );
+function fscr_enqueue_scripts() {   
+  wp_enqueue_script( 'vue-js', '//cdn.jsdelivr.net/npm/vue/dist/vue.js', [], '1.0', true );
   wp_enqueue_script( 'axios-js', '//unpkg.com/axios/dist/axios.min.js', [], '1.0', true );
+  wp_enqueue_script( 'datepicker-js', '//unpkg.com/vuejs-datepicker', [], '1.0', true );
   wp_enqueue_script( 'fscr_javascript', plugin_dir_url( __FILE__ ) . '/public/assets/js/main.js', array('vue-js', 'axios-js'), '1.0', true );
 }
-add_action('wp_enqueue_scripts', 'fscr_enqueue_script');
+add_action('wp_enqueue_scripts', 'fscr_enqueue_scripts');
 
 // add api routes
 function fscr_api_register_routes() {

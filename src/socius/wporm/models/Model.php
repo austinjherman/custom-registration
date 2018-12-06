@@ -12,6 +12,7 @@ class Model {
     $model = new static();
     $table = $model->table;
     $conn = new DBConn();
+    $id = htmlspecialchars($id);
     $sql = "SELECT * FROM $table WHERE id=$id;";
     $res = $conn->db->get_results($sql);
     $conn->db->close();
@@ -25,7 +26,22 @@ class Model {
     $model = new static();
     $table = $model->table;
     $conn = new DBConn();
+    $colName = htmlspecialchars($colName);
+    $value = htmlspecialchars($value);
     $sql = "SELECT * FROM $table WHERE $colName='$value';";
+    $res = $conn->db->get_results($sql);
+    $conn->db->close();
+    if(!empty($res)) {
+      return $res;
+    }
+    return null;
+  }
+
+  public static function all() {
+    $model = new static();
+    $table = $model->table;
+    $sql = "SELECT * FROM $table";
+    $conn = new DBConn();
     $res = $conn->db->get_results($sql);
     $conn->db->close();
     if(!empty($res)) {
@@ -50,9 +66,14 @@ class Model {
     $sql = "
       INSERT INTO $this->table ($columns) VALUES ($values);
     ";
+    var_dump($sql);
     $conn->db->query($sql);
-    $this->id = $conn->db->insert_id;
+    $this->id = (int)$conn->db->insert_id;
     $conn->db->close();
+  }
+
+  public function tableName() {
+    return $this->table;
   }
 
 }

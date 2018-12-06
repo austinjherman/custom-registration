@@ -21,6 +21,7 @@ class StudentTable extends Table {
         REFERENCES fscr_parents_guardians(id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
+      date_of_birth DATE NOT NULL,
       created_at TIMESTAMP
     ');
   }

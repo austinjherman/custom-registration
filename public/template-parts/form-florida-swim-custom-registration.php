@@ -10,7 +10,7 @@
         <label class="input-container">
           <span class="d-block">First Name <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.first_name }}</span>
-          <input name="first_name" type="text" v-model="formFields.firstName">
+          <input name="first_name" type="text" v-model="registrant.firstName">
         </label>
       </div>
 
@@ -18,7 +18,7 @@
         <label class="input-container">
           <span class="d-block">Last Name <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.last_name }}</span>
-          <input name="last_name" type="text" v-model="formFields.lastName">
+          <input name="last_name" type="text" v-model="registrant.lastName">
         </label>
       </div>
 
@@ -26,7 +26,7 @@
         <label class="input-container">
           <span class="d-block">Email Address <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.email_address }}</span>
-          <input name="email" type="email" v-model="formFields.email" v-on:input="foo">
+          <input name="email" type="email" v-model="registrant.email" v-on:input="foo">
         </label>
       </div>
 
@@ -34,7 +34,7 @@
         <label class="input-container">
           <span class="d-block">Phone Number <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.phone_number }}</span>
-          <input name="phone" type="tel" v-model="formFields.phone">
+          <input name="phone" type="tel" v-model="registrant.phone">
         </label>
       </div>
 
@@ -42,30 +42,30 @@
         <label class="input-container">
           <span class="d-block">ZIP Code <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.zip_code }}</span>
-          <input name="zip" type="tel" v-model="formFields.zipCode">
+          <input name="zip" type="tel" v-model="registrant.zipCode">
         </label>
       </div>
 
-      <fieldset class="fieldset fieldset--pool-access">
+    </fieldset>
+
+    <fieldset class="fieldset fieldset--pool-access">
         <legend class="label">Do you have access to a pool? <span class="field--required">*</span></legend>
         <span class="fwcr__form__error">{{ errors.pool_access }}</span>
         <label class="d-inline-block">
           <span class="d-block custom-radio custom-radio--square">
             <span class="d-block">Yes</span>
-            <input name="pool_access" type="radio" value="true" v-model="formFields.poolAccess">
+            <input name="pool_access" type="radio" value="true" v-model="registrant.poolAccess">
           </span>
         </label>
         <label class="d-inline-block">
           <span class="d-inline-block custom-radio custom-radio--square">
             <span class="d-block">No</span>
-            <input name="pool_access" type="radio" value="false" v-model="formFields.poolAccess">
+            <input name="pool_access" type="radio" value="false" v-model="registrant.poolAccess">
           </span>
         </label>
       </fieldset>
 
-    </fieldset>
-
-    <button type="button" v-on:click="handleFirstPage">Next</button>
+    <button type="button" v-on:click="createRegistrant">Next</button>
 
     <fieldset class="fieldset fieldset--student-info">
 
@@ -77,8 +77,8 @@
         <div class="input-container">
           <label>
             <span class="d-block">How many students are you enrolling? <span class="field--required">*</span></span>
-            <select name="number_students_enrolling" v-model.number="formFields.numberStudentsEnrolling">
-              <option value="" default selected></option>
+            <select name="number_students_enrolling" v-model.number="students.count" @change="changeAmountOfStudents">
+              <option value="0" default selected>Please Select</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -94,27 +94,29 @@
 
       <br>
 
+
       <div class="students-container">
-        <div class="input--student" v-for="n in formFields.numberStudentsEnrolling">
+        <div class="input--student" v-for="n in students.count">
           <div class="input-wrap input--half">
             <div class="input-container">
               <label>
                 <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
-                <input type="text" @input="updateStudentObjectName($event, n)">
+                <input type="text" v-model="students.students[n-1].name">
+                <span>{{ students.students[n-1].name }}</span>
               </label>
             </div>
           </div>
           <div class="input-wrap input--half">
             <div class="input-container">
-              <label>
+              <label :for="'student__dob--' + n">
                 <span class="d-block">Student {{ n }} DOB <span class="field--required">*</span></span>
-                <input type="text" @input="updateStudentObjectDob($event, n)">
               </label>
+              <datepicker :id="'student__dob--' + n" @input="updateStudentDob($event, n-1)" v-model="students.students[n-1].dobOriginal"></datepicker>
             </div>
           </div>
         </div>
-        <input type="hidden" name="student_information">
       </div>
+
 
       <div class="input-wrap">
         <label>
@@ -123,27 +125,59 @@
         </label>
       </div>
 
-      <fieldset class="fieldset">
-        <legend class="label">
-          Are you the parent/guardian of all the sudents? <span class="field--required">*</span>
-        </legend>
-        <label class="d-inline-block">
-          <span class="d-block custom-radio custom-radio--square" tabindex="0">
-            <span class="d-block">Yes</span>
-            <input name="parent_guardian" type="radio" value="true">
-          </span>
-        </label>
-        <label class="d-inline-block">
-          <span class="d-block custom-radio custom-radio--square" tabindex="0">
-            <span class="d-block">No</span>
-            <input name="parent_guardian" type="radio" value="false">
-          </span>
-        </label>
-      </fieldset>
-
     </fieldset>
 
-    <button type="button" v-on:click="handleSecondPage">Next</button>
+    <fieldset class="fieldset">
+      <legend class="label">
+        Are you the parent/guardian of all the sudents? <span class="field--required">*</span>
+      </legend>
+      <label class="d-inline-block">
+        <span class="d-block custom-radio custom-radio--square" tabindex="0">
+          <span class="d-block">Yes</span>
+          <input name="parent_guardian" type="radio" value="true" @change="confirmParentGuardianForAll">
+        </span>
+      </label>
+      <label class="d-inline-block">
+        <span class="d-block custom-radio custom-radio--square" tabindex="0">
+          <span class="d-block">No</span>
+          <input name="parent_guardian" type="radio" value="false" @change="confirmParentGuardianForAll">
+        </span>
+      </label>
+    </fieldset>
+
+    <fieldset v-if="confirmParentGuardians">
+      <legend>Please confirm the parent/guardian for each student.</legend>
+      <button type="button" @click="addParentGuardianField">Add</button>
+      <button type="button" @click="removeParentGuardianField">Remove</button>
+      <div class="parent-guardians">
+        <div class="parent-guardian" v-for="n in Number(parents.count)">
+          <fieldset>
+            <legend>Parent/Guardian Information</legend>
+            <fieldset>
+              <legend>Parent/Guardian of</legend>
+              <label v-for="x in students.count" class="d-inline-block">
+                <input type="checkbox" :value="students.students[x-1].id" v-model="parents.parents[n-1].students">
+                <span>{{ students.students[x-1].name }}</span>
+              </label>
+            </fieldset>
+            <label>
+              <span class="d-block">Name</span>
+              <input type="text" v-model="parents.parents[n-1].name">
+            </label>
+            <label>
+              <span class="d-block">Email Address</span>
+              <input type="email" v-model="parents.parents[n-1].email">
+            </label>
+            <label>
+              <span class="d-block">Phone Number</span>
+              <input type="tel" v-model="parents.parents[n-1].phone">
+            </label>
+          </fieldset>
+        </div>
+      </div>
+    </fieldset>
+
+    <button type="button" v-on:click="createStudentsAndGuardians">Next</button>
 
     <fieldset class="fieldset">
 
