@@ -18,13 +18,27 @@ ini_set('display_errors', 1);
 
 require __DIR__ . '/vendor/autoload.php';
 
-use FloridaSwim\FloridaSwimCustomRegistration;
-use FloridaSwim\Controllers\RegistrantController;
-use FloridaSwim\Models\Person;
+use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\EntityManager;
 
-//var_dump(Person::find());
-//exit;
+$paths = array("/src/");
+$isDevMode = false;
 
+// the connection configuration
+$dbParams = array(
+    'driver'   => 'pdo_mysql',
+    'user'     => DB_USER,
+    'password' => DB_PASSWORD,
+    'dbname'   => DB_NAME
+);
+
+$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
+$entityManager = EntityManager::create($dbParams, $config);
+
+
+
+
+/*
 global $fscr_plugin;
 $fscr_plugin = new FloridaSwimCustomRegistration();
 
@@ -51,10 +65,10 @@ function fscr_public_shortcode() {
 add_shortcode( 'fscr_form', 'fscr_public_shortcode' );
 
 // enqueue styles
-/*function fscr_enqueue_styles() {   
-  wp_enqueue_style( 'flatpickr-css', '//cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', [], false, 'all' );
-}
-add_action('wp_enqueue_scripts', 'fscr_enqueue_styles');*/
+//function fscr_enqueue_styles() {   
+  //wp_enqueue_style( 'flatpickr-css', '//cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css', [], false, 'all' );
+//}
+//add_action('wp_enqueue_scripts', 'fscr_enqueue_styles');
 
 // enqueue scripts
 function fscr_enqueue_scripts() {   
@@ -73,3 +87,5 @@ function fscr_api_register_routes() {
   //$studentController->registerRoutes();
 }
 add_action( 'rest_api_init', 'fscr_api_register_routes' );
+
+*/
