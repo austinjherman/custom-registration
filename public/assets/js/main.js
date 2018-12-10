@@ -54,7 +54,8 @@ var fscrForm = new Vue({
          * 
         {
           id: 0,
-          name: "",
+          first_name: "",
+          last_name: "",
           email: "",
           phone: "",
           students: [],
@@ -253,7 +254,8 @@ var fscrForm = new Vue({
             if (i == 0) {
               this.$set(this.parents.parents, i, {
                 id: i,
-                name: this.registrant.firstName + " " + this.registrant.lastName,
+                first_name: this.registrant.firstName,
+                last_name: this.registrant.lastName,
                 email: this.registrant.email,
                 phone: this.registrant.phone,
                 students: studentIds,
@@ -269,7 +271,8 @@ var fscrForm = new Vue({
         else {
           this.$set(this.parents.parents, 0, {
             id: 0,
-            name: this.registrant.firstName + " " + this.registrant.lastName,
+            first_name: this.registrant.firstName,
+            last_name: this.registrant.lastName,
             email: this.registrant.email,
             phone: this.registrant.phone,
             students: studentIds,
@@ -287,7 +290,8 @@ var fscrForm = new Vue({
         for(var i=0; i < this.parents.count; i++) {
           if(typeof this.parents.parents[i] == 'undefined') {
             this.$set(this.parents.parents, i, {
-              name: "",
+              first_name: "",
+              last_name: "",
               email: "",
               phone: "",
               students: [],
@@ -311,7 +315,7 @@ var fscrForm = new Vue({
     },
 
     createStudentsAndGuardians: function(e) {
-      
+      console.log(this.parents.parents);
     },
 
   }

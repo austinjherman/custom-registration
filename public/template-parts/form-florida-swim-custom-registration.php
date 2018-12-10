@@ -102,7 +102,6 @@
               <label>
                 <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
                 <input type="text" v-model="students.students[n-1].name">
-                <span>{{ students.students[n-1].name }}</span>
               </label>
             </div>
           </div>
@@ -161,8 +160,12 @@
               </label>
             </fieldset>
             <label>
-              <span class="d-block">Name</span>
-              <input type="text" v-model="parents.parents[n-1].name">
+              <span class="d-block">First Name</span>
+              <input type="text" v-model="parents.parents[n-1].first_name">
+            </label>
+            <label>
+              <span class="d-block">Last Name</span>
+              <input type="text" v-model="parents.parents[n-1].last_name">
             </label>
             <label>
               <span class="d-block">Email Address</span>

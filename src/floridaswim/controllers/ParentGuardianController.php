@@ -3,9 +3,8 @@
 namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
-use FloridaSwim\Models\Person;
 
-class PersonController extends \WP_REST_Controller {
+class ParentGuardianController extends \WP_REST_Controller {
 
   protected $namespace = '/fscr/v1';
   protected $resource_name = 'guardians';
@@ -21,8 +20,10 @@ class PersonController extends \WP_REST_Controller {
 
   public function create(\WP_REST_Request $request) {
 
+    // get json params from request
     $request = $request->get_json_params();
 
+    // validate these params
     $v = new Validator($request);
     $v->rules([
       'required' => [
@@ -32,8 +33,9 @@ class PersonController extends \WP_REST_Controller {
         'email'
       ]
     ]);
-
-    
+    if (!$v->validate()) {
+      return new \WP_REST_Response(['errors' => $v->errors()], 400);
+    }
 
   }
 

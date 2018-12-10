@@ -15,11 +15,8 @@ class Model {
     $id = htmlspecialchars($id);
     $sql = "SELECT * FROM $table WHERE id=$id;";
     $res = $conn->db->get_results($sql);
-    $conn->db->close();
-    if(!empty($res)) {
-      return $res;
-    }
-    return null;
+    $res = new Collection($res, get_class($model));
+    return $res;
   }
 
   public static function where($colName, $value) {
@@ -30,11 +27,8 @@ class Model {
     $value = htmlspecialchars($value);
     $sql = "SELECT * FROM $table WHERE $colName='$value';";
     $res = $conn->db->get_results($sql);
-    $conn->db->close();
-    if(!empty($res)) {
-      return $res;
-    }
-    return null;
+    $res = new Collection($res, get_class($model));
+    return $res;
   }
 
   public static function all() {
@@ -43,11 +37,8 @@ class Model {
     $sql = "SELECT * FROM $table";
     $conn = new DBConn();
     $res = $conn->db->get_results($sql);
-    $conn->db->close();
-    if(!empty($res)) {
-      return $res;
-    }
-    return null;
+    $res = new Collection($res, get_class($model));
+    return $res;
   }
 
   public function save() {
@@ -66,14 +57,18 @@ class Model {
     $sql = "
       INSERT INTO $this->table ($columns) VALUES ($values);
     ";
-    var_dump($sql);
+    //var_dump($sql);
     $conn->db->query($sql);
     $this->id = (int)$conn->db->insert_id;
-    $conn->db->close();
   }
 
   public function tableName() {
     return $this->table;
+  }
+
+  public function belongsTo($parent, $joinOn) {
+    $id = $this->$joinOn;
+    return $parent::find($id);
   }
 
 }

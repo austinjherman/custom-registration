@@ -27,8 +27,11 @@ class RegistrantController extends \WP_REST_Controller {
   }
 
   public function index(\WP_REST_Request $request) {
-    $registrants = Registrant::all();
-    return $registrants;
+    $registrants = Registrant::all()->get();
+    foreach($registrants as $registrant) {
+      $registrant->person = $registrant->person()->first();
+    }
+    return new \WP_REST_Response(['registrants' => $registrants], 200);
   }
 
   public function create(\WP_REST_Request $request) {

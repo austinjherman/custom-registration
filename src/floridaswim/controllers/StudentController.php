@@ -27,7 +27,7 @@ class StudentController extends \WP_REST_Controller {
     $v = new Validator($request);
     $v->rules([
       'required' => [
-        'name', 'date_of_birth'
+        'name', 'date_of_birth', 'parent_guardian'
       ]
     ]);
     if (!$v->validate()) {

@@ -14,7 +14,7 @@ class PersonTable extends Table {
       id INT(10) UNSIGNED AUTO_INCREMENT,
       PRIMARY KEY (id),
       first_name VARCHAR(25) NOT NULL,
-      last_name VARCHAR(25),
+      last_name VARCHAR(25) NOT NULL,
       phone_number VARCHAR(25),
       email_address VARCHAR(128),
       zip_code VARCHAR(25),
