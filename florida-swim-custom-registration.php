@@ -58,8 +58,3 @@ function fscr_api_register_routes() {
   //$studentController->registerRoutes();
 }
 add_action( 'rest_api_init', 'fscr_api_register_routes' );
-<<<<<<< HEAD
-=======
-
-*/
->>>>>>> a15ff7d0f171439139dcb011a6a7bcd787fbc726
