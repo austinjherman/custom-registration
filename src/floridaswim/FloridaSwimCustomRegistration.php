@@ -2,15 +2,50 @@
 
 namespace FloridaSwim;
 
-use Socius\WpOrm\Db\Schema;
-use FloridaSwim\Db\PersonTable;
-use FloridaSwim\Db\StudentTable;
-use FloridaSwim\Db\ProductTable;
-use FloridaSwim\Db\RegistrantTable;
-use FloridaSwim\Db\ParentGuardianTable;
-use FloridaSwim\Db\ProductAttributeTable;
+use Doctrine\ORM\Tools\Setup;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\Tools\SchemaTool;
+use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
+
 
 class FloridaSwimCustomRegistration {
+
+  protected $doctrineEm;
+  protected $pathToPluginFile;
+
+  public function __construct(string $pathToPluginFile) {
+    $this->pathToPluginFile = $pathToPluginFile;
+  }
+
+  public function run() {
+    $this->bootDoctrine();
+    register_activation_hook($this->pathToPluginFile, [$this, 'handleActivation']);
+    register_deactivation_hook($this->pathToPluginFile, [$this, 'handleDeactivation']);
+  }
+
+  public function bootDoctrine() {
+    
+    $paths = array("$this->pathToPluginFile/src/floridaswim/entities");
+    $isDevMode = false;
+
+    // the connection configuration
+    $dbParams = array(
+      'driver'   => 'pdo_mysql',
+      'user'     => DB_USER,
+      'password' => DB_PASSWORD,
+      'dbname'   => DB_NAME
+    );
+
+    $config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
+    $entityManager = EntityManager::create($dbParams, $config);
+
+    $driver = new StaticPHPDriver("$this->pathToPluginFile/src/floridaswim/entities");
+    $entityManager->getConfiguration()->setMetadataDriverImpl($driver);
+
+    $this->doctrineEm = $entityManager;
+
+  }
+
 
   public function handleActivation() {
     $this->createTables();
@@ -23,21 +58,21 @@ class FloridaSwimCustomRegistration {
   }
 
   public function createTables() {
-    PersonTable::create();
-    RegistrantTable::create();
-    ParentGuardianTable::create();
-    StudentTable::create();
-    ProductTable::create();
-    ProductAttributeTable::create();
+    $tool = new SchemaTool($this->doctrineEm);
+    $classes = array(
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Person'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Registrant'),
+    );
+    $tool->createSchema($classes);
   }
 
   public function dropTables() {
-    Schema::drop('fscr_students');
-    Schema::drop('fscr_parents_guardians');
-    Schema::drop('fscr_registrants');
-    Schema::drop('fscr_people');
-    Schema::drop('fscr_product_attributes');
-    Schema::drop('fscr_products');
+    $tool = new SchemaTool($this->doctrineEm);
+    $classes = array(
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Person'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Registrant'),
+    );
+    $tool->dropSchema($classes);
   }
 
   public function createPublicFormPage() {

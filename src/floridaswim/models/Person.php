@@ -2,14 +2,10 @@
 
 namespace FloridaSwim\Models;
 
-class Person {
+use Socius\WpOrm\Models\Model;
 
-    //public function create();
+class Person extends Model {
 
-    //public function read();
-
-    //public function update();
-
-    //public function delete();
+  protected $table = 'fscr_people';
 
 }

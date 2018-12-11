@@ -4,11 +4,13 @@ namespace FloridaSwim\Db;
 
 use Socius\WpOrm\Db\Schema;
 use Socius\WpOrm\Db\Table;
+use FloridaSwim\Models\ParentGuardian;
 
 class ParentGuardianTable extends Table {
 
   public static function create() {
-    Schema::create('fscr_parents_guardians', '
+    $parent = new ParentGuardian();
+    Schema::create($parent->tableName(), '
       id INT(10) UNSIGNED AUTO_INCREMENT,
       PRIMARY KEY (id),
       person_id INT(10) UNSIGNED NOT NULL,

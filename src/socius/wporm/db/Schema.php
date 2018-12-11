@@ -8,7 +8,7 @@ class Schema {
 
   public static function create(String $tableName, String $sql) {
     $conn = new DBConn();
-    $sql = "CREATE TABLE IF NOT EXISTS $tableName ($sql)";
+    $sql = "CREATE TABLE IF NOT EXISTS $tableName ($sql);";
     $conn->db->query($sql);
   }
 
@@ -17,7 +17,7 @@ class Schema {
     $sql = "
       SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
       WHERE TABLE_SCHEMA='fsc_test'
-    ";
+    ;";
     $res = $conn->db->query($sql)->fetch();
     if(!$res) {
       $res = [];
@@ -27,7 +27,7 @@ class Schema {
 
   public static function drop(String $tableName) {
     $conn = new DBConn();
-    $sql = "DROP TABLE IF EXISTS $tableName";
+    $sql = "DROP TABLE IF EXISTS $tableName;";
     $conn->db->query($sql);
   }
 
