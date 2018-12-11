@@ -20,8 +20,32 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+<<<<<<< HEAD
 
 use FloridaSwim\FloridaSwimCustomRegistration;
+=======
+
+$paths = array("/src/");
+$isDevMode = false;
+
+// the connection configuration
+$dbParams = array(
+    'driver'   => 'pdo_mysql',
+    'user'     => DB_USER,
+    'password' => DB_PASSWORD,
+    'dbname'   => DB_NAME
+);
+
+$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode);
+$entityManager = EntityManager::create($dbParams, $config);
+
+
+
+
+/*
+global $fscr_plugin;
+$fscr_plugin = new FloridaSwimCustomRegistration();
+>>>>>>> a15ff7d0f171439139dcb011a6a7bcd787fbc726
 
 $plugin = new FloridaSwimCustomRegistration(__FILE__);
 $plugin->run();
@@ -58,3 +82,8 @@ function fscr_api_register_routes() {
   //$studentController->registerRoutes();
 }
 add_action( 'rest_api_init', 'fscr_api_register_routes' );
+<<<<<<< HEAD
+=======
+
+*/
+>>>>>>> a15ff7d0f171439139dcb011a6a7bcd787fbc726
