@@ -5,6 +5,7 @@ namespace FloridaSwim;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
+use FloridaSwim\Controllers\GuestController;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
 
 
@@ -23,6 +24,7 @@ class FloridaSwimCustomRegistration {
     $this->bootDoctrine();
     register_activation_hook($this->pathToPluginFile, [$this, 'handleActivation']);
     register_deactivation_hook($this->pathToPluginFile, [$this, 'handleDeactivation']);
+    add_action( 'rest_api_init', [$this, 'registerApiRoutes'] );
   }
 
   public function bootDoctrine() 
@@ -69,11 +71,13 @@ class FloridaSwimCustomRegistration {
     $tool = new SchemaTool($this->doctrineEm);
     $classes = array(
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormFill'),
-      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Registrant'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Lesson'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guest'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Lesson'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Schedule'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\PromoCode'),
     );
     $tool->createSchema($classes);
   }
@@ -83,11 +87,13 @@ class FloridaSwimCustomRegistration {
     $tool = new SchemaTool($this->doctrineEm);
     $classes = array(
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormFill'),
-      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Registrant'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Lesson'),
-      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guest'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Lesson'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Schedule'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\PromoCode'),
     );
     $tool->dropSchema($classes);
   }
@@ -115,6 +121,11 @@ class FloridaSwimCustomRegistration {
       wp_delete_post($pageId);
     }
     delete_option('fscr_public_form_page_id');
+  }
+
+  public function registerApiRoutes() {
+    $guestController = new GuestController($this->orm());
+    $guestController->registerRoutes();
   }
 
 }

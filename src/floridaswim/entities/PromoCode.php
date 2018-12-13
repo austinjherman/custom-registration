@@ -2,39 +2,40 @@
 
 namespace FloridaSwim\Entities;
 
+use FloridaSwim\Entities\Lesson;
 use FloridaSwim\Entities\BaseModel;
-use FloridaSwim\Entities\Guest;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class FormFill extends BaseModel
+class PromoCode extends BaseModel
 {
 
     protected $id;
+    protected $lesson;
+    protected $lesson_id;
+    protected $promo_code;
     protected $created_at;
-    protected $updated_at;
-    protected $completed_at;
 
-    protected $guest;
+    protected $schedule;
 
     public function __construct() 
     {
         $this->created_at = new \DateTime();
     }
 
-    public function addGuest(Guest $guest) {
-        $this->guest = $guest;
+    public function addLesson(Lesson $lesson) {
+        $lesson->addPromoCode($this);
+        $this->lesson = $lesson;
     }
 
     public static function loadMetadata(ClassMetadata $metadata)
     {
         $builder = new ClassMetadataBuilder($metadata);
-        $builder->setTable(parent::tablePrefix() . "fwcr_form_fills");
+        $builder->setTable(parent::tablePrefix(). "fwcr_promo_codes");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
-        $builder->createOneToOne('guest', 'FloridaSwim\Entities\Guest')->mappedBy('form_fill')->build();
+        $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', false, false, 'cascade')->inversedBy('students')->build();
+        $builder->addField('promo_code', 'string');
         $builder->addField('created_at', 'datetime');
-        $builder->addField('updated_at', 'datetime', ['nullable' => true]);
-        $builder->addField('completed_at', 'datetime', ['nullable' => true]);
     }
 
 }

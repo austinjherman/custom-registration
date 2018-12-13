@@ -18,9 +18,6 @@ ini_set('display_errors', 1);
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Doctrine\ORM\Tools\Setup;
-use Doctrine\ORM\EntityManager;
-
 use FloridaSwim\FloridaSwimCustomRegistration;
 
 $plugin = new FloridaSwimCustomRegistration(__FILE__);
@@ -49,12 +46,3 @@ function fscr_enqueue_scripts() {
   wp_enqueue_script( 'fscr_javascript', plugin_dir_url( __FILE__ ) . '/public/assets/js/main.js', array('vue-js', 'axios-js'), '1.0', true );
 }
 add_action('wp_enqueue_scripts', 'fscr_enqueue_scripts');
-
-// add api routes
-function fscr_api_register_routes() {
-  $registrantController = new RegistrantController();
-  $registrantController->registerRoutes();
-  //$studentController = new StudentController();
-  //$studentController->registerRoutes();
-}
-add_action( 'rest_api_init', 'fscr_api_register_routes' );

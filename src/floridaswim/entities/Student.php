@@ -2,44 +2,62 @@
 
 namespace FloridaSwim\Entities;
 
+use FloridaSwim\Entities\Guardian;
+use FloridaSwim\Entities\BaseModel;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class Student
+class Student extends BaseModel
 {
 
     protected $id;
-    protected $registrant;
-    protected $registrant_id;
+    protected $guest;
+    protected $guest_id;
     protected $guardian;
     protected $guardian_id;
-    protected $first_name;
-    protected $last_name;
+    protected $name;
     protected $date_of_birth;
+    protected $description;
+    protected $pool_address;
+    protected $pool_type;
     protected $created_at;
+    protected $updated_at;
+
+    protected $schedule;
 
     public function __construct() 
     {
         $this->created_at = new \DateTime();
     }
 
+    public function addGuardian(Guardian $guardian) {
+        $guardian->addStudent($this);
+        $this->guardian = $guardian;
+    }
+
+    public function addSchedule(Schedule $schedule) {
+        $this->schedule = $schedule;
+    }
+
     public static function loadMetadata(ClassMetadata $metadata)
     {
-        global $wpdb;
         $builder = new ClassMetadataBuilder($metadata);
-        $builder->setTable($wpdb->prefix . "fwcr_students");
+        $builder->setTable(parent::tablePrefix(). "fwcr_students");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
 
-        // One registrant can have many students
-        $builder->createManyToOne('registrant_id', 'FloridaSwim\Entities\Registrant')->addJoinColumn('registrant_id', 'id', false, false)->build();
+        // One guest can register many students
+        $builder->createManyToOne('guest', 'FloridaSwim\Entities\Guest')->addJoinColumn('guest_id', 'id', true, false, 'cascade')->build();
 
-        // One guardian have have many students
-        $builder->createManyToOne('guardian_id', 'FloridaSwim\Entities\Guardians')->addJoinColumn('guardian_id', 'id', false, false)->build();
+        // One guardian can have many students
+        $builder->createManyToOne('guardian', 'FloridaSwim\Entities\Guardian')->addJoinColumn('guardian_id', 'id', true, false)->inversedBy('students')->build();
 
-        $builder->addField('first_name', 'string');
-        $builder->addField('last_name', 'string');
+        $builder->addField('name', 'string');
         $builder->addField('date_of_birth', 'datetime');
+        $builder->addField('description', 'text', ['nullable' => true]);
+        $builder->addField('pool_address', 'string', ['nullable' => true]);
+        $builder->addField('pool_type', 'string', ['nullable' => true]);
         $builder->addField('created_at', 'datetime');
+        $builder->addField('updated_at', 'datetime', ['nullable' => true]);
     }
 
 }
