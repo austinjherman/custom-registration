@@ -1,0 +1,2 @@
+// run this from command line to run all tests
+./vendor/bin/phpunit --bootstrap vendor/autoload.php src/floridaswim/tests

@@ -10,23 +10,26 @@ use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
 
 class FloridaSwimCustomRegistration {
 
-  protected $doctrineEm;
-  protected $pathToPluginFile;
+  private $doctrineEm;
+  private $pathToPluginFile;
 
-  public function __construct(string $pathToPluginFile) {
+  public function __construct(string $pathToPluginFile) 
+  {
     $this->pathToPluginFile = $pathToPluginFile;
   }
 
-  public function run() {
+  public function run() 
+  {
     $this->bootDoctrine();
     register_activation_hook($this->pathToPluginFile, [$this, 'handleActivation']);
     register_deactivation_hook($this->pathToPluginFile, [$this, 'handleDeactivation']);
   }
 
-  public function bootDoctrine() {
-    
+  public function bootDoctrine() 
+  {
+    // a couple configuration variables  
     $paths = array("$this->pathToPluginFile/src/floridaswim/entities");
-    $isDevMode = false;
+    $isDevMode = true;
 
     // the connection configuration
     $dbParams = array(
@@ -43,39 +46,54 @@ class FloridaSwimCustomRegistration {
     $entityManager->getConfiguration()->setMetadataDriverImpl($driver);
 
     $this->doctrineEm = $entityManager;
-
   }
 
+  public function orm() {
+    return $this->doctrineEm;
+  }
 
-  public function handleActivation() {
+  public function handleActivation() 
+  {
     $this->createTables();
     $this->createPublicFormPage();
   }
 
-  public function handleDeactivation() {
+  public function handleDeactivation() 
+  {
     $this->dropTables();
     $this->deletePublicFormPage();
   }
 
-  public function createTables() {
+  public function createTables() 
+  {
     $tool = new SchemaTool($this->doctrineEm);
     $classes = array(
-      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Person'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormFill'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Registrant'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Lesson'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
     );
     $tool->createSchema($classes);
   }
 
-  public function dropTables() {
+  public function dropTables() 
+  {
     $tool = new SchemaTool($this->doctrineEm);
     $classes = array(
-      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Person'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormFill'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Registrant'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Lesson'),
+      //$this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
     );
     $tool->dropSchema($classes);
   }
 
-  public function createPublicFormPage() {
+  public function createPublicFormPage() 
+  {
     $post = array(
       'post_title'    => wp_strip_all_tags( 'Florida Swim Custom Registration' ),
       'post_content'  => '[fscr_form]',
@@ -90,7 +108,8 @@ class FloridaSwimCustomRegistration {
     }
   }
 
-  public function deletePublicFormPage() {
+  public function deletePublicFormPage() 
+  {
     $pageId = get_option('fscr_public_form_page_id');
     if($pageId > 0) {
       wp_delete_post($pageId);

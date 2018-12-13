@@ -9,7 +9,8 @@
     ],
     "require": {
         "vlucas/valitron": "^1.4",
-        "doctrine/orm": "^2.6"
+        "doctrine/orm": "^2.6",
+        "phpunit/phpunit": "^7.5"
     },
     "autoload": {
       "psr-4": {

@@ -5,15 +5,13 @@ namespace FloridaSwim\Entities;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class Person
+class Lesson
 {
+
     protected $id;
-    protected $first_name;
-    protected $last_name;
-    protected $email_address;
-    protected $phone_number;
-    protected $zip_code;
-    protected $pool_access;
+    protected $name;
+    protected $duration_to_price;
+    protected $lesson_packages;
     protected $created_at;
 
     public function __construct() 
@@ -25,14 +23,12 @@ class Person
     {
         global $wpdb;
         $builder = new ClassMetadataBuilder($metadata);
-        $builder->setTable($wpdb->prefix . "fwcr_persons");
+        $builder->setTable($wpdb->prefix . "fwcr_lessons");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
-        $builder->addField('first_name', 'string');
-        $builder->addField('last_name', 'string');
-        $builder->addField('email_address', 'string');
-        $builder->addField('phone_number', 'string');
-        $builder->addField('zip_code', 'string');
-        $builder->addField('pool_access', 'string');
+        $builder->createField('name', 'string');
+        $builder->createField('duration_to_price', 'array');
+        $builder->createOneToMany('lesson_packages', 'FloridaSwim\Entities\LessonPackage')->build();
         $builder->addField('created_at', 'datetime');
     }
+
 }
