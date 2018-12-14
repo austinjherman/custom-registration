@@ -8,37 +8,37 @@ use FloridaSwim\Entities\Guest;
 use FloridaSwim\Entities\FormFill;
 use FloridaSwim\Controllers\BaseController;
 
-class GuestController extends BaseController {
+class FormFillController extends BaseController {
 
   protected $namespace = '/fscr/v1';
-  protected $resource_name = 'guests';
+  protected $resource_name = 'forms';
 
   public function registerRoutes() {
-    register_rest_route($this->namespace, '/guests', array(
+    register_rest_route($this->namespace, '/forms', array(
       'methods'             => \WP_REST_Server::READABLE,
       'callback'            => array( $this, 'index' ),
       //'permission_callback' => array( $this, 'index_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/guests/create', array(
+    register_rest_route($this->namespace, '/forms/create', array(
       'methods'             => \WP_REST_Server::CREATABLE,
       'callback'            => array( $this, 'create' ),
       //'permission_callback' => array( $this, 'create_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/guests/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/forms/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::READABLE,
       'callback'            => array( $this, 'read' ),
       //'permission_callback' => array( $this, 'read_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/guests/update/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/forms/update/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::EDITABLE,
       'callback'            => array( $this, 'update' ),
       //'permission_callback' => array( $this, 'update_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/guests/delete/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/forms/delete/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::DELETABLE,
       'callback'            => array( $this, 'delete' ),
       //'permission_callback' => array( $this, 'delete_permissions_check' ),
@@ -47,54 +47,31 @@ class GuestController extends BaseController {
   }
 
   public function index(\WP_REST_Request $request) {
-    $guests = $this->orm()->getRepository('FloridaSwim\Entities\Guest')->findAll();
-    $guestsArray = [];
-    return new \WP_REST_Response(['guests' => $guestsArray], 200);
+    $forms = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')->findAll();
+    $arr = [];
+    foreach ($forms as $form) {
+      $arr[] = $form->toArray();
+    }
+    return new \WP_REST_Response(['forms' => $arr], 200);
   }
 
   public function create(\WP_REST_Request $request) {
-    
-    // get json params from request
-    $request = $request->get_json_params();
-
-    // validate these params
-    $v = new Validator($request);
-    $v->rules([
-      'required' => [
-        'first_name', 'last_name', 'email_address', 'phone_number', 'zip_code', 'pool_access', 
-      ],
-      'email' => [
-        'email_address'
-      ]
-    ]);
-    if (!$v->validate()) {
-      return new \WP_REST_Response(['errors' => $v->errors()], 400);
-    }
 
     $formFill = new FormFill;
     $this->orm()->persist($formFill);
 
-    $guest = new Guest();
-    $guest->addFormFill($formFill);
-    $guest->set('first_name', $request['first_name']);
-    $guest->set('last_name', $request['last_name']);
-    $guest->set('phone_number', $request['phone_number']);
-    $guest->set('email_address', $request['email_address']);
-    $guest->set('zip_code', $request['zip_code']);
-    $guest->set('pool_access', $request['pool_access']);
-    $this->orm()->persist($guest);
-
     $this->orm()->flush();
 
-    if(!$guest->get('id')) {
+    if(!$formFill->get('id')) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
 
-    $json = $guest->toArray();
+    $json = json_encode($formFill);
 
     $response = new \WP_REST_Response([
-      "guest" => $json
+      "form" => $json
     ], 201);
+
     return $response;
 
   }

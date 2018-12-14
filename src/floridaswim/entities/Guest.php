@@ -23,6 +23,15 @@ class Guest extends BaseModel
     protected $updated_at;
     protected $stripe_token;
 
+    protected $expose = [
+        "id", 
+        "first_name", 
+        "last_name",
+        "email_address",
+        "phone_number",
+        "form_fill"
+    ];
+
     public function __construct() 
     {
         $this->created_at = new \DateTime();

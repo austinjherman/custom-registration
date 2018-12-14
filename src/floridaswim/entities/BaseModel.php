@@ -2,7 +2,7 @@
 
 namespace FloridaSwim\Entities;
 
-class BaseModel {
+class BaseModel implements \JsonSerializable {
 
   public function get($key) {
     if(property_exists($this, $key)) {
@@ -26,6 +26,20 @@ class BaseModel {
       $wpdb->prefix = "wp_";
     }
     return $wpdb->prefix;
+  }
+
+  public function jsonSerialize() {
+    $res = [];
+    foreach($this->expose as $property) {
+      if(property_exists($this, $property)) {
+        $res[$property] = $this->$property;
+      }
+    }
+    return $res;
+  }
+
+  public function toArray() {
+    return json_decode(json_encode($this));
   }
 
 }

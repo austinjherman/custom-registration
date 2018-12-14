@@ -11,11 +11,14 @@ class FormFill extends BaseModel
 {
 
     protected $id;
+    protected $guest;
     protected $created_at;
     protected $updated_at;
     protected $completed_at;
 
-    protected $guest;
+    protected $expose = [
+        'id'
+    ];
 
     public function __construct() 
     {

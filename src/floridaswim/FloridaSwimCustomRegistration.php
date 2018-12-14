@@ -6,6 +6,7 @@ use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use FloridaSwim\Controllers\GuestController;
+use FloridaSwim\Controllers\FormFillController;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
 
 
@@ -126,6 +127,8 @@ class FloridaSwimCustomRegistration {
   public function registerApiRoutes() {
     $guestController = new GuestController($this->orm());
     $guestController->registerRoutes();
+    $formFillController = new FormFillController($this->orm());
+    $formFillController->registerRoutes();
   }
 
 }
