@@ -48,8 +48,11 @@ class GuestController extends BaseController {
 
   public function index(\WP_REST_Request $request) {
     $guests = $this->orm()->getRepository('FloridaSwim\Entities\Guest')->findAll();
-    $guestsArray = [];
-    return new \WP_REST_Response(['guests' => $guestsArray], 200);
+    $arr = [];
+    foreach ($guests as $guest) {
+      $arr[] = $guest->toArray();
+    }
+    return new \WP_REST_Response(['guests' => $arr], 200);
   }
 
   public function create(\WP_REST_Request $request) {

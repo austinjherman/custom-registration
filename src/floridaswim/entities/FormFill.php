@@ -17,7 +17,7 @@ class FormFill extends BaseModel
     protected $completed_at;
 
     protected $expose = [
-        'id'
+        'id', 'created_at', 'updated_at', 'completed_at'
     ];
 
     public function __construct() 
