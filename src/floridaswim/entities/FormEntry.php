@@ -7,7 +7,7 @@ use FloridaSwim\Entities\Guest;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class FormFill extends BaseModel
+class FormEntry extends BaseModel
 {
 
     protected $id;
@@ -32,9 +32,9 @@ class FormFill extends BaseModel
     public static function loadMetadata(ClassMetadata $metadata)
     {
         $builder = new ClassMetadataBuilder($metadata);
-        $builder->setTable(parent::tablePrefix() . "fwcr_form_fills");
+        $builder->setTable(parent::tablePrefix() . "fwcr_form_entries");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
-        $builder->createOneToOne('guest', 'FloridaSwim\Entities\Guest')->mappedBy('form_fill')->build();
+        $builder->createOneToOne('guest', 'FloridaSwim\Entities\Guest')->mappedBy('form_entry')->build();
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
         $builder->addField('completed_at', 'datetime', ['nullable' => true]);

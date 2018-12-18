@@ -26,6 +26,7 @@ class Guardian extends BaseModel
     }
 
     public function addStudent(Student $student) {
+        $student->addGuardian($this);
         $this->students[] = $student;
     }
 
@@ -35,7 +36,7 @@ class Guardian extends BaseModel
         $builder->setTable(parent::tablePrefix() . "fwcr_guardians");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
 
-        // One form_fill can have many parent/guardians
+        // One form_entry can have many parent/guardians
         $builder->createManyToOne('guest', 'FloridaSwim\Entities\Guest')->addJoinColumn('guest_id', 'id', true, false, 'cascade')->build();
 
         $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian_id')->build();

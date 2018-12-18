@@ -1,12 +1,12 @@
-<form id="fscrForm" class="form--registration" method="post">
+<form id="fscrForm" class="fscrForm--registration" method="post">
 
-    <fieldset class="fieldset fieldset--contact">
+    <fieldset class="fscrForm__fieldset">
 
-      <legend>
+      <legend class="fscrForm__title">
         Your Contact Information
       </legend>
 
-      <div class="input-wrap input--half">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
         <label class="input-container">
           <span class="d-block">First Name <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.first_name }}</span>
@@ -14,7 +14,7 @@
         </label>
       </div>
 
-      <div class="input-wrap input--half">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
         <label class="input-container">
           <span class="d-block">Last Name <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.last_name }}</span>
@@ -22,7 +22,7 @@
         </label>
       </div>
 
-      <div class="input-wrap input--half">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
         <label class="input-container">
           <span class="d-block">Email Address <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.email_address }}</span>
@@ -30,7 +30,7 @@
         </label>
       </div>
 
-      <div class="input-wrap input--half">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
         <label class="input-container">
           <span class="d-block">Phone Number <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.phone_number }}</span>
@@ -38,7 +38,7 @@
         </label>
       </div>
 
-      <div class="input-wrap input--half">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
         <label class="input-container">
           <span class="d-block">ZIP Code <span class="field--required">*</span></span>
           <span class="fwcr__form__error">{{ errors.zip_code }}</span>
@@ -52,13 +52,13 @@
         <legend class="label">Do you have access to a pool? <span class="field--required">*</span></legend>
         <span class="fwcr__form__error">{{ errors.pool_access }}</span>
         <label class="d-inline-block">
-          <span class="d-block custom-radio custom-radio--square">
+          <span class="fscrForm__custom-radio--square">
             <span class="d-block">Yes</span>
             <input name="pool_access" type="radio" value="true" v-model="registrant.poolAccess">
           </span>
         </label>
         <label class="d-inline-block">
-          <span class="d-inline-block custom-radio custom-radio--square">
+          <span class="fscrForm__custom-radio--square">
             <span class="d-block">No</span>
             <input name="pool_access" type="radio" value="false" v-model="registrant.poolAccess">
           </span>

@@ -3,39 +3,39 @@
 namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
-use FloridaSwim\Entities\Student;
+use FloridaSwim\Entities\Schedule;
 
-class StudentController extends \WP_REST_Controller {
+class ScheduleController extends \WP_REST_Controller {
 
   protected $namespace = '/fscr/v1';
-  protected $resource_name = 'students';
+  protected $resource_name = 'schedules';
 
   public function registerRoutes() {
-    register_rest_route($this->namespace, '/students', array(
+    register_rest_route($this->namespace, '/schedules', array(
       'methods'             => \WP_REST_Server::READABLE,
       'callback'            => array( $this, 'index' ),
       //'permission_callback' => array( $this, 'index_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/create', array(
+    register_rest_route($this->namespace, '/schedules/create', array(
       'methods'             => \WP_REST_Server::CREATABLE,
       'callback'            => array( $this, 'create' ),
       //'permission_callback' => array( $this, 'create_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/schedules/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::READABLE,
       'callback'            => array( $this, 'read' ),
       //'permission_callback' => array( $this, 'read_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/update/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/schedules/update/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::EDITABLE,
       'callback'            => array( $this, 'update' ),
       //'permission_callback' => array( $this, 'update_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/delete/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/schedules/delete/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::DELETABLE,
       'callback'            => array( $this, 'delete' ),
       //'permission_callback' => array( $this, 'delete_permissions_check' ),
@@ -49,12 +49,12 @@ class StudentController extends \WP_REST_Controller {
    *
    */
   public function index(\WP_REST_Request $request) {
-    $students = $this->orm()->getRepository('FloridaSwim\Entities\Student')->findAll();
+    $schedules = $this->orm()->getRepository('FloridaSwim\Entities\Schedule')->findAll();
     $arr = [];
-    foreach ($students as $student) {
-      $arr[] = $student->toArray();
+    foreach ($schedules as $schedule) {
+      $arr[] = $schedule->toArray();
     }
-    return new \WP_REST_Response(['students' => $arr], 200);
+    return new \WP_REST_Response(['schedules' => $arr], 200);
   }
 
 
@@ -64,38 +64,42 @@ class StudentController extends \WP_REST_Controller {
    */
   public function create(\WP_REST_Request $request) {
 
-    // validate params
-    $v = new Validator($request->get_params());
+    // validate these params
+    $v = new Validator($request->get_json_params());
     $v->rules([
       'required' => [
-        'student_name', 'student_date_of_birth', 'guardian_id'
-      ]
+        'lesson_frequency_per_week', 
+        'lessons_begin', 'days_available', 'time_availability_weekdays',
+        'student_id'
+      ],
+      'integer' => ['lesson_frequency_per_week', 'student_id']
     ]);
     if (!$v->validate()) {
       return new \WP_REST_Response(['errors' => $v->errors()], 400);
     }
 
-    // find associated guardian
-    $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($request->get_param('guardian_id'));
-    if(!$guardian) {
-      return new \WP_REST_Response(['errors' => 'guardian' => ['Please enter a valid guardian ID.']], 400);
+    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($request->get_param('student_id'));
+    if(!$student) {
+      return new \WP_REST_Response(['errors' => ['student' => 'Please enter a valid student ID.']], 400);
     }
 
-    // create a new student
-    $student = new Student;
-    $student->set('name', $request->get_param('name'));
-    $student->set('date_of_birth', $request->get_param('date_of_birth'));
-    $student->addGuardian($guardian);
-    $this->orm()->persist($student);
+    // create new schedule
+    $schedule = new Schedule;
+    $schedule->set('lesson_frequency_per_week', $request->get_param('lesson_frequency_per_week'));
+    $schedule->set('lessons_begin', $request->get_param('lessons_begin'));
+    $schedule->set('days_available', $request->get_param('days_available'));
+    $schedule->set('time_availability_weekdays', $request->get_param('time_availability_weekdays'));
+    $schedule->addStudent($student);
+    $this->orm()->persist($schedule);
     $this->orm()->flush();
-    if(!$student->get('id')) {
+    if(!$schedule->get('id')) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
 
-    // return response with created student
-    $arr = $student->toArray();
+    // return response with created guardian
+    $arr = $schedule->toArray();
     return new \WP_REST_Response([
-      "student" => $arr
+      "schedule" => $arr
     ], 201);
 
   }
@@ -107,10 +111,10 @@ class StudentController extends \WP_REST_Controller {
    */
   public function read(\WP_REST_Request $request) {
 
-    // find student
+    // find schedule
     $id = $request->get_param('id');
-    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
-    if(!$student) {
+    $schedule = $this->orm()->getRepository('FloridaSwim\Entities\Schedule')->find($id);
+    if(!$schedule) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
         "message" => "No route was found matching the URL and request method",
@@ -121,9 +125,9 @@ class StudentController extends \WP_REST_Controller {
     }
 
     // display student
-    $arr = $student->toArray();
+    $arr = $schedule->toArray();
     return new \WP_REST_Response([
-      "student" => $arr
+      "schedule" => $arr
     ], 200);
 
   }
@@ -137,8 +141,8 @@ class StudentController extends \WP_REST_Controller {
 
     // find student
     $id = $request->get_param('id');
-    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
-    if(!$student) {
+    $schedule = $this->orm()->getRepository('FloridaSwim\Entities\Schedule')->find($id);
+    if(!$schedule) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
         "message" => "No route was found matching the URL and request method",
@@ -151,12 +155,8 @@ class StudentController extends \WP_REST_Controller {
     // validate request
     $v = new Validator($request->get_json_params());
     $v->rules([
-      'optional' => [
-        'date_of_birth'
-      ],
-      'date' => [
-        'date_of_birth'
-      ]
+      'optional' => ['lesson_frequency_per_week', 'student_id'],
+      'integer' => ['lesson_frequency_per_week', 'student_id']
     ]);
     if (!$v->validate()) {
       $response = new \WP_REST_Response(['errors' => $v->errors()], 400);
@@ -166,11 +166,11 @@ class StudentController extends \WP_REST_Controller {
     $incomingJson = $request->get_json_params();
     foreach($incomingJson as $key => $value) {
       // okay because set() will only set a value if its key already exists
-      $student->set($key, $value);
+      $schedule->set($key, $value);
     }
-    $arr = $student->toArray();
+    $arr = $schedule->toArray();
     return new \WP_REST_Response([
-      "student" => $arr
+      "schedule" => $arr
     ], 200);
 
   }
@@ -182,10 +182,10 @@ class StudentController extends \WP_REST_Controller {
    */
   public function delete(\WP_REST_Request $request) {
 
-    // find student
+    // find schedule
     $id = $request->get_param('id');
-    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
-    if(!$student) {
+    $schedule = $this->orm()->getRepository('FloridaSwim\Entities\Schedule')->find($id);
+    if(!$schedule) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
         "message" => "No route was found matching the URL and request method",
@@ -195,10 +195,11 @@ class StudentController extends \WP_REST_Controller {
       ], 404);
     }
   
-    $this->orm()->remove($student);
+    // remove guardian from storage
+    $this->orm()->remove($schedule);
     $this->orm()->flush();
     return new \WP_REST_Response([
-      "message" => "student deleted"
+      "message" => "schedule deleted"
     ], 200);
 
   }

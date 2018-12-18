@@ -3,12 +3,9 @@
 namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
-use Doctrine\ORM\EntityManager;
-use FloridaSwim\Entities\Guest;
-use FloridaSwim\Entities\FormFill;
-use FloridaSwim\Controllers\BaseController;
+use FloridaSwim\Entities\FormEntry;
 
-class FormFillController extends BaseController {
+class FormEntryController extends BaseController {
 
   protected $namespace = '/fscr/v1';
   protected $resource_name = 'forms';
@@ -47,11 +44,11 @@ class FormFillController extends BaseController {
   }
 
   /**
-   * Display a listing of all FormFill objects.
+   * Display a listing of all FormEntry objects.
    *
    */
   public function index(\WP_REST_Request $request) {
-    $forms = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')->findAll();
+    $forms = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')->findAll();
     $arr = [];
     foreach ($forms as $form) {
       $arr[] = $form->toArray();
@@ -60,21 +57,20 @@ class FormFillController extends BaseController {
   }
 
   /**
-   * Store a FormFill object in the database.
+   * Store a FormEntry object in the database.
    *
    */
   public function create(\WP_REST_Request $request) {
 
-    $formFill = new FormFill;
-    $this->orm()->persist($formFill);
-
+    $formEntry = new FormEntry;
+    $this->orm()->persist($formEntry);
     $this->orm()->flush();
 
-    if(!$formFill->get('id')) {
+    if(!$formEntry->get('id')) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
 
-    $arr = $formFill->toArray();
+    $arr = $formEntry->toArray();
     $response = new \WP_REST_Response([
       "form" => $arr
     ], 201);
@@ -84,12 +80,12 @@ class FormFillController extends BaseController {
   }
 
   /**
-   * Get a single FormFill object from the database.
+   * Get a single FormEntry object from the database.
    *
    */
   public function read(\WP_REST_Request $request) {
     $id = $request->get_param('id');
-    $form = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')->find($id);
+    $form = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')->find($id);
     if(!$form) {
       $response = new \WP_REST_Response([
         "code" => "rest_no_route",
@@ -110,7 +106,7 @@ class FormFillController extends BaseController {
 
 
   /**
-   * Update a single FormFill object in storage.
+   * Update a single FormEntry object in storage.
    *
    */
   public function update(\WP_REST_Request $request) {
@@ -119,12 +115,12 @@ class FormFillController extends BaseController {
 
 
   /**
-   * Delete a single FormFill object in storage.
+   * Delete a single FormEntry object in storage.
    *
    */
   public function delete(\WP_REST_Request $request) {
     $id = $request->get_param('id');
-    $form = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')->find($id);
+    $form = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')->find($id);
     if(!$form) {
       $response = new \WP_REST_Response([
         "code" => "rest_no_route",
@@ -137,6 +133,9 @@ class FormFillController extends BaseController {
     else {
       $this->orm()->remove($form);
       $this->orm()->flush();
+      $response = new \WP_REST_Response([
+        "message" => "entry deleted"
+      ], 200);
     }
     return $response;
   }

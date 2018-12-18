@@ -3,7 +3,7 @@
 namespace FloridaSwim\Tests\Entities;
 
 use FloridaSwim\Entities\Guest;
-use FloridaSwim\Entities\FormFill;
+use FloridaSwim\Entities\FormEntry;
 use FloridaSwim\Tests\BaseTestCase;
 
 class GuestTest extends BaseTestCase
@@ -12,12 +12,12 @@ class GuestTest extends BaseTestCase
   public function testCanCreateGuest() 
   {
 
-    $formFill = new FormFill;
-    $this->orm()->persist($formFill);
+    $formEntry = new FormEntry;
+    $this->orm()->persist($formEntry);
     $this->orm()->flush();
 
     $guest = new Guest;
-    $guest->addFormFill($formFill);
+    $guest->addFormEntry($formEntry);
     $guest->set('first_name', 'Donald');
     $guest->set('last_name', 'Duck');
     $guest->set('email_address', 'donald@duck.com');
@@ -32,20 +32,20 @@ class GuestTest extends BaseTestCase
 
     $this->assertNotNull($createdGuest);
 
-    $this->orm()->remove($formFill);
+    $this->orm()->remove($formEntry);
     $this->orm()->remove($guest);
     $this->orm()->flush();
   }
 
-  public function testCanAddAndAccessFormFill()
+  public function testCanAddAndAccessFormEntry()
   {
 
-    $formFill = new FormFill;
-    $this->orm()->persist($formFill);
+    $formEntry = new FormEntry;
+    $this->orm()->persist($formEntry);
     $this->orm()->flush();
 
     $guest = new Guest;
-    $guest->addFormFill($formFill);
+    $guest->addFormEntry($formEntry);
     $guest->set('first_name', 'Donald');
     $guest->set('last_name', 'Duck');
     $guest->set('email_address', 'donald@duck.com');
@@ -56,9 +56,9 @@ class GuestTest extends BaseTestCase
     $this->orm()->persist($guest);
     $this->orm()->flush();
 
-    $this->assertNotNull($guest->get('form_fill'));
+    $this->assertNotNull($guest->get('form_entry'));
 
-    $this->orm()->remove($formFill);
+    $this->orm()->remove($formEntry);
     $this->orm()->remove($guest);
     $this->orm()->flush();
 

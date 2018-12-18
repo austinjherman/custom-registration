@@ -2,13 +2,15 @@
 
 namespace FloridaSwim;
 
+use Valitron\Validator;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use FloridaSwim\Controllers\GuestController;
-use FloridaSwim\Controllers\FormFillController;
+use FloridaSwim\Controllers\StudentController;
+use FloridaSwim\Controllers\GuaridanController;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
-
+use FloridaSwim\Controllers\FormEntryController;
 
 class FloridaSwimCustomRegistration {
 
@@ -23,6 +25,7 @@ class FloridaSwimCustomRegistration {
   public function run() 
   {
     $this->bootDoctrine();
+    $this->extendValidator();
     register_activation_hook($this->pathToPluginFile, [$this, 'handleActivation']);
     register_deactivation_hook($this->pathToPluginFile, [$this, 'handleDeactivation']);
     add_action( 'rest_api_init', [$this, 'registerApiRoutes'] );
@@ -55,6 +58,12 @@ class FloridaSwimCustomRegistration {
     return $this->doctrineEm;
   }
 
+  public function extendValidator() {
+    Validator::addRule('whitelist', function($field, $value, array $params, array $fields) {
+      return false;
+    }, 'Everything you do is wrong. You fail.');
+  }
+
   public function handleActivation() 
   {
     $this->createTables();
@@ -71,7 +80,7 @@ class FloridaSwimCustomRegistration {
   {
     $tool = new SchemaTool($this->doctrineEm);
     $classes = array(
-      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormFill'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormEntry'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guest'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
@@ -87,7 +96,7 @@ class FloridaSwimCustomRegistration {
   {
     $tool = new SchemaTool($this->doctrineEm);
     $classes = array(
-      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormFill'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\FormEntry'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guest'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Guardian'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Student'),
@@ -125,10 +134,14 @@ class FloridaSwimCustomRegistration {
   }
 
   public function registerApiRoutes() {
+    $formEntryController = new FormEntryController($this->orm());
+    $formEntryController->registerRoutes();
     $guestController = new GuestController($this->orm());
     $guestController->registerRoutes();
-    $formFillController = new FormFillController($this->orm());
-    $formFillController->registerRoutes();
+    $studentController = new StudentController($this->orm());
+    $studentController->registerRoutes();
+    $guardianController = new GuardianController($this->orm());
+    $guardianController->registerRoutes();
   }
 
 }

@@ -2,37 +2,37 @@
 
 namespace FloridaSwim\Tests\Entities;
 
-use FloridaSwim\Entities\FormFill;
+use FloridaSwim\Entities\FormEntry;
 use FloridaSwim\Tests\BaseTestCase;
 use FloridaSwim\Entities\Guest;
 
 
-class FormFillTest extends BaseTestCase
+class FormEntryTest extends BaseTestCase
 {
 
-  public function testCanCreateFormFill() {
+  public function testCanCreateFormEntry() {
     
-    $formFill = new FormFill;
-    $this->orm()->persist($formFill);
+    $FormEntry = new FormEntry;
+    $this->orm()->persist($formEntry);
     $this->orm()->flush();
 
-    $id = $formFill->get('id');
-    $createdFormFill = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')
+    $id = $formEntry->get('id');
+    $createdFormEntry = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')
           ->find($id);
 
-    $this->assertNotNull($createdFormFill);
-    $this->orm()->remove($formFill);
+    $this->assertNotNull($createdFormEntry);
+    $this->orm()->remove($formEntry);
     $this->orm()->flush();
 
   }
 
   public function testCanAddAndAccessGuest() {
     
-    $formFill = new FormFill;
-    $this->orm()->persist($formFill);
+    $formEntry = new FormEntry;
+    $this->orm()->persist($formEntry);
 
     $guest = new Guest;
-    $guest->addFormFill($formFill);
+    $guest->addFormEntry($formEntry);
     $guest->set('first_name', 'testCanAddAndAccessGuest');
     $guest->set('last_name', 'Duck');
     $guest->set('email_address', 'donald@duck.com');
@@ -43,36 +43,36 @@ class FormFillTest extends BaseTestCase
 
     $this->orm()->flush();
 
-    $addedGuest = $formFill->get('guest');
-    $this->assertEquals($formFill->get('guest')->get('first_name'), 'testCanAddAndAccessGuest');
+    $addedGuest = $formEntry->get('guest');
+    $this->assertEquals($formEntry->get('guest')->get('first_name'), 'testCanAddAndAccessGuest');
 
-    $this->orm()->remove($formFill);
+    $this->orm()->remove($formEntry);
     $this->orm()->remove($guest);
 
     $this->orm()->flush();
 
   }
 
-  public function testCanDeleteFormFill() {
+  public function testCanDeleteFormEntry() {
 
-    $formFill = new FormFill;
-    $this->orm()->persist($formFill);
+    $formEntry = new FormEntry;
+    $this->orm()->persist($formEntry);
 
     $this->orm()->flush();
 
-    $id = $formFill->get('id');
-    $createdFormFill = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')
+    $id = $formEntry->get('id');
+    $createdFormEntry = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')
           ->find($id);
-    $this->assertNotNull($createdFormFill);
-    $idToDelete = $createdFormFill->get('id');
+    $this->assertNotNull($createdFormEntry);
+    $idToDelete = $createdFormentry->get('id');
     
-    $this->orm()->remove($createdFormFill);
+    $this->orm()->remove($createdFormEntry);
     $this->orm()->flush();
 
-    $deletedFormFill = $this->orm()->getRepository('FloridaSwim\Entities\FormFill')
+    $deletedFormEntry = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')
           ->find($idToDelete);
 
-    $this->assertNull($deletedFormFill);
+    $this->assertNull($deletedFormEntry);
 
   }
 

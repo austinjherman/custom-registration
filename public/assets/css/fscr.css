@@ -1,0 +1,35 @@
+body.page:not(.twentyseventeen-front-page) .entry-header {
+  float: none !important;
+  width: 100% !important;
+}
+
+body.page:not(.twentyseventeen-front-page) .entry-content {
+  float: none !important;
+  width: 100% !important;
+}
+
+.fscrForm__fieldset {
+  border: none;
+  margin: 0;  
+  padding: 0;
+}
+
+.fscrForm__title {
+  border-top: 4px solid #345F72;
+  border-bottom: 4px solid #345F72;
+  font-weight: bold;
+  margin-bottom: 35px;
+  padding: 15px 0;
+  text-align: center;
+  width: 100%;
+}
+
+.fscrForm__input-wrap--input-half {
+  float: left;
+  width: 50%;
+}
+
+.fscrForm__custom-radio--square {
+  background-color: #333;
+  
+}

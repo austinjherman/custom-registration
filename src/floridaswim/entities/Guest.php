@@ -2,7 +2,7 @@
 
 namespace FloridaSwim\Entities;
 
-use FloridaSwim\Entities\FormFill;
+use FloridaSwim\Entities\FormEntry;
 use FloridaSwim\Entities\BaseModel;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
@@ -11,8 +11,8 @@ class Guest extends BaseModel
 {
 
     protected $id;
-    protected $form_fill;
-    protected $form_fill_id;
+    protected $form_entry;
+    protected $form_entry_id;
     protected $first_name;
     protected $last_name;
     protected $email_address;
@@ -29,7 +29,7 @@ class Guest extends BaseModel
         "last_name",
         "email_address",
         "phone_number",
-        "form_fill"
+        "form_entry"
     ];
 
     public function __construct() 
@@ -37,10 +37,10 @@ class Guest extends BaseModel
         $this->created_at = new \DateTime();
     }
 
-    public function addFormFill(FormFill $formFill) 
+    public function addFormEntry(FormEntry $formEntry) 
     {
-        $formFill->addGuest($this);
-        $this->form_fill = $formFill;
+        $formEntry->addGuest($this);
+        $this->form_entry = $formEntry;
     }
 
     public static function loadMetadata(ClassMetadata $metadata)
@@ -48,7 +48,7 @@ class Guest extends BaseModel
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_guests");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
-        $builder->createOneToOne('form_fill', 'FloridaSwim\Entities\FormFill')->inversedBy('guest')->addJoinColumn('form_fill_id', 'id', false, false, 'cascade')->build();
+        $builder->createOneToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->inversedBy('guest')->addJoinColumn('form_entry_id', 'id', false, false, 'cascade')->build();
         $builder->addField('first_name', 'string');
         $builder->addField('last_name', 'string');
         $builder->addField('email_address', 'string');

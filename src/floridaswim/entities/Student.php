@@ -31,7 +31,6 @@ class Student extends BaseModel
     }
 
     public function addGuardian(Guardian $guardian) {
-        $guardian->addStudent($this);
         $this->guardian = $guardian;
     }
 

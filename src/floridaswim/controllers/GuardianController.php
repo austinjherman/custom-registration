@@ -3,39 +3,39 @@
 namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
-use FloridaSwim\Entities\Student;
+use FloridaSwim\Entities\Guardian;
 
-class StudentController extends \WP_REST_Controller {
+class GuardianController extends \WP_REST_Controller {
 
   protected $namespace = '/fscr/v1';
-  protected $resource_name = 'students';
+  protected $resource_name = 'guardians';
 
   public function registerRoutes() {
-    register_rest_route($this->namespace, '/students', array(
+    register_rest_route($this->namespace, '/guardians', array(
       'methods'             => \WP_REST_Server::READABLE,
       'callback'            => array( $this, 'index' ),
       //'permission_callback' => array( $this, 'index_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/create', array(
+    register_rest_route($this->namespace, '/guardians/create', array(
       'methods'             => \WP_REST_Server::CREATABLE,
       'callback'            => array( $this, 'create' ),
       //'permission_callback' => array( $this, 'create_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/guardians/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::READABLE,
       'callback'            => array( $this, 'read' ),
       //'permission_callback' => array( $this, 'read_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/update/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/guardians/update/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::EDITABLE,
       'callback'            => array( $this, 'update' ),
       //'permission_callback' => array( $this, 'update_permissions_check' ),
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
-    register_rest_route($this->namespace, '/students/delete/(?P<id>\d+)', array(
+    register_rest_route($this->namespace, '/guardians/delete/(?P<id>\d+)', array(
       'methods'             => \WP_REST_Server::DELETABLE,
       'callback'            => array( $this, 'delete' ),
       //'permission_callback' => array( $this, 'delete_permissions_check' ),
@@ -49,12 +49,12 @@ class StudentController extends \WP_REST_Controller {
    *
    */
   public function index(\WP_REST_Request $request) {
-    $students = $this->orm()->getRepository('FloridaSwim\Entities\Student')->findAll();
+    $guardians = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->findAll();
     $arr = [];
-    foreach ($students as $student) {
-      $arr[] = $student->toArray();
+    foreach ($guardians as $guardian) {
+      $arr[] = $guardian->toArray();
     }
-    return new \WP_REST_Response(['students' => $arr], 200);
+    return new \WP_REST_Response(['guardians' => $arr], 200);
   }
 
 
@@ -64,38 +64,35 @@ class StudentController extends \WP_REST_Controller {
    */
   public function create(\WP_REST_Request $request) {
 
-    // validate params
-    $v = new Validator($request->get_params());
+    // validate these params
+    $v = new Validator($request->get_json_params());
     $v->rules([
       'required' => [
-        'student_name', 'student_date_of_birth', 'guardian_id'
+        'name', 'email', 'phone_number'
+      ],
+      'email' => [
+        'email'
       ]
     ]);
     if (!$v->validate()) {
       return new \WP_REST_Response(['errors' => $v->errors()], 400);
     }
 
-    // find associated guardian
-    $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($request->get_param('guardian_id'));
-    if(!$guardian) {
-      return new \WP_REST_Response(['errors' => 'guardian' => ['Please enter a valid guardian ID.']], 400);
-    }
-
-    // create a new student
-    $student = new Student;
-    $student->set('name', $request->get_param('name'));
-    $student->set('date_of_birth', $request->get_param('date_of_birth'));
-    $student->addGuardian($guardian);
-    $this->orm()->persist($student);
+    // create new guardian
+    $guardian = new Guardian;
+    $guardian->set('name', $request->get_param('name'));
+    $guardian->set('email', $request->get_param('email'));
+    $guardian->set('phone_number', $request->get_param('phone_number'));
+    $this->orm()->persist($guardian);
     $this->orm()->flush();
-    if(!$student->get('id')) {
+    if(!$guardian->get('id')) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
 
-    // return response with created student
-    $arr = $student->toArray();
+    // return response with created guardian
+    $arr = $guardian->toArray();
     return new \WP_REST_Response([
-      "student" => $arr
+      "guardian" => $arr
     ], 201);
 
   }
@@ -107,10 +104,10 @@ class StudentController extends \WP_REST_Controller {
    */
   public function read(\WP_REST_Request $request) {
 
-    // find student
+    // find guardian
     $id = $request->get_param('id');
-    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
-    if(!$student) {
+    $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
+    if(!$guardian) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
         "message" => "No route was found matching the URL and request method",
@@ -121,9 +118,9 @@ class StudentController extends \WP_REST_Controller {
     }
 
     // display student
-    $arr = $student->toArray();
+    $arr = $guardian->toArray();
     return new \WP_REST_Response([
-      "student" => $arr
+      "guardian" => $arr
     ], 200);
 
   }
@@ -135,10 +132,10 @@ class StudentController extends \WP_REST_Controller {
    */
   public function update(\WP_REST_Request $request) {
 
-    // find student
+    // find guardian
     $id = $request->get_param('id');
-    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
-    if(!$student) {
+    $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($id);
+    if(!$guardian) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
         "message" => "No route was found matching the URL and request method",
@@ -152,10 +149,10 @@ class StudentController extends \WP_REST_Controller {
     $v = new Validator($request->get_json_params());
     $v->rules([
       'optional' => [
-        'date_of_birth'
+        'email'
       ],
-      'date' => [
-        'date_of_birth'
+      'email' => [
+        'email'
       ]
     ]);
     if (!$v->validate()) {
@@ -166,11 +163,11 @@ class StudentController extends \WP_REST_Controller {
     $incomingJson = $request->get_json_params();
     foreach($incomingJson as $key => $value) {
       // okay because set() will only set a value if its key already exists
-      $student->set($key, $value);
+      $guardian->set($key, $value);
     }
-    $arr = $student->toArray();
+    $arr = $guardian->toArray();
     return new \WP_REST_Response([
-      "student" => $arr
+      "guardian" => $arr
     ], 200);
 
   }
@@ -182,10 +179,10 @@ class StudentController extends \WP_REST_Controller {
    */
   public function delete(\WP_REST_Request $request) {
 
-    // find student
+    // find guardian
     $id = $request->get_param('id');
-    $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
-    if(!$student) {
+    $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($id);
+    if(!$guardian) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
         "message" => "No route was found matching the URL and request method",
@@ -195,10 +192,11 @@ class StudentController extends \WP_REST_Controller {
       ], 404);
     }
   
-    $this->orm()->remove($student);
+    // remove guardian from storage
+    $this->orm()->remove($guardian);
     $this->orm()->flush();
     return new \WP_REST_Response([
-      "message" => "student deleted"
+      "message" => "guardian deleted"
     ], 200);
 
   }
