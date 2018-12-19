@@ -1,4 +1,8 @@
 
+Vue.use(VeeValidate, {
+  errorBagName: 'validator'
+});
+
 var fscrForm = new Vue({
   
   el: '#fscrForm',
@@ -15,14 +19,22 @@ var fscrForm = new Vue({
     // display the confirm parent/guardian section?
     confirmParentGuardians: false,
 
-    // registrant object
-    registrant: {
+    // guest object
+    guest: {
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
       zipCode: "",
-      poolAccess: ""
+      poolAccess: "",
+      errors: {
+        first_name: "",
+        last_name: "",
+        email_address: "",
+        phone_number: "",
+        zip_code: "",
+        pool_access: ""
+      }
     },
 
     // students object
@@ -65,49 +77,90 @@ var fscrForm = new Vue({
       ]
     },
 
-    // error object
-    errors: {
-      first_name: "",
-      last_name: "",
-      email_address: "",
-      phone_number: "",
-      zip_code: "",
-      pool_access: ""
-    }
-
   },
 
   methods: {
 
-    foo: function() {
-      //console.log('email input change');
+    updatePoolAccess: function(boolean) {
+      if (boolean === true) {
+        this.$set(this.guest, 'poolAccess', 'true');
+      }
+      else {
+        this.$set(this.guest, 'poolAccess', 'false');
+      }
     },
 
     /**
      | ---------------------------------------------------------------
-     | Registrants
+     | First Page
      | ---------------------------------------------------------------
      |
      */
 
+    handleFirstPageSubmission: function(event) {
+      
+      // emit this event so vee validator can catch it
+      this.$emit('pageonesubmit');
+      var inputs = this.$el.querySelectorAll('.pageOneInput');
+      inputs.forEach(function(e) {
+        e.dispatchEvent(
+          new Event('pageonesubmit')
+        );
+      });
+
+      // ensure pool access radio has been picked
+      if (this.guest.poolAccess === "") {
+        this.$set(this.guest.errors, 'pool_access', 'Please select an option.');
+        return false;
+      }
+      else if(this.guest.poolAccess == 'true' || this.guest.poolAccess == 'false') {
+        this.$set(this.guest.errors, 'pool_access', '');
+      }
+
+      if(this.validator.any()) {
+        console.log('there are errors');
+        return false;
+      }
+
+      // create the form entry
+      this.createFormEntry();
+
+    },
+
+    createFormEntry: function() {
+      var request = {};
+      axios.post(this.api + '/forms/create', request)
+        .then(response => {
+          console.log(response);
+        })
+        .catch(error => {
+          console.log(error.response);
+        });
+    },
+
+
+
+
     /**
-     * This function creates a registrant object in javascript 
-     * then sends this object as a post request to the registrants
+     * This function creates a guest object in javascript 
+     * then sends this object as a post request to the guests
      * endpoint. If all goes well, we should expect a 201 created
      * response. 
      *
      * If errors are returned, they are displayed on the frontend.
      *
      */
-    createRegistrant: function() {
+    createGuest: function() {
+      //console.log(this.guest.poolAccess);
+      /*
       var request = {};
-      request.first_name = this.registrant.firstName;
-      request.last_name = this.registrant.lastName;
-      request.email_address = this.registrant.email;
-      request.phone_number = this.registrant.phone;
-      request.zip_code = this.registrant.zipCode;
-      request.pool_access = this.registrant.poolAccess;
-      axios.post(this.api + '/registrants/create', request)
+      request.first_name = this.guest.firstName;
+      request.last_name = this.guest.lastName;
+      request.email_address = this.guest.email;
+      request.phone_number = this.guest.phone;
+      request.zip_code = this.guest.zipCode;
+      request.pool_access = this.guest.poolAccess;
+      axios.post(this.api + '/guests/create', request)
         .then(response => {
           console.log(response);
         })
@@ -125,6 +178,8 @@ var fscrForm = new Vue({
             }
           }
         });
+
+        */
     },
 
     /**
@@ -254,10 +309,10 @@ var fscrForm = new Vue({
             if (i == 0) {
               this.$set(this.parents.parents, i, {
                 id: i,
-                first_name: this.registrant.firstName,
-                last_name: this.registrant.lastName,
-                email: this.registrant.email,
-                phone: this.registrant.phone,
+                first_name: this.guest.firstName,
+                last_name: this.guest.lastName,
+                email: this.guest.email,
+                phone: this.guest.phone,
                 students: studentIds,
                 save: true
               });
@@ -271,10 +326,10 @@ var fscrForm = new Vue({
         else {
           this.$set(this.parents.parents, 0, {
             id: 0,
-            first_name: this.registrant.firstName,
-            last_name: this.registrant.lastName,
-            email: this.registrant.email,
-            phone: this.registrant.phone,
+            first_name: this.guest.firstName,
+            last_name: this.guest.lastName,
+            email: this.guest.email,
+            phone: this.guest.phone,
             students: studentIds,
             save: true
           });

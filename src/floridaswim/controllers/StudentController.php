@@ -78,7 +78,7 @@ class StudentController extends \WP_REST_Controller {
     // find associated guardian
     $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($request->get_param('guardian_id'));
     if(!$guardian) {
-      return new \WP_REST_Response(['errors' => 'guardian' => ['Please enter a valid guardian ID.']], 400);
+      return new \WP_REST_Response(['errors' => ['guardian' => 'Please enter a valid guardian ID.']], 400);
     }
 
     // create a new student

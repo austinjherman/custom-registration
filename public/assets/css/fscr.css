@@ -8,15 +8,64 @@ body.page:not(.twentyseventeen-front-page) .entry-content {
   width: 100% !important;
 }
 
+#fscrForm .d-block {
+  display: block;
+}
+
+#fscrForm .d-inline-block {
+  display: inline-block;
+}
+
+#fscrForm .field--required {
+  color: tomato;
+}
+
+#fscrForm .m-0 {
+  margin: 0;
+}
+
+#fscrForm .f-right {
+  float: right;
+}
+
+#fscrForm hr {
+  margin: 1.5rem 0;
+}
+
+#fscrForm .hidden {
+  display: none;
+}
+
+.fscrForm__input-wrap {
+  margin-bottom: 1rem;
+}
+
+.fwcr__form__error {
+  color: tomato;
+  font-size: 0.7rem;
+  font-weight: normal;
+  min-height: 20px;
+  display: block;
+  padding: 0 0 4px 0;
+}
+
+.fscrForm__label {
+  font-weight: 800;
+  color: #333;
+  font-size: 0.99rem;
+  line-height: 1rem;
+  display: block;
+}
+
 .fscrForm__fieldset {
   border: none;
-  margin: 0;  
+  margin: 0 0 25px 0;  
   padding: 0;
 }
 
 .fscrForm__title {
-  border-top: 4px solid #345F72;
-  border-bottom: 4px solid #345F72;
+  border-top: 4px solid #283166;
+  border-bottom: 4px solid #283166;
   font-weight: bold;
   margin-bottom: 35px;
   padding: 15px 0;
@@ -25,11 +74,79 @@ body.page:not(.twentyseventeen-front-page) .entry-content {
 }
 
 .fscrForm__input-wrap--input-half {
-  float: left;
-  width: 50%;
+  display: block;
+}
+@media(min-width: 576px) {
+  .fscrForm__input-wrap--input-half {
+    display: inline-block;
+    width: 48%;
+  }
+}
+
+.fscrForm__input-container {
+  margin-right: 15%;
 }
 
 .fscrForm__custom-radio--square {
-  background-color: #333;
-  
+  border-radius: 2px;
+  display: block;
+  background-color: #283166;
+  color: #fff;
+  min-width: 125px;
+  text-align: center;
+  padding: 15px 0;
+  transition: all 0.2s ease;
+  margin-bottom: 0;
 }
+
+.fscrForm__custom-radio--square:hover,
+.fscrForm__custom-radio--square:active,
+.fscrForm__custom-radio--square:focus {
+  background-color: #79c142;
+  cursor: pointer;
+}
+
+.fscr__pool-access--active {
+  background-color: #79c142;
+}
+
+.fscrForm__custom-radio--square input[type=radio]:before {
+  display: none;
+}
+.fscrForm__custom-radio--square.active {
+  background-color: #79c142;
+}
+
+.fscrForm__page--2,
+.fscrForm__page--3 {
+  display: none;
+}
+
+.fscr__button {
+  border-radius: 2px;
+  display: inline-block;
+  min-width: 125px;
+  text-align: center;
+  padding: 15px 0;
+  transition: all 0.2s ease;
+}
+
+.fscr__button--primary {
+  background-color: #283166;
+  color: #fff;
+}
+.fscr__button--primary:hover,
+.fscr__button--primary:active,
+.fscr__button--primary:focus {
+  background-color: #79c142;
+}
+
+.fscrForm__btn-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+[v-cloak] {
+  visibility: hidden;
+}
+

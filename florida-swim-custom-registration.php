@@ -43,6 +43,7 @@ function fscr_enqueue_scripts() {
   wp_enqueue_script( 'fscr-vue-js', '//cdn.jsdelivr.net/npm/vue/dist/vue.js', [], '1.0', true );
   wp_enqueue_script( 'fscr-axios-js', '//unpkg.com/axios/dist/axios.min.js', [], '1.0', true );
   wp_enqueue_script( 'fscr-datepicker-js', '//unpkg.com/vuejs-datepicker', [], '1.0', true );
+  wp_enqueue_script( 'fscr-vee-validator-js', '//cdn.jsdelivr.net/npm/vee-validate@latest/dist/vee-validate.js', [], '1.0', true );
   wp_enqueue_script( 'fscr-main-js', plugin_dir_url( __FILE__ ) . 'public/assets/js/fscr.js', array('fscr-vue-js', 'fscr-axios-js'), '1.0', true );
 }
 add_action('wp_enqueue_scripts', 'fscr_enqueue_scripts');

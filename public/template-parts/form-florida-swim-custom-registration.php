@@ -1,5 +1,7 @@
 <form id="fscrForm" class="fscrForm--registration" method="post">
 
+  <div class="fscrForm__page--1">
+
     <fieldset class="fscrForm__fieldset">
 
       <legend class="fscrForm__title">
@@ -7,65 +9,74 @@
       </legend>
 
       <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
-        <label class="input-container">
-          <span class="d-block">First Name <span class="field--required">*</span></span>
-          <span class="fwcr__form__error">{{ errors.first_name }}</span>
-          <input name="first_name" type="text" v-model="registrant.firstName">
+        <label class="fscrForm__input-container">
+          <span class="fscrForm__label">First Name <span class="field--required">*</span></span>
+          <span class="fwcr__form__error" v-cloak>{{ guest.errors.first_name || validator.first('first_name') }}</span>
+          <input name="first_name" type="text" v-model="guest.firstName" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
         </label>
       </div>
 
       <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
-        <label class="input-container">
-          <span class="d-block">Last Name <span class="field--required">*</span></span>
-          <span class="fwcr__form__error">{{ errors.last_name }}</span>
-          <input name="last_name" type="text" v-model="registrant.lastName">
+        <label class="fscrForm__input-container">
+          <span class="fscrForm__label">Last Name <span class="field--required">*</span></span>
+          <span class="fwcr__form__error" v-cloak>{{ guest.errors.last_name || validator.first('last_name') }}</span>
+          <input name="last_name" type="text" v-model="guest.lastName" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
         </label>
       </div>
 
       <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
-        <label class="input-container">
-          <span class="d-block">Email Address <span class="field--required">*</span></span>
-          <span class="fwcr__form__error">{{ errors.email_address }}</span>
-          <input name="email" type="email" v-model="registrant.email" v-on:input="foo">
+        <label class="fscrForm__input-container">
+          <span class="fscrForm__label">Email Address <span class="field--required">*</span></span>
+          <span class="fwcr__form__error" v-cloak>{{ guest.errors.email_address || validator.first('email') }}</span>
+          <input name="email" type="email" v-model="guest.email" v-validate="'required|email'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
         </label>
       </div>
 
       <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
-        <label class="input-container">
-          <span class="d-block">Phone Number <span class="field--required">*</span></span>
-          <span class="fwcr__form__error">{{ errors.phone_number }}</span>
-          <input name="phone" type="tel" v-model="registrant.phone">
+        <label class="fscrForm__input-container">
+          <span class="fscrForm__label">Phone Number <span class="field--required">*</span></span>
+          <span class="fwcr__form__error" v-cloak>{{ guest.errors.phone_number || validator.first('phone') }}</span>
+          <input name="phone" type="tel" v-model="guest.phone" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
         </label>
       </div>
 
       <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
-        <label class="input-container">
-          <span class="d-block">ZIP Code <span class="field--required">*</span></span>
-          <span class="fwcr__form__error">{{ errors.zip_code }}</span>
-          <input name="zip" type="tel" v-model="registrant.zipCode">
+        <label class="fscrForm__input-container">
+          <span class="fscrForm__label">ZIP Code <span class="field--required">*</span></span>
+          <span class="fwcr__form__error" v-cloak>{{ guest.errors.zip_code || validator.first('zip_code') }}</span>
+          <input name="zip_code" type="tel" v-model="guest.zipCode" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
         </label>
       </div>
 
     </fieldset>
 
-    <fieldset class="fieldset fieldset--pool-access">
-        <legend class="label">Do you have access to a pool? <span class="field--required">*</span></legend>
-        <span class="fwcr__form__error">{{ errors.pool_access }}</span>
-        <label class="d-inline-block">
-          <span class="fscrForm__custom-radio--square">
-            <span class="d-block">Yes</span>
-            <input name="pool_access" type="radio" value="true" v-model="registrant.poolAccess">
-          </span>
-        </label>
-        <label class="d-inline-block">
-          <span class="fscrForm__custom-radio--square">
-            <span class="d-block">No</span>
-            <input name="pool_access" type="radio" value="false" v-model="registrant.poolAccess">
-          </span>
-        </label>
-      </fieldset>
+    <fieldset class="fscrForm__fieldset">
+      <legend class="fscrForm__label">Do you have access to a pool? <span class="field--required">*</span></legend>
+      <span class="fwcr__form__error" v-cloak>{{ guest.errors.pool_access }}</span>
+      <label class="d-inline-block m-0">
+        <div class="fscrForm__custom-radio--square" v-bind:class="{ active: guest.poolAccess == 'true' }" tabindex="0" @keyup.enter="updatePoolAccess(true)">
+          Yes
+        </div>
+        <input name="pool_access" type="radio" value="true" v-model="guest.poolAccess" class="hidden">
+      </label>
+      <label class="d-inline-block m-0">
+        <div class="fscrForm__custom-radio--square" v-bind:class="{ active: guest.poolAccess == 'false' }" tabindex="0" @keyup.enter="updatePoolAccess(false)">
+          No
+        </div>
+        <input name="pool_access" type="radio" value="false" v-model="guest.poolAccess" class="hidden">
+      </label>
+    </fieldset>
 
-    <button type="button" v-on:click="createRegistrant">Next</button>
+    <hr>
+
+    <div class="fscrForm__btn-container">
+      <button type="button" v-on:click="handleFirstPageSubmission" class="fscr__button fscr__button--primary">Next</button>
+    </div>
+
+  </div>
+
+
+  <div class="fscrForm__page--2">
 
     <fieldset class="fieldset fieldset--student-info">
 
@@ -182,6 +193,10 @@
 
     <button type="button" v-on:click="createStudentsAndGuardians">Next</button>
 
+  </div>
+
+  <div class="fscrForm__page--3">
+
     <fieldset class="fieldset">
 
       <legend>
@@ -246,4 +261,6 @@
 
     <input type="submit" value="submit">
 
-  </form>
+  </div>
+
+</form>

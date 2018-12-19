@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use FloridaSwim\Controllers\GuestController;
 use FloridaSwim\Controllers\StudentController;
-use FloridaSwim\Controllers\GuaridanController;
+use FloridaSwim\Controllers\GuardianController;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
 use FloridaSwim\Controllers\FormEntryController;
 

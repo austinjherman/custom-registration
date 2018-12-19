@@ -82,7 +82,7 @@ class GuestController extends BaseController {
     $formEntryId = $request->get_param('form_entry_id');
     $formEntry = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')->find($formEntryId);
     if(!$formEntry) {
-      return new \WP_REST_Response(['errors' => 'form entry' => ['Please enter a valid form entry ID.']], 400);
+      return new \WP_REST_Response(['errors' => ['form entry' => 'Please enter a valid form entry ID.']], 400);
     }
 
     // create guest
