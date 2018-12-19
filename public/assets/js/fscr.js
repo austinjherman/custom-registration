@@ -1,4 +1,5 @@
 
+// using VeeValidate as a plugin
 Vue.use(VeeValidate, {
   errorBagName: 'validator'
 });
@@ -16,25 +17,33 @@ var fscrForm = new Vue({
     // api base URL
     api: "http://localhost/floridaswim/wp-json/fscr/v1", 
 
+    activeFormPage: 1,
+
     // display the confirm parent/guardian section?
     confirmParentGuardians: false,
 
+    // for form entries
+    formEntry: {
+      created: null
+    },
+
     // guest object
     guest: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      zipCode: "",
-      poolAccess: "",
+      firstName: null,
+      lastName: null,
+      email: null,
+      phone: null,
+      zipCode: null,
+      poolAccess: null,
       errors: {
-        first_name: "",
-        last_name: "",
-        email_address: "",
-        phone_number: "",
-        zip_code: "",
-        pool_access: ""
-      }
+        first_name: null,
+        last_name: null,
+        email_address: null,
+        phone_number: null,
+        zip_code: null,
+        pool_access: null
+      },
+      created: null
     },
 
     // students object
@@ -79,8 +88,30 @@ var fscrForm = new Vue({
 
   },
 
+  mounted: function () {
+    this.$nextTick(function () {
+      if(this.getQueryParam('fscr-page')) {
+        this.goToPage(this.getQueryParam('fscr-page'));
+        this.$set(this, 'activeFormPage', this.getQueryParam('fscr-page'));
+      }
+    })
+  },
+
   methods: {
 
+    /**
+     | ---------------------------------------------------------------
+     | Helper Methods
+     | ---------------------------------------------------------------
+     |
+     | Here we have some helper methods to help us.
+     |
+     */
+
+    /** 
+     * This exists to set the value of this.guest.poolAccess
+     *
+     */
     updatePoolAccess: function(boolean) {
       if (boolean === true) {
         this.$set(this.guest, 'poolAccess', 'true');
@@ -90,69 +121,115 @@ var fscrForm = new Vue({
       }
     },
 
+    getQueryParam: function(parameterName) {
+      var result = null,
+          tmp = [];
+      var items = location.search.substr(1).split("&");
+      for (var index = 0; index < items.length; index++) {
+        tmp = items[index].split("=");
+        if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+      }
+      return result;
+    },
+
+    /** 
+     * This function will allow us to go to pages of the form.
+     *
+     */
+    goToPage: function(pageNumber) {
+      var currentPage = this.$el.querySelector('[data-fscr-page="' + this.activeFormPage + '"]');
+      var targetPage  = this.$el.querySelector('[data-fscr-page="' + pageNumber + '"]');
+      currentPage.classList.remove('active');
+      targetPage.classList.add('active');
+      this.$set(this, 'activeFormPage', pageNumber);
+    },
+
+
     /**
      | ---------------------------------------------------------------
      | First Page
      | ---------------------------------------------------------------
      |
+     | These functions handle submissions on the first page of this form.
+     |
      */
 
-    handleFirstPageSubmission: function(event) {
+     /** 
+     * Handle the submission of the first page
+     *
+     */
+    handleFirstPageSubmission: function() {
       
       // emit this event so vee validator can catch it
-      this.$emit('pageonesubmit');
-      var inputs = this.$el.querySelectorAll('.pageOneInput');
-      inputs.forEach(function(e) {
-        e.dispatchEvent(
-          new Event('pageonesubmit')
-        );
+      // this.$emit('pageonesubmit');
+      // var inputs = this.$el.querySelectorAll('.pageOneInput');
+      // inputs.forEach(function(e) {
+      //   e.dispatchEvent(
+      //     new Event('pageonesubmit')
+      //   );
+      // });
+
+      // ensure a value for poolAccess has been selected
+      // if (this.guest.poolAccess === null) {
+      //   this.$set(this.guest.errors, 'pool_access', 'Please select an option.');
+      //   return false;
+      // }
+      // else if(this.guest.poolAccess == 'true' || this.guest.poolAccess == 'false') {
+      //   this.$set(this.guest.errors, 'pool_access', '');
+      // }
+
+      // run validator
+      this.$validator.validate().then(result => {
+
+        // return false if there are any errors
+        if (!result) {
+          return false;
+        }
+
+        // create the FormEntry
+        this.createFormEntry();
+
+        // create the Guest
+        this.$on('create:form.entry', function() {
+          if(this.formEntry.created.id !== null) {
+            this.createGuest();
+          }
+        });
+
+        // go to the next page
+        this.$on('create:guest', function() {
+          if(this.guest.created.id !== null) {
+            this.goToPage(2);
+          }
+        });
       });
-
-      // ensure pool access radio has been picked
-      if (this.guest.poolAccess === "") {
-        this.$set(this.guest.errors, 'pool_access', 'Please select an option.');
-        return false;
-      }
-      else if(this.guest.poolAccess == 'true' || this.guest.poolAccess == 'false') {
-        this.$set(this.guest.errors, 'pool_access', '');
-      }
-
-      if(this.validator.any()) {
-        console.log('there are errors');
-        return false;
-      }
-
-      // create the form entry
-      this.createFormEntry();
 
     },
 
+    /**
+     * This function creates a form entry object in the database
+     * to begin our exchange.
+     *
+     */
     createFormEntry: function() {
       var request = {};
       axios.post(this.api + '/forms/create', request)
         .then(response => {
-          console.log(response);
+          // update formEntry id so we know we have one
+          this.$set(this.formEntry, 'created', response.data.form);
+          // emit event so now we can create guest
+          this.$emit('create:form.entry');
         })
         .catch(error => {
           console.log(error.response);
         });
     },
 
-
-
-
     /**
-     * This function creates a guest object in javascript 
-     * then sends this object as a post request to the guests
-     * endpoint. If all goes well, we should expect a 201 created
-     * response. 
-     *
-     * If errors are returned, they are displayed on the frontend.
+     * This function creates a guest object in the database.
      *
      */
     createGuest: function() {
-      //console.log(this.guest.poolAccess);
-      /*
       var request = {};
       request.first_name = this.guest.firstName;
       request.last_name = this.guest.lastName;
@@ -160,27 +237,27 @@ var fscrForm = new Vue({
       request.phone_number = this.guest.phone;
       request.zip_code = this.guest.zipCode;
       request.pool_access = this.guest.poolAccess;
+      request.form_entry_id = this.formEntry.created.id;
       axios.post(this.api + '/guests/create', request)
         .then(response => {
-          console.log(response);
+          this.$set(this.guest, 'created', response.data.guest);
+          this.$emit('create:guest');
         })
         .catch(error => {
-          console.log(error.response);
-          var errorResponse = error.response.data.errors;
-          if(typeof errorResponse != 'undefined') {
-            for (var e in this.errors) {
-              if(errorResponse.hasOwnProperty(e)) {
-                this.errors[e] = errorResponse[e][0];
+          if(typeof error.response.data.errors != 'undefined') {
+            var errorResponse = error.response.data.errors;
+            for (var e in errorResponse) {
+              if(this.guest.errors.hasOwnProperty(e)) {
+                this.guest.errors[e] = errorResponse[e][0];
               }
               else {
-                this.errors[e] = "";
+                this.guest.errors[e] = errorResponse[e][0];
               }
             }
           }
         });
-
-        */
     },
+
 
     /**
      | ---------------------------------------------------------------

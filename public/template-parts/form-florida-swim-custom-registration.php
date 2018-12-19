@@ -1,6 +1,6 @@
 <form id="fscrForm" class="fscrForm--registration" method="post">
 
-  <div class="fscrForm__page--1">
+  <div class="fscrForm__page active" data-fscr-page="1">
 
     <fieldset class="fscrForm__fieldset">
 
@@ -12,7 +12,7 @@
         <label class="fscrForm__input-container">
           <span class="fscrForm__label">First Name <span class="field--required">*</span></span>
           <span class="fwcr__form__error" v-cloak>{{ guest.errors.first_name || validator.first('first_name') }}</span>
-          <input name="first_name" type="text" v-model="guest.firstName" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
+          <input name="first_name" type="text" v-model="guest.firstName" v-validate="'required'">
         </label>
       </div>
 
@@ -20,7 +20,7 @@
         <label class="fscrForm__input-container">
           <span class="fscrForm__label">Last Name <span class="field--required">*</span></span>
           <span class="fwcr__form__error" v-cloak>{{ guest.errors.last_name || validator.first('last_name') }}</span>
-          <input name="last_name" type="text" v-model="guest.lastName" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
+          <input name="last_name" type="text" v-model="guest.lastName" v-validate="'required'">
         </label>
       </div>
 
@@ -28,7 +28,7 @@
         <label class="fscrForm__input-container">
           <span class="fscrForm__label">Email Address <span class="field--required">*</span></span>
           <span class="fwcr__form__error" v-cloak>{{ guest.errors.email_address || validator.first('email') }}</span>
-          <input name="email" type="email" v-model="guest.email" v-validate="'required|email'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
+          <input name="email" type="email" v-model="guest.email" v-validate="'required|email'">
         </label>
       </div>
 
@@ -36,7 +36,7 @@
         <label class="fscrForm__input-container">
           <span class="fscrForm__label">Phone Number <span class="field--required">*</span></span>
           <span class="fwcr__form__error" v-cloak>{{ guest.errors.phone_number || validator.first('phone') }}</span>
-          <input name="phone" type="tel" v-model="guest.phone" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
+          <input name="phone" type="tel" v-model="guest.phone" v-validate="'required'">
         </label>
       </div>
 
@@ -44,7 +44,7 @@
         <label class="fscrForm__input-container">
           <span class="fscrForm__label">ZIP Code <span class="field--required">*</span></span>
           <span class="fwcr__form__error" v-cloak>{{ guest.errors.zip_code || validator.first('zip_code') }}</span>
-          <input name="zip_code" type="tel" v-model="guest.zipCode" v-validate="'required'" class="pageOneInput" data-vv-validate-on="blur|pageonesubmit">
+          <input name="zip_code" type="tel" v-model="guest.zipCode" v-validate="'required'">
         </label>
       </div>
 
@@ -52,18 +52,18 @@
 
     <fieldset class="fscrForm__fieldset">
       <legend class="fscrForm__label">Do you have access to a pool? <span class="field--required">*</span></legend>
-      <span class="fwcr__form__error" v-cloak>{{ guest.errors.pool_access }}</span>
+      <span class="fwcr__form__error" v-cloak>{{ guest.errors.pool_access || validator.first('pool_access') }}</span>
       <label class="d-inline-block m-0">
         <div class="fscrForm__custom-radio--square" v-bind:class="{ active: guest.poolAccess == 'true' }" tabindex="0" @keyup.enter="updatePoolAccess(true)">
           Yes
         </div>
-        <input name="pool_access" type="radio" value="true" v-model="guest.poolAccess" class="hidden">
+        <input name="pool_access" type="radio" value="true" v-model="guest.poolAccess" class="hidden" v-validate="'required'">
       </label>
       <label class="d-inline-block m-0">
         <div class="fscrForm__custom-radio--square" v-bind:class="{ active: guest.poolAccess == 'false' }" tabindex="0" @keyup.enter="updatePoolAccess(false)">
           No
         </div>
-        <input name="pool_access" type="radio" value="false" v-model="guest.poolAccess" class="hidden">
+        <input name="pool_access" type="radio" value="false" v-model="guest.poolAccess" class="hidden" v-validate="'required'">
       </label>
     </fieldset>
 
@@ -76,19 +76,19 @@
   </div>
 
 
-  <div class="fscrForm__page--2">
+  <div class="fscrForm__page" data-fscr-page="2">
 
-    <fieldset class="fieldset fieldset--student-info">
+    <fieldset class="fscrForm__fieldset">
 
-      <legend>
+      <legend class="fscrForm__title">
         Student Information
       </legend>
 
-      <div class="input-wrap input--half">
-        <div class="input-container">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+        <div class="fscrForm__input-container">
           <label>
-            <span class="d-block">How many students are you enrolling? <span class="field--required">*</span></span>
-            <select name="number_students_enrolling" v-model.number="students.count" @change="changeAmountOfStudents">
+            <span class="fscrForm__label">How many students are you enrolling? <span class="field--required">*</span></span>
+            <select name="number_students_enrolling" v-model.number="students.count" @change="changeAmountOfStudents" class=fscrForm__input>
               <option value="0" default selected>Please Select</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -108,16 +108,16 @@
 
       <div class="students-container">
         <div class="input--student" v-for="n in students.count">
-          <div class="input-wrap input--half">
-            <div class="input-container">
+          <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+            <div class="fscrForm__input-container">
               <label>
                 <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
                 <input type="text" v-model="students.students[n-1].name">
               </label>
             </div>
           </div>
-          <div class="input-wrap input--half">
-            <div class="input-container">
+          <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+            <div class="fscrForm__input-container">
               <label :for="'student__dob--' + n">
                 <span class="d-block">Student {{ n }} DOB <span class="field--required">*</span></span>
               </label>
@@ -128,17 +128,17 @@
       </div>
 
 
-      <div class="input-wrap">
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
         <label>
           <span class="d-block">Questions or information we should know about the student(s)? (i.e. special needs, medical issues, goals, etc.)</span>
-          <textarea name="student_additional_info"></textarea>
+          <textarea name="student_additional_info" rows="5"></textarea>
         </label>
       </div>
 
     </fieldset>
 
-    <fieldset class="fieldset">
-      <legend class="label">
+    <fieldset class="fscrForm__fieldset">
+      <legend class="fscrForm__label">
         Are you the parent/guardian of all the sudents? <span class="field--required">*</span>
       </legend>
       <label class="d-inline-block">
@@ -191,11 +191,16 @@
       </div>
     </fieldset>
 
-    <button type="button" v-on:click="createStudentsAndGuardians">Next</button>
+    <hr>
+
+    <div class="fscrForm__btn-container space-between">
+      <button type="button" v-on:click="" class="fscr__button fscr__button--primary">Back</button>
+      <button type="button" v-on:click="" class="fscr__button fscr__button--primary">Next</button>
+    </div>
 
   </div>
 
-  <div class="fscrForm__page--3">
+  <div class="fscrForm__page" data-fscr-page="3">
 
     <fieldset class="fieldset">
 

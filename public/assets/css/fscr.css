@@ -36,8 +36,16 @@ body.page:not(.twentyseventeen-front-page) .entry-content {
   display: none;
 }
 
+#fscrForm .space-between {
+  justify-content: space-between;
+}
+
 .fscrForm__input-wrap {
   margin-bottom: 1rem;
+}
+
+.fscrForm__input {
+  width: 100%;
 }
 
 .fwcr__form__error {
@@ -117,9 +125,12 @@ body.page:not(.twentyseventeen-front-page) .entry-content {
   background-color: #79c142;
 }
 
-.fscrForm__page--2,
-.fscrForm__page--3 {
+.fscrForm__page {
   display: none;
+}
+
+.fscrForm__page.active {
+  display: block;
 }
 
 .fscr__button {
