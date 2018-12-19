@@ -194,7 +194,7 @@
     <hr>
 
     <div class="fscrForm__btn-container space-between">
-      <button type="button" v-on:click="" class="fscr__button fscr__button--primary">Back</button>
+      <button type="button" v-on:click="goBack" class="fscr__button fscr__button--primary">Back</button>
       <button type="button" v-on:click="" class="fscr__button fscr__button--primary">Next</button>
     </div>
 

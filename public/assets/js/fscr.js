@@ -144,6 +144,19 @@ var fscrForm = new Vue({
       this.$set(this, 'activeFormPage', pageNumber);
     },
 
+    /** 
+     * This function will allow us to navigate back a page.
+     *
+     */
+    goBack: function() {
+      var targetPageId = this.activeFormPage - 1;
+      var currentPage = this.$el.querySelector('[data-fscr-page="' + this.activeFormPage + '"]');
+      var targetPage  = this.$el.querySelector('[data-fscr-page="' + targetPageId + '"]');
+      currentPage.classList.remove('active');
+      targetPage.classList.add('active');
+      this.$set(this, 'activeFormPage', targetPageId);
+      //console.log(currentPage);
+    },
 
     /**
      | ---------------------------------------------------------------
