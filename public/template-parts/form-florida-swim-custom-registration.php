@@ -88,8 +88,9 @@
         <div class="fscrForm__input-container">
           <label>
             <span class="fscrForm__label">How many students are you enrolling? <span class="field--required">*</span></span>
-            <select name="number_students_enrolling" v-model.number="students.count" @change="changeAmountOfStudents" class=fscrForm__input>
-              <option value="0" default selected>Please Select</option>
+            <span class="fwcr__form__error" v-cloak>{{ students.errors.number_students_enrolling || validator.first('number_students_enrolling') }}</span>
+            <select name="number_students_enrolling" v-model.number="students.count" @change="changeAmountOfStudents" class="fscrForm__input" v-validate="'required|min_value:1'">
+              <option selected="selected" value="0">Please Select</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -112,7 +113,8 @@
             <div class="fscrForm__input-container">
               <label>
                 <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
-                <input type="text" v-model="students.students[n-1].name">
+                <span class="fwcr__form__error" v-cloak>{{ validator.first('student_name_' + (n) ) }}</span>
+                <input type="text" v-model="students.students[n-1].name" :name="'student_name_' + (n)" v-validate="'required'">
               </label>
             </div>
           </div>
@@ -129,8 +131,9 @@
 
 
       <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
-        <label>
+        <label class="fscrForm__input-container">
           <span class="d-block">Questions or information we should know about the student(s)? (i.e. special needs, medical issues, goals, etc.)</span>
+          <span class="fwcr__form__error" v-cloak></span>
           <textarea name="student_additional_info" rows="5"></textarea>
         </label>
       </div>
@@ -140,23 +143,27 @@
     <fieldset class="fscrForm__fieldset">
       <legend class="fscrForm__label">
         Are you the parent/guardian of all the sudents? <span class="field--required">*</span>
+        <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_guardian') }}</span>
       </legend>
-      <label class="d-inline-block">
-        <span class="d-block custom-radio custom-radio--square" tabindex="0">
-          <span class="d-block">Yes</span>
-          <input name="parent_guardian" type="radio" value="true" @change="confirmParentGuardianForAll">
+      <label class="fscrForm__label">
+        <span class="fscrForm__custom-radio fscrForm__custom-radio--checkbox" tabindex="0">
+          <span class="fscrForm__label__text">Yes</span>
+          <input name="parent_guardian" type="radio" value="true" @change="confirmParentGuardianForAll" checked v-validate="'required'">
+          <span class="fscrForm__checkmark"></span>
         </span>
       </label>
-      <label class="d-inline-block">
-        <span class="d-block custom-radio custom-radio--square" tabindex="0">
-          <span class="d-block">No</span>
-          <input name="parent_guardian" type="radio" value="false" @change="confirmParentGuardianForAll">
+      <label class="fscrForm__label">
+        <span class="fscrForm__custom-radio fscrForm__custom-radio--checkbox" tabindex="0">
+          <span class="fscrForm__label__text">No</span>
+          <input name="parent_guardian" type="radio" value="false" @change="confirmParentGuardianForAll" v-validate="'required'">
+          <span class="fscrForm__checkmark"></span>
         </span>
       </label>
     </fieldset>
 
-    <fieldset v-if="confirmParentGuardians">
-      <legend>Please confirm the parent/guardian for each student.</legend>
+    <fieldset v-if="confirmParentGuardians" class="fscrForm__fieldset">
+      <legend class="fscrForm__label">Please confirm the parent/guardian for each student.</legend>
+      <span class="fwcr__form__error" v-cloak></span>
       <button type="button" @click="addParentGuardianField">Add</button>
       <button type="button" @click="removeParentGuardianField">Remove</button>
       <div class="parent-guardians">

@@ -1,7 +1,8 @@
 
 // using VeeValidate as a plugin
 Vue.use(VeeValidate, {
-  errorBagName: 'validator'
+  errorBagName: 'validator',
+  events: 'blur'
 });
 
 var fscrForm = new Vue({
@@ -19,10 +20,22 @@ var fscrForm = new Vue({
 
     activeFormPage: 1,
 
+    pages: {
+      1: {
+        submitted: false
+      },
+      2: {
+        submitted: false
+      },
+      3: {
+        submitted: false
+      },
+    },
+
     // display the confirm parent/guardian section?
     confirmParentGuardians: false,
 
-    // for form entries
+    // the created form entries
     formEntry: {
       created: null
     },
@@ -49,6 +62,9 @@ var fscrForm = new Vue({
     // students object
     students: {
       count: 0,
+      errors: {
+        number_students_enrolling: null
+      },
       students: [
         /**
          * if count > 0 at the created event, 
@@ -172,24 +188,6 @@ var fscrForm = new Vue({
      *
      */
     handleFirstPageSubmission: function() {
-      
-      // emit this event so vee validator can catch it
-      // this.$emit('pageonesubmit');
-      // var inputs = this.$el.querySelectorAll('.pageOneInput');
-      // inputs.forEach(function(e) {
-      //   e.dispatchEvent(
-      //     new Event('pageonesubmit')
-      //   );
-      // });
-
-      // ensure a value for poolAccess has been selected
-      // if (this.guest.poolAccess === null) {
-      //   this.$set(this.guest.errors, 'pool_access', 'Please select an option.');
-      //   return false;
-      // }
-      // else if(this.guest.poolAccess == 'true' || this.guest.poolAccess == 'false') {
-      //   this.$set(this.guest.errors, 'pool_access', '');
-      // }
 
       // run validator
       this.$validator.validate().then(result => {
@@ -198,6 +196,15 @@ var fscrForm = new Vue({
         if (!result) {
           return false;
         }
+
+        // return false if already submitted
+        if(this.pages[1].submitted) {
+          this.goToPage(2);
+          return false;
+        }
+
+        // mark this page as submitted
+        this.$set(this.pages[1], 'submitted', true);
 
         // create the FormEntry
         this.createFormEntry();
@@ -215,6 +222,7 @@ var fscrForm = new Vue({
             this.goToPage(2);
           }
         });
+
       });
 
     },
@@ -274,8 +282,10 @@ var fscrForm = new Vue({
 
     /**
      | ---------------------------------------------------------------
-     | Students
+     | Second Page
      | ---------------------------------------------------------------
+     |
+     | These functions handle interactions on the second page.
      |
      */
 
@@ -327,6 +337,14 @@ var fscrForm = new Vue({
       }
       this.$set(this.students, 'students', newStudents);
     },
+
+
+    /**
+     | ---------------------------------------------------------------
+     | Students
+     | ---------------------------------------------------------------
+     |
+     */
 
     /**
      * Add/Update a student's name.
