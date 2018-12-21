@@ -40,8 +40,24 @@ body.page:not(.twentyseventeen-front-page) .entry-content {
   justify-content: space-between;
 }
 
+#fscrForm .m-bot-25 {
+  margin-bottom: 25px;
+}
+
+#fscrForm .hover-pointer:hover {
+  cursor: pointer;
+}
+
+#fscrForm .m-bot-05rem {
+  margin-bottom: 0.5rem;
+}
+
+#fscrForm .f-wght-normal {
+  font-weight: normal;
+}
+
 .fscrForm__input-wrap {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .fscrForm__input {
@@ -63,6 +79,7 @@ body.page:not(.twentyseventeen-front-page) .entry-content {
   font-size: 0.99rem;
   line-height: 1rem;
   display: block;
+  margin-bottom: 0;
 }
 
 .fscrForm__fieldset {

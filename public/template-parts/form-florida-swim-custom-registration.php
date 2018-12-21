@@ -1,5 +1,6 @@
 <form id="fscrForm" class="fscrForm--registration" method="post">
 
+  <!-- PAGE 1 -->
   <div class="fscrForm__page active" data-fscr-page="1">
 
     <fieldset class="fscrForm__fieldset">
@@ -76,6 +77,7 @@
   </div>
 
 
+  <!-- PAGE 2 -->
   <div class="fscrForm__page" data-fscr-page="2">
 
     <fieldset class="fscrForm__fieldset">
@@ -111,7 +113,7 @@
         <div class="input--student" v-for="n in students.count">
           <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
             <div class="fscrForm__input-container">
-              <label>
+              <label class="fscrForm__label">
                 <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
                 <span class="fwcr__form__error" v-cloak>{{ validator.first('student_name_' + (n) ) }}</span>
                 <input type="text" v-model="students.students[n-1].name" :name="'student_name_' + (n)" v-validate="'required'">
@@ -120,10 +122,11 @@
           </div>
           <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
             <div class="fscrForm__input-container">
-              <label :for="'student__dob--' + n">
+              <label :for="'student__dob--' + n" class="fscrForm__label">
                 <span class="d-block">Student {{ n }} DOB <span class="field--required">*</span></span>
               </label>
-              <datepicker :id="'student__dob--' + n" @input="updateStudentDob($event, n-1)" v-model="students.students[n-1].dobOriginal"></datepicker>
+              <span class="fwcr__form__error" v-cloak>{{ validator.first('student_dob_' + (n) ) }}</span>
+              <datepicker :id="'student__dob--' + n" @input="updateStudentDob($event, n-1)" v-model="students.students[n-1].dobOriginal" :name="'student_dob_' + (n)" v-validate="'required'"></datepicker>
             </div>
           </div>
         </div>
@@ -145,54 +148,87 @@
         Are you the parent/guardian of all the sudents? <span class="field--required">*</span>
         <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_guardian') }}</span>
       </legend>
-      <label class="fscrForm__label">
+      <label class="fscrForm__label m-bot-05rem">
         <span class="fscrForm__custom-radio fscrForm__custom-radio--checkbox" tabindex="0">
           <span class="fscrForm__label__text">Yes</span>
-          <input name="parent_guardian" type="radio" value="true" @change="confirmParentGuardianForAll" checked v-validate="'required'">
+          <input name="parent_guardian" type="radio" value="true" @change="updateGuestParentGuardianForAllStatus" checked v-validate="'required'">
           <span class="fscrForm__checkmark"></span>
         </span>
       </label>
       <label class="fscrForm__label">
         <span class="fscrForm__custom-radio fscrForm__custom-radio--checkbox" tabindex="0">
           <span class="fscrForm__label__text">No</span>
-          <input name="parent_guardian" type="radio" value="false" @change="confirmParentGuardianForAll" v-validate="'required'">
+          <input name="parent_guardian" type="radio" value="false" @change="updateGuestParentGuardianForAllStatus" v-validate="'required'">
           <span class="fscrForm__checkmark"></span>
         </span>
       </label>
     </fieldset>
 
-    <fieldset v-if="confirmParentGuardians" class="fscrForm__fieldset">
-      <legend class="fscrForm__label">Please confirm the parent/guardian for each student.</legend>
-      <span class="fwcr__form__error" v-cloak></span>
-      <button type="button" @click="addParentGuardianField">Add</button>
-      <button type="button" @click="removeParentGuardianField">Remove</button>
+    <fieldset v-if="!guestIsParentGuardianForAll" class="fscrForm__fieldset">
+
+      <legend class="fscrForm__label m-bot-25">Please confirm the parent/guardian for each student.</legend>
+
+      <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+        <div class="fscrForm__input-container">
+          <label>
+            <span class="fscrForm__label">How many Parents and/or Guardians will you be adding?<span class="field--required">*</span></span>
+            <span class="fwcr__form__error" v-cloak>{{ parents.errors.number_parents_adding || validator.first('number_parents_adding') }}</span>
+            <select name="number_parents_adding" v-model.number="parents.count" @change="changeAmountOfParents" class="fscrForm__input" v-validate="'required|min_value:1'">
+              <option selected="selected" value="0">Please Select</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
       <div class="parent-guardians">
         <div class="parent-guardian" v-for="n in Number(parents.count)">
           <fieldset>
-            <legend>Parent/Guardian Information</legend>
-            <fieldset>
-              <legend>Parent/Guardian of</legend>
-              <label v-for="x in students.count" class="d-inline-block">
-                <input type="checkbox" :value="students.students[x-1].id" v-model="parents.parents[n-1].students">
-                <span>{{ students.students[x-1].name }}</span>
-              </label>
+            <legend class="fscrForm__label m-bot-25">Parent/Guardian {{ n }}</legend>
+            <fieldset class="fscrForm__fieldset">
+              <legend class="fscrForm__label">Parent/Guardian of <span class="field--required">*</span></legend>
+              <span class="fwcr__form__error" v-cloak>{{ parents.parents[n-1].errors.students }}</span>
+              <div v-for="x in students.count" >
+                <label class="d-block hover-pointer f-wght-normal">
+                  <input type="checkbox" :value="students.students[x-1].id" @click="handleParentStudentRelationship(parents.parents[n-1].id, students.students[x-1].id, $event)">
+                  <span>{{ students.students[x-1].name }}</span>
+                </label>
+              </div>
             </fieldset>
-            <label>
-              <span class="d-block">First Name</span>
-              <input type="text" v-model="parents.parents[n-1].first_name">
-            </label>
-            <label>
-              <span class="d-block">Last Name</span>
-              <input type="text" v-model="parents.parents[n-1].last_name">
-            </label>
-            <label>
-              <span class="d-block">Email Address</span>
-              <input type="email" v-model="parents.parents[n-1].email">
-            </label>
-            <label>
-              <span class="d-block">Phone Number</span>
-              <input type="tel" v-model="parents.parents[n-1].phone">
-            </label>
+            <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+              <div class="fscrForm__input-container">
+                <label class="fscrForm__label">
+                  <span class="d-block">Name <span class="field--required">*</span></span>
+                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + (n-1) + '_name') }}</span>
+                  <input type="text" v-model="parents.parents[n-1].name" :name="'parent_' + (n-1) + '_name'" v-validate="'required'">
+                </label>
+              </div>
+            </div>
+            <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+              <div class="fscrForm__input-container">
+                <label class="fscrForm__label">
+                  <span class="d-block">Email Address <span class="field--required">*</span></span>
+                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + (n-1) + '_email') }}</span>
+                  <input type="email" v-model="parents.parents[n-1].email" :name="'parent_' + (n-1) + '_email'" v-validate="'required|email'">
+                </label>
+              </div>
+            </div>
+            <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
+              <div class="fscrForm__input-container">
+                <label class="fscrForm__label">
+                  <span class="d-block">Phone Number <span class="field--required">*</span></span>
+                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + (n-1) + '_phone') }}</span>
+                  <input type="tel" v-model="parents.parents[n-1].phone" :name="'parent_' + (n-1) + '_phone'" v-validate="'required'">
+                </label>
+              </div>
+            </div>
           </fieldset>
         </div>
       </div>
@@ -202,7 +238,7 @@
 
     <div class="fscrForm__btn-container space-between">
       <button type="button" v-on:click="goBack" class="fscr__button fscr__button--primary">Back</button>
-      <button type="button" v-on:click="" class="fscr__button fscr__button--primary">Next</button>
+      <button type="button" v-on:click="handleSecondPageSubmission" class="fscr__button fscr__button--primary">Next</button>
     </div>
 
   </div>

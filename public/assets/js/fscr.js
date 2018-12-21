@@ -2,7 +2,7 @@
 // using VeeValidate as a plugin
 Vue.use(VeeValidate, {
   errorBagName: 'validator',
-  events: 'blur'
+  events: 'input'
 });
 
 var fscrForm = new Vue({
@@ -33,7 +33,7 @@ var fscrForm = new Vue({
     },
 
     // display the confirm parent/guardian section?
-    confirmParentGuardians: false,
+    guestIsParentGuardianForAll: true,
 
     // the created form entries
     formEntry: {
@@ -84,6 +84,9 @@ var fscrForm = new Vue({
     // parents guardians
     parents: {
       count: 0,
+      errors: {
+        number_parents_adding: null
+      },
       parents: [
         /**
          * if count > 0 at the created event, 
@@ -105,12 +108,15 @@ var fscrForm = new Vue({
   },
 
   mounted: function () {
+
+    // go to a page based on query param
     this.$nextTick(function () {
       if(this.getQueryParam('fscr-page')) {
         this.goToPage(this.getQueryParam('fscr-page'));
         this.$set(this, 'activeFormPage', this.getQueryParam('fscr-page'));
       }
-    })
+    });
+
   },
 
   methods: {
@@ -137,6 +143,10 @@ var fscrForm = new Vue({
       }
     },
 
+    /** 
+     * Get a URL query parameter
+     *
+     */
     getQueryParam: function(parameterName) {
       var result = null,
           tmp = [];
@@ -174,6 +184,18 @@ var fscrForm = new Vue({
       //console.log(currentPage);
     },
 
+    /** 
+     * Get a Student
+     *
+     */
+    getStudent: function(id) {
+      if(typeof this.students.students[id] != 'undefined') {
+        return this.students.students[id];
+      }
+      return null;
+    },
+
+
     /**
      | ---------------------------------------------------------------
      | First Page
@@ -187,15 +209,22 @@ var fscrForm = new Vue({
      * Handle the submission of the first page
      *
      */
-    handleFirstPageSubmission: function() {
+    handleFirstPageSubmission: async function() {
 
-      // run validator
-      this.$validator.validate().then(result => {
+      // validate necessary form fields
+      var validate = Promise.all([
+        this.$validator.validate('first_name'),
+        this.$validator.validate('last_name'),
+        this.$validator.validate('email'),
+        this.$validator.validate('phone'),
+        this.$validator.validate('zip_code'),
+        this.$validator.validate('pool_access'),
+      ]);
 
-        // return false if there are any errors
-        if (!result) {
-          return false;
-        }
+      // await results of promise and ensure they are all true
+      var validated = await validate.then(result => validated = result.every(isValid => isValid));
+
+      if(validated) {
 
         // return false if already submitted
         if(this.pages[1].submitted) {
@@ -223,7 +252,17 @@ var fscrForm = new Vue({
           }
         });
 
-      });
+        // finally we'll assume that this guest
+        // is the default parent/guardian
+        // emulate event to make this easier
+        var click = {};
+        click.target = {};
+        click.target.value = true;
+        this.updateGuestParentGuardianForAllStatus(click);
+
+      }
+
+      return false;
 
     },
 
@@ -299,6 +338,15 @@ var fscrForm = new Vue({
     },
 
     /**
+     * This function calls populateParents in order to update
+     * the live parent object.
+     *
+     */
+    changeAmountOfParents: function(e) {
+      this.populateParents(this.parents.count);
+    },
+
+    /**
      * This function updates the live students object
      * when the number of students is changed.
      *
@@ -309,12 +357,14 @@ var fscrForm = new Vue({
       var liveStudents = this.students.students,
           newStudents  = [];
 
+      // create the needed amount of students
       for (var i=0; i < count; i++) {
         var student = {
           id: null,
           name: null,
           dob: null,
           dobOriginal: null,
+          parentId: null,
           save: null
         };
         if(typeof liveStudents[i] == 'undefined') {
@@ -328,6 +378,9 @@ var fscrForm = new Vue({
           newStudents.push(student);
         }
       }
+
+      // do not send students to API if they have been removed
+      // from front-end
       for(var i=0; i < this.students.students.length; i++) {
         if(i >= count) {
           student = liveStudents[i];
@@ -335,7 +388,199 @@ var fscrForm = new Vue({
           newStudents.push(student);
         }
       }
+
+      // update students object
       this.$set(this.students, 'students', newStudents);
+
+    },
+
+    /**
+     * This function updates the live parents object
+     * when the number of parents is changed.
+     *
+     */
+    populateParents: function(count) {
+
+      console.log('parent count: ', count);
+      return;
+
+      count = Number(count);
+      var liveParents = this.parents.parents,
+          newParents  = [];
+
+      // create the needed amount of parents
+      for (var i=0; i < count; i++) {
+        var parent = {
+          id: null,
+          name: null,
+          email: null,
+          phone: null,
+          students: [],
+          errors: {
+            students: null
+          },
+          save: null
+        };
+        if(typeof liveParents[i] == 'undefined') {
+          parent.id = i;
+          parent.save = true;
+          newParents.push(parent);
+        }
+        else {
+          parent = liveParents[i];
+          parent.save = true;
+          newParents.push(parent);
+        }
+      }
+
+      // do not send parents to API if they have been removed
+      // from front-end
+      for(var i=0; i < this.parents.parents.length; i++) {
+        if(i >= count) {
+          parent = liveParents[i];
+          parent.save = false;
+          newParents.push(parents);
+        }
+      }
+
+      // update parents object
+      this.$set(this.parents, 'parents', newParents);
+
+    },
+
+    /**
+     * This function updates the which students belong to which 
+     * parents/guardians.
+     *
+     */
+    handleParentStudentRelationship: function(parentId, studentId, $e) {
+
+      // get current students object for parent
+      var currentStudents = this.parents.parents[parentId].students || [];
+      var newStudents = [];
+
+      // build new students object
+      currentStudents.forEach(student => newStudents.push(student));
+
+      // add this new student if checkbox is checked
+      if($e.target.checked) {
+        newStudents.push(studentId);
+      }
+
+      // remove if unchecked
+      else {
+        var indexToRemove = newStudents.indexOf(studentId);
+        if(indexToRemove !== -1) newStudents.splice(indexToRemove, 1);
+      }
+
+      // push new students object
+      this.$set(this.parents.parents[parentId], 'students', newStudents);
+
+      // throw error if no students selected
+      if(this.parents.parents[parentId].students.length == 0) {
+        this.$set(this.parents.parents[parentId].errors, 'students', 'Please select at least one student.');
+      }
+      else {
+        this.$set(this.parents.parents[parentId].errors, 'students', '');
+      }
+
+    },
+
+    /**
+     * Adjust a boolean letting us know whether or not
+     * we can use the same parent/guardian for each registered student.
+     *
+     */
+    updateGuestParentGuardianForAllStatus: function(e) {
+
+      // if parent is not guardian for all students
+      if(e.target.value == 'false') {
+        this.$set(this, 'guestIsParentGuardianForAll', false);
+      }
+
+      // if parent/guardian for all students
+      else {
+        this.$set(this, 'guestIsParentGuardianForAll', true);
+        this.makeGuestParentGuardianForAll();
+      }
+        
+    },
+
+    makeGuestParentGuardianForAll: function() {
+
+      if(this.guestIsParentGuardianForAll) {
+
+        // collect students
+        var studentIds = [];
+        for (var student in this.students.students) {
+          studentIds.push(student.id);
+        }
+
+        // alter first parent object if one already exists
+        if (this.parents.parents.length > 0) {
+
+          for(var i=0; i < this.parents.parents.length; i++) {
+            if (i == 0) {
+              this.$set(this.parents.parents, i, {
+                id: i,
+                name: this.guest.firstName + " " + this.guest.lastName,
+                email: this.guest.email,
+                phone: this.guest.phone,
+                students: studentIds,
+                save: true
+              });
+            }
+            else {
+              this.$set(this.parents.parents[i], 'save', false);
+            }
+          }
+        }
+
+        // otherwise create new parent object
+        else {
+          this.$set(this.parents.parents, 0, {
+            id: 0,
+            name: this.guest.firstName + " " + this.guest.lastName,
+            email: this.guest.email,
+            phone: this.guest.phone,
+            students: studentIds,
+            save: true
+          });
+        }
+
+      }
+
+      return false;
+    },
+
+    /**
+     * Handle a submission of the second page.
+     *
+     */
+    handleSecondPageSubmission: async function() {
+
+      /*
+      // validate necessary form fields
+      var validate = Promise.all([
+        this.$validator.validate('first_name'),
+        this.$validator.validate('last_name'),
+        this.$validator.validate('email'),
+        this.$validator.validate('phone'),
+        this.$validator.validate('zip_code'),
+        this.$validator.validate('pool_access'),
+      ]);
+
+      // await results of promise and ensure they are all true
+      var validated = await validate.then(result => validated = result.every(isValid => isValid));
+      */
+
+      if(this.guestIsParentGuardianForAll) {
+        this.makeGuestParentGuardianForAll();
+      }     
+
+      console.log('students', this.students);
+      console.log('parents', this.parents);
+
     },
 
 
@@ -386,66 +631,6 @@ var fscrForm = new Vue({
      | ---------------------------------------------------------------
      |
      */
-
-     /**
-      * Adjust a boolean letting us know whether or not
-      * we can use the same parent/guardian for each registered student.
-      *
-      */
-    confirmParentGuardianForAll: function(e) {
-
-      // if parent is not guardian for all students
-      if(e.target.value == 'false') {
-        this.confirmParentGuardians = true;
-      }
-
-      // if parent/guardian for all students
-      else {
-        
-        this.confirmParentGuardians = false;
-
-        // collect student Ids
-        var studentIds = [];
-        for (var studentId in this.students.students) {
-          studentIds.push(studentId);
-        }
-
-        // create parent object
-        if (this.parents.parents.length > 0) {
-
-          for(var i=0; i < this.parents.parents.length; i++) {
-            if (i == 0) {
-              this.$set(this.parents.parents, i, {
-                id: i,
-                first_name: this.guest.firstName,
-                last_name: this.guest.lastName,
-                email: this.guest.email,
-                phone: this.guest.phone,
-                students: studentIds,
-                save: true
-              });
-            }
-            else {
-              this.$set(this.parents.parents[i], 'save', false);
-            }
-          }
-        }
-
-        else {
-          this.$set(this.parents.parents, 0, {
-            id: 0,
-            first_name: this.guest.firstName,
-            last_name: this.guest.lastName,
-            email: this.guest.email,
-            phone: this.guest.phone,
-            students: studentIds,
-            save: true
-          });
-        }
-
-      }
-        
-    },
 
     addParentGuardianField: function() {
       if (this.parents.count < this.students.count) {
