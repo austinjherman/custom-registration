@@ -4,8 +4,9 @@ namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
 use FloridaSwim\Entities\Guardian;
+use FloridaSwim\Controllers\BaseController;
 
-class GuardianController extends \WP_REST_Controller {
+class GuardianController extends BaseController {
 
   protected $namespace = '/fscr/v1';
   protected $resource_name = 'guardians';
@@ -68,7 +69,7 @@ class GuardianController extends \WP_REST_Controller {
     $v = new Validator($request->get_json_params());
     $v->rules([
       'required' => [
-        'name', 'email', 'phone_number'
+        'name', 'email', 'phone_number', 'form_entry_id'
       ],
       'email' => [
         'email'
@@ -78,11 +79,20 @@ class GuardianController extends \WP_REST_Controller {
       return new \WP_REST_Response(['errors' => $v->errors()], 400);
     }
 
+    // find associated form entry
+    $formEntryId = $request->get_param('form_entry_id');
+    $formEntry = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')->find($formEntryId);
+    if(!$formEntry) {
+      return new \WP_REST_Response(['errors' => ['form entry' => 'Please enter a valid form entry ID.']], 400);
+    }
+
     // create new guardian
     $guardian = new Guardian;
+    $guardian->addFormEntry($formEntry);
     $guardian->set('name', $request->get_param('name'));
-    $guardian->set('email', $request->get_param('email'));
+    $guardian->set('email_address', $request->get_param('email'));
     $guardian->set('phone_number', $request->get_param('phone_number'));
+    $guardian->set('form_entry_id', $request->get_param('form_entry_id'));
     $this->orm()->persist($guardian);
     $this->orm()->flush();
     if(!$guardian->get('id')) {

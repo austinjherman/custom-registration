@@ -1,3 +1,22 @@
+/**
+ *
+ * A note about this javascript:
+ *
+ * There are some complex objects in here that are 
+ * dynamically created. Notably, the "students" and
+ * "parents" objects and those that are nested within
+ * these objects. Vue.js prefers to have all properties 
+ * within objects predefined, or it throws an error during 
+ * render. Unfortunately, this was not possible here because
+ * we don't know how many students or parents are going to be
+ * signing up.
+ *
+ * What this means is that anytime you're changing an object,
+ * you need to make sure that it has the same properties throughout
+ * this file, or you will probably have an error during render.
+ *
+ */
+
 
 // using VeeValidate as a plugin
 Vue.use(VeeValidate, {
@@ -75,7 +94,8 @@ var fscrForm = new Vue({
           name: "",
           dob: "",
           dobOriginal: "",
-          save: false
+          save: false,
+          created: null
         }
         */
       ]
@@ -99,7 +119,8 @@ var fscrForm = new Vue({
           email: "",
           phone: "",
           students: [],
-          save: false
+          save: false,
+          created: null
         }
         */
       ]
@@ -401,9 +422,6 @@ var fscrForm = new Vue({
      */
     populateParents: function(count) {
 
-      console.log('parent count: ', count);
-      return;
-
       count = Number(count);
       var liveParents = this.parents.parents,
           newParents  = [];
@@ -419,7 +437,8 @@ var fscrForm = new Vue({
           errors: {
             students: null
           },
-          save: null
+          save: null,
+          created: null
         };
         if(typeof liveParents[i] == 'undefined') {
           parent.id = i;
@@ -439,7 +458,7 @@ var fscrForm = new Vue({
         if(i >= count) {
           parent = liveParents[i];
           parent.save = false;
-          newParents.push(parents);
+          newParents.push(parent);
         }
       }
 
@@ -453,8 +472,17 @@ var fscrForm = new Vue({
      * parents/guardians.
      *
      */
-    handleParentStudentRelationship: function(parentId, studentId, $e) {
+    handleParentStudentRelationship: async function(parentId, studentId, $e) {
 
+      // check to see if the validation for this field passes here.
+      var parentGroup = $e.target.getAttribute('data-parent-group');
+      var parentStudentRelationshipFields = this.$refs.parentStudentRelationshipField;
+      parentStudentRelationshipFields.forEach(field => {
+        if (field.getAttribute('data-parent-group') == parentGroup) {
+          this.$validator.errors.remove(field.name);
+        }
+      });
+      
       // get current students object for parent
       var currentStudents = this.parents.parents[parentId].students || [];
       var newStudents = [];
@@ -508,95 +536,54 @@ var fscrForm = new Vue({
 
     makeGuestParentGuardianForAll: function() {
 
-      if(this.guestIsParentGuardianForAll) {
+      // collect students
+      var students = this.students.students,
+          studentIds = [];
 
-        // collect students
-        var studentIds = [];
-        for (var student in this.students.students) {
-          studentIds.push(student.id);
-        }
+      students.forEach(student => {
+        studentIds.push(student.id);
+      });
 
-        // alter first parent object if one already exists
-        if (this.parents.parents.length > 0) {
+      // alter first parent object if one already exists
+      if (this.parents.parents.length > 0) {
 
-          for(var i=0; i < this.parents.parents.length; i++) {
-            if (i == 0) {
-              this.$set(this.parents.parents, i, {
-                id: i,
-                name: this.guest.firstName + " " + this.guest.lastName,
-                email: this.guest.email,
-                phone: this.guest.phone,
-                students: studentIds,
-                save: true
-              });
-            }
-            else {
-              this.$set(this.parents.parents[i], 'save', false);
-            }
+        for(var i=0; i < this.parents.parents.length; i++) {
+          if (i == 0) {
+            this.$set(this.parents.parents, i, {
+              id: i,
+              name: this.guest.firstName + " " + this.guest.lastName,
+              email: this.guest.email,
+              phone: this.guest.phone,
+              students: studentIds,
+              errors: {
+                students: null
+              },
+              save: true,
+              created: null
+            });
+          }
+          else {
+            this.$set(this.parents.parents[i], 'save', false);
           }
         }
-
-        // otherwise create new parent object
-        else {
-          this.$set(this.parents.parents, 0, {
-            id: 0,
-            name: this.guest.firstName + " " + this.guest.lastName,
-            email: this.guest.email,
-            phone: this.guest.phone,
-            students: studentIds,
-            save: true
-          });
-        }
-
       }
 
-      return false;
-    },
+      // otherwise create new parent object
+      else {
+        this.$set(this.parents.parents, 0, {
+          id: 0,
+          name: this.guest.firstName + " " + this.guest.lastName,
+          email: this.guest.email,
+          phone: this.guest.phone,
+          students: studentIds,
+          errors: {
+            students: null
+          },
+          save: true,
+          created: null
+        });
+      }
 
-    /**
-     * Handle a submission of the second page.
-     *
-     */
-    handleSecondPageSubmission: async function() {
-
-      /*
-      // validate necessary form fields
-      var validate = Promise.all([
-        this.$validator.validate('first_name'),
-        this.$validator.validate('last_name'),
-        this.$validator.validate('email'),
-        this.$validator.validate('phone'),
-        this.$validator.validate('zip_code'),
-        this.$validator.validate('pool_access'),
-      ]);
-
-      // await results of promise and ensure they are all true
-      var validated = await validate.then(result => validated = result.every(isValid => isValid));
-      */
-
-      if(this.guestIsParentGuardianForAll) {
-        this.makeGuestParentGuardianForAll();
-      }     
-
-      console.log('students', this.students);
-      console.log('parents', this.parents);
-
-    },
-
-
-    /**
-     | ---------------------------------------------------------------
-     | Students
-     | ---------------------------------------------------------------
-     |
-     */
-
-    /**
-     * Add/Update a student's name.
-     *
-     */
-    updateStudentName: function(e, n) {
-      this.$set(this.students.students[n], 'name', e.target.value);
     },
 
     /**
@@ -624,46 +611,152 @@ var fscrForm = new Vue({
       this.$set(this.students.students[n], 'dob', dateObj);
     },
 
-
     /**
-     | ---------------------------------------------------------------
-     | Parents/Guardians
-     | ---------------------------------------------------------------
-     |
+     * Handle a submission of the second page.
+     *
      */
+    handleSecondPageSubmission: async function() {
 
-    addParentGuardianField: function() {
-      if (this.parents.count < this.students.count) {
-        this.$set(this.parents, 'count', this.parents.count + 1);
-        for(var i=0; i < this.parents.count; i++) {
-          if(typeof this.parents.parents[i] == 'undefined') {
-            this.$set(this.parents.parents, i, {
-              first_name: "",
-              last_name: "",
-              email: "",
-              phone: "",
-              students: [],
-              save: true
-            });
-          }
-          else {
-            this.$set(this.parents.parents[i], 'save', true);
-          }
+      // validate necessary form fields
+      /*var validate = Promise.all([
+        this.$validator.validate('first_name'),
+        this.$validator.validate('last_name'),
+        this.$validator.validate('email'),
+        this.$validator.validate('phone'),
+        this.$validator.validate('zip_code'),
+        this.$validator.validate('pool_access'),
+      ]);*/
+
+      var validateItems = [];
+
+      // validate number students enrolling dropdown
+      validateItems.push(this.$validator.validate('number_students_enrolling'));
+
+      // validate dynamic student inputs
+      var studentInputs = [];
+      studentInputs.push(this.$refs.studentNameInput);
+      studentInputs.push(this.$refs.studentDobInput);
+      studentInputs.forEach(input => {
+        validateItems.push(this.$validator.validate(input.name));
+      });
+
+      // validate number parents adding dropdown
+      validateItems.push(this.$validator.validate('number_parents_adding'));
+
+      var parentInputs = [];
+      parentInputs.push(this.$refs.parentInput);
+      parentInputs.forEach(input => {
+        validateItems.push(this.$validator.validate(input.name));
+      });
+
+      var validate = Promise.all(validateItems);
+
+      // await results of promise and ensure they are all true
+      var validated = await validate.then(result => validated = result.every(isValid => isValid));
+
+      console.log('valdiated: ', validated);
+      return false;
+
+      if (validated) {
+
+        // return false if already submitted
+        if(this.pages[2].submitted) {
+          this.goToPage(3);
+          return false;
         }
+
+        // mark this page as submitted
+        this.$set(this.pages[2], 'submitted', true);
+
+        // in case the user never touched the "Are you the p/g of all" button
+        if(this.guestIsParentGuardianForAll) {
+          this.makeGuestParentGuardianForAll();
+        }
+
+        this.createParents();
+
+        this.$on('create:allGuardians', function() {
+          this.createStudents();
+        });
+
+        this.goToPage(3);
+
       }
+
     },
 
-    removeParentGuardianField: function() {
-      if(this.parents.count > 0) {
-        // get last element of array
-        var recentParentIndex = this.parents.count - 1;
-        this.$set(this.parents.parents[recentParentIndex], 'save', false);
-        this.$set(this.parents, 'count', this.parents.count - 1);
+    createParents: function() {
+      
+      // create parents
+      
+      var promises = [];
+      
+      for(var i=0; i < this.parents.parents.length; i++) {
+        
+        // created request for each parent
+        var request = {};
+        request.name = this.parents.parents[i].name;
+        request.email = this.parents.parents[i].email;
+        request.phone_number = this.parents.parents[i].phone;
+        request.form_entry_id = this.formEntry.created.id;
+
+        // push to array of promises
+        promises.push(axios.post(this.api + '/guardians/create', request));
+
       }
+
+      axios.all(promises).then(results => {
+        var index = 0;
+        results.forEach(response => {
+          this.parents.parents[index].created = response.data.guardian;
+          index++;
+        });
+        this.$emit('create:allGuardians');
+      }).catch(error => {
+        console.log('error: ', error);
+      });
+
     },
 
-    createStudentsAndGuardians: function(e) {
-      console.log(this.parents.parents);
+    createStudents: function() {
+      
+      // create students
+
+      var promises = [];
+
+      for(var i=0; i < this.parents.parents.length; i++) {
+
+        var guardianId = this.parents.parents[i].created.id;
+        var students = this.parents.parents[i].students;
+
+        students.forEach(studentId => {
+
+          var student = this.getStudent(studentId),
+              request = {};
+
+          request.student_name = student.name;
+          request.student_date_of_birth = student.dobOriginal;
+          request.guardian_id = guardianId;
+          request.form_entry_id = this.formEntry.created.id;
+
+          console.log('create student ' + studentId + ' : ', request);
+          promises.push(axios.post(this.api + '/students/create', request));
+
+        });
+
+      }
+
+      axios.all(promises).then(results => {
+        var index = 0;
+        results.forEach(response => {
+          this.students.students[index].created = response.data.student;
+          index++;
+        });
+        this.$emit('create:allStudents');
+      }).catch(error => {
+        console.log('error: ', error);
+      });
+
     },
 
   }

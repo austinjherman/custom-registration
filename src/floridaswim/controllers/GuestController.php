@@ -4,6 +4,7 @@ namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
 use FloridaSwim\Entities\Guest;
+use FloridaSwim\Controllers\BaseController;
 
 class GuestController extends BaseController {
 

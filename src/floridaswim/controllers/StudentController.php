@@ -4,8 +4,9 @@ namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
 use FloridaSwim\Entities\Student;
+use FloridaSwim\Controllers\BaseController;
 
-class StudentController extends \WP_REST_Controller {
+class StudentController extends BaseController {
 
   protected $namespace = '/fscr/v1';
   protected $resource_name = 'students';
@@ -68,11 +69,18 @@ class StudentController extends \WP_REST_Controller {
     $v = new Validator($request->get_params());
     $v->rules([
       'required' => [
-        'student_name', 'student_date_of_birth', 'guardian_id'
+        'student_name', 'student_date_of_birth', 'guardian_id', 'form_entry_id'
       ]
     ]);
     if (!$v->validate()) {
       return new \WP_REST_Response(['errors' => $v->errors()], 400);
+    }
+
+    // find associated form entry
+    $formEntryId = $request->get_param('form_entry_id');
+    $formEntry = $this->orm()->getRepository('FloridaSwim\Entities\FormEntry')->find($formEntryId);
+    if(!$formEntry) {
+      return new \WP_REST_Response(['errors' => ['form entry' => 'Please enter a valid form entry ID.']], 400);
     }
 
     // find associated guardian
@@ -82,10 +90,12 @@ class StudentController extends \WP_REST_Controller {
     }
 
     // create a new student
+    $studentDob = new \DateTime($request->get_param('student_date_of_birth')); 
     $student = new Student;
-    $student->set('name', $request->get_param('name'));
-    $student->set('date_of_birth', $request->get_param('date_of_birth'));
+    $student->set('name', $request->get_param('student_name'));
+    $student->set('date_of_birth', $studentDob);
     $student->addGuardian($guardian);
+    $student->addFormEntry($formEntry);
     $this->orm()->persist($student);
     $this->orm()->flush();
     if(!$student->get('id')) {

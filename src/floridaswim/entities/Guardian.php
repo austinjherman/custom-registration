@@ -4,6 +4,7 @@ namespace FloridaSwim\Entities;
 
 use FloridaSwim\Entities\Student;
 use FloridaSwim\Entities\BaseModel;
+use FloridaSwim\Entities\FormEntry;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
@@ -11,8 +12,8 @@ class Guardian extends BaseModel
 {
 
     protected $id;
-    protected $guest;
-    protected $guest_id;
+    protected $form_entry;
+    protected $form_entry_id;
     protected $name;
     protected $email_address;
     protected $created_at;
@@ -20,12 +21,27 @@ class Guardian extends BaseModel
 
     protected $students;
 
+    protected $expose = [
+        "id", 
+        "name",
+        "email_address",
+        "phone_number",
+        "form_entry"
+    ];
+
     public function __construct() 
     {
         $this->created_at = new \DateTime();
     }
 
-    public function addStudent(Student $student) {
+    public function addFormEntry(FormEntry $formEntry) 
+    {
+        $formEntry->addGuardian($this);
+        $this->form_entry = $formEntry;
+    }
+
+    public function addStudent(Student $student) 
+    {
         $student->addGuardian($this);
         $this->students[] = $student;
     }
@@ -37,7 +53,7 @@ class Guardian extends BaseModel
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
 
         // One form_entry can have many parent/guardians
-        $builder->createManyToOne('guest', 'FloridaSwim\Entities\Guest')->addJoinColumn('guest_id', 'id', true, false, 'cascade')->build();
+        $builder->createManyToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->addJoinColumn('form_entry_id', 'id', true, false, 'cascade')->build();
 
         $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian_id')->build();
 

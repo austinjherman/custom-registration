@@ -4,6 +4,7 @@ namespace FloridaSwim\Entities;
 
 use FloridaSwim\Entities\Guardian;
 use FloridaSwim\Entities\BaseModel;
+use FloridaSwim\Entities\FormEntry;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
@@ -11,8 +12,8 @@ class Student extends BaseModel
 {
 
     protected $id;
-    protected $guest;
-    protected $guest_id;
+    protected $form_entry;
+    protected $form_entry_id;
     protected $guardian;
     protected $guardian_id;
     protected $name;
@@ -25,16 +26,31 @@ class Student extends BaseModel
 
     protected $schedule;
 
+    protected $expose = [
+        "id", 
+        "name",
+        "date_of_birth",
+        "form_entry"
+    ];
+
     public function __construct() 
     {
         $this->created_at = new \DateTime();
     }
 
-    public function addGuardian(Guardian $guardian) {
+    public function addFormEntry(FormEntry $formEntry) 
+    {
+        $formEntry->addStudent($this);
+        $this->form_entry = $formEntry;
+    }
+
+    public function addGuardian(Guardian $guardian) 
+    {
         $this->guardian = $guardian;
     }
 
-    public function addSchedule(Schedule $schedule) {
+    public function addSchedule(Schedule $schedule) 
+    {
         $this->schedule = $schedule;
     }
 
@@ -44,8 +60,8 @@ class Student extends BaseModel
         $builder->setTable(parent::tablePrefix(). "fwcr_students");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
 
-        // One guest can register many students
-        $builder->createManyToOne('guest', 'FloridaSwim\Entities\Guest')->addJoinColumn('guest_id', 'id', true, false, 'cascade')->build();
+        // One form_entry can have many students
+        $builder->createManyToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->addJoinColumn('form_entry_id', 'id', true, false, 'cascade')->build();
 
         // One guardian can have many students
         $builder->createManyToOne('guardian', 'FloridaSwim\Entities\Guardian')->addJoinColumn('guardian_id', 'id', true, false)->inversedBy('students')->build();

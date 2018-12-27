@@ -116,7 +116,7 @@
               <label class="fscrForm__label">
                 <span class="d-block">Student {{ n }} Name <span class="field--required">*</span></span>
                 <span class="fwcr__form__error" v-cloak>{{ validator.first('student_name_' + (n) ) }}</span>
-                <input type="text" v-model="students.students[n-1].name" :name="'student_name_' + (n)" v-validate="'required'">
+                <input type="text" v-model="students.students[n-1].name" :name="'student_name_' + (n)" v-validate="'required'" :ref="'studentNameInput'">
               </label>
             </div>
           </div>
@@ -126,7 +126,7 @@
                 <span class="d-block">Student {{ n }} DOB <span class="field--required">*</span></span>
               </label>
               <span class="fwcr__form__error" v-cloak>{{ validator.first('student_dob_' + (n) ) }}</span>
-              <datepicker :id="'student__dob--' + n" @input="updateStudentDob($event, n-1)" v-model="students.students[n-1].dobOriginal" :name="'student_dob_' + (n)" v-validate="'required'"></datepicker>
+              <datepicker :id="'student__dob--' + n" @input="updateStudentDob($event, n-1)" v-model="students.students[n-1].dobOriginal" :name="'student_dob_' + (n)" v-validate="'required'" :ref="'studentDobInput'"></datepicker>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@
           <label>
             <span class="fscrForm__label">How many Parents and/or Guardians will you be adding?<span class="field--required">*</span></span>
             <span class="fwcr__form__error" v-cloak>{{ parents.errors.number_parents_adding || validator.first('number_parents_adding') }}</span>
-            <select name="number_parents_adding" v-model.number="parents.count" @change="changeAmountOfParents" class="fscrForm__input" v-validate="'required|min_value:1'">
+            <select name="number_parents_adding" v-model="parents.count" @change="changeAmountOfParents" class="fscrForm__input" v-validate="'required|min_value:1'">
               <option selected="selected" value="0">Please Select</option>
               <option value="1">1</option>
               <option value="2">2</option>
@@ -192,22 +192,25 @@
         <div class="parent-guardian" v-for="n in Number(parents.count)">
           <fieldset>
             <legend class="fscrForm__label m-bot-25">Parent/Guardian {{ n }}</legend>
+
             <fieldset class="fscrForm__fieldset">
               <legend class="fscrForm__label">Parent/Guardian of <span class="field--required">*</span></legend>
-              <span class="fwcr__form__error" v-cloak>{{ parents.parents[n-1].errors.students }}</span>
+              <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + n + '_students') || parents.parents[n-1].errors.students }}</span>
               <div v-for="x in students.count" >
                 <label class="d-block hover-pointer f-wght-normal">
-                  <input type="checkbox" :value="students.students[x-1].id" @click="handleParentStudentRelationship(parents.parents[n-1].id, students.students[x-1].id, $event)">
+                  <input type="checkbox" :value="students.students[x-1].id" @click="handleParentStudentRelationship(parents.parents[n-1].id, students.students[x-1].id, $event)" :data-parent-group="n">
                   <span>{{ students.students[x-1].name }}</span>
                 </label>
               </div>
+              <input type="hidden" v-model="parents.parents[n-1].students" v-validate="'required'" :name="'parent_' + n + '_students'" :ref="'parentStudentRelationshipField'" :data-parent-group="n">
             </fieldset>
+
             <div class="fscrForm__input-wrap fscrForm__input-wrap--input-half">
               <div class="fscrForm__input-container">
                 <label class="fscrForm__label">
                   <span class="d-block">Name <span class="field--required">*</span></span>
-                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + (n-1) + '_name') }}</span>
-                  <input type="text" v-model="parents.parents[n-1].name" :name="'parent_' + (n-1) + '_name'" v-validate="'required'">
+                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + n + '_name') }}</span>
+                  <input type="text" v-model="parents.parents[n-1].name" :name="'parent_' + n + '_name'" v-validate="'required'" :ref="'parentInput'">
                 </label>
               </div>
             </div>
@@ -215,8 +218,8 @@
               <div class="fscrForm__input-container">
                 <label class="fscrForm__label">
                   <span class="d-block">Email Address <span class="field--required">*</span></span>
-                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + (n-1) + '_email') }}</span>
-                  <input type="email" v-model="parents.parents[n-1].email" :name="'parent_' + (n-1) + '_email'" v-validate="'required|email'">
+                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + n + '_email') }}</span>
+                  <input type="email" v-model="parents.parents[n-1].email" :name="'parent_' + n + '_email'" v-validate="'required|email'" :ref="'parentInput'">
                 </label>
               </div>
             </div>
@@ -224,8 +227,8 @@
               <div class="fscrForm__input-container">
                 <label class="fscrForm__label">
                   <span class="d-block">Phone Number <span class="field--required">*</span></span>
-                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + (n-1) + '_phone') }}</span>
-                  <input type="tel" v-model="parents.parents[n-1].phone" :name="'parent_' + (n-1) + '_phone'" v-validate="'required'">
+                  <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + n + '_phone') }}</span>
+                  <input type="tel" v-model="parents.parents[n-1].phone" :name="'parent_' + n + '_phone'" v-validate="'required'" :ref="'parentInput'">
                 </label>
               </div>
             </div>
