@@ -472,7 +472,7 @@ var fscrForm = new Vue({
      * parents/guardians.
      *
      */
-    handleParentStudentRelationship: async function(parentId, studentId, $e) {
+    handleParentStudentRelationship: function(parentId, studentId, $e) {
 
       // check to see if the validation for this field passes here.
       var parentGroup = $e.target.getAttribute('data-parent-group');
