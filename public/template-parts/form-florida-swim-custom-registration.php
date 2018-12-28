@@ -1,3 +1,7 @@
+<div id="#app"></div>
+
+
+<?php /*
 <form id="fscrForm" class="fscrForm--registration" method="post">
 
   <!-- PAGE 1 -->
@@ -195,7 +199,7 @@
 
             <fieldset class="fscrForm__fieldset">
               <legend class="fscrForm__label">Parent/Guardian of <span class="field--required">*</span></legend>
-              <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + n + '_students') || parents.parents[n-1].errors.students }}</span>
+              <span class="fwcr__form__error" v-cloak>{{ validator.first('parent_' + n + '_students') || parents.parents[n-1].errors.students || studentsNeedParents }}</span>
               <div v-for="x in students.count" >
                 <label class="d-block hover-pointer f-wght-normal">
                   <input type="checkbox" :value="students.students[x-1].id" @click="handleParentStudentRelationship(parents.parents[n-1].id, students.students[x-1].id, $event)" :data-parent-group="n">
@@ -315,3 +319,5 @@
   </div>
 
 </form>
+
+*/ ?>

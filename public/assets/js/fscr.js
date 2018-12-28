@@ -95,7 +95,8 @@ var fscrForm = new Vue({
           dob: "",
           dobOriginal: "",
           save: false,
-          created: null
+          created: null,
+          needsParent: null
         }
         */
       ]
@@ -105,7 +106,7 @@ var fscrForm = new Vue({
     parents: {
       count: 0,
       errors: {
-        number_parents_adding: null
+        number_parents_adding: null,
       },
       parents: [
         /**
@@ -125,6 +126,8 @@ var fscrForm = new Vue({
         */
       ]
     },
+
+    //studentsNeedParents: null,
 
   },
 
@@ -215,6 +218,18 @@ var fscrForm = new Vue({
       }
       return null;
     },
+
+    /** 
+     * Get a Parent
+     *
+     */
+    getParent: function(id) {
+      if(typeof this.parents.parents[id] != 'undefined') {
+        return this.parents.parents[id];
+      }
+      return null;
+    },
+
 
 
     /**
@@ -468,15 +483,19 @@ var fscrForm = new Vue({
     },
 
     /**
-     * This function updates the which students belong to which 
+     * This function updates which students belong to which 
      * parents/guardians.
      *
      */
     handleParentStudentRelationship: function(parentId, studentId, $e) {
+          
+      var parent  = this.getParent(parentId),
+          student = this.getStudent(studentId),
+          parentGroup = $e.target.getAttribute('data-parent-group'),
+          parentStudentRelationshipFields = this.$refs.parentStudentRelationshipField;
 
-      // check to see if the validation for this field passes here.
-      var parentGroup = $e.target.getAttribute('data-parent-group');
-      var parentStudentRelationshipFields = this.$refs.parentStudentRelationshipField;
+      // here we'll just remove all the errors thrown because a student 
+      // wasn't selected within this parent group, if there are errors
       parentStudentRelationshipFields.forEach(field => {
         if (field.getAttribute('data-parent-group') == parentGroup) {
           this.$validator.errors.remove(field.name);
@@ -484,7 +503,7 @@ var fscrForm = new Vue({
       });
       
       // get current students object for parent
-      var currentStudents = this.parents.parents[parentId].students || [];
+      var currentStudents = parent.students || [];
       var newStudents = [];
 
       // build new students object
@@ -492,11 +511,13 @@ var fscrForm = new Vue({
 
       // add this new student if checkbox is checked
       if($e.target.checked) {
+        student.parentId = parentdId;
         newStudents.push(studentId);
       }
 
       // remove if unchecked
       else {
+        student.parentId = null;
         var indexToRemove = newStudents.indexOf(studentId);
         if(indexToRemove !== -1) newStudents.splice(indexToRemove, 1);
       }
@@ -541,6 +562,7 @@ var fscrForm = new Vue({
           studentIds = [];
 
       students.forEach(student => {
+        student.parentId = 0;
         studentIds.push(student.id);
       });
 
@@ -653,8 +675,10 @@ var fscrForm = new Vue({
 
       // await results of promise and ensure they are all true
       var validated = await validate.then(result => validated = result.every(isValid => isValid));
+      //var allStudentsHaveParents = this.allStudentsHaveParents();
 
       console.log('valdiated: ', validated);
+      //console.log('all students have parents: ', allStudentsHaveParents);
       return false;
 
       if (validated) {
@@ -693,15 +717,17 @@ var fscrForm = new Vue({
       
       for(var i=0; i < this.parents.parents.length; i++) {
         
-        // created request for each parent
-        var request = {};
-        request.name = this.parents.parents[i].name;
-        request.email = this.parents.parents[i].email;
-        request.phone_number = this.parents.parents[i].phone;
-        request.form_entry_id = this.formEntry.created.id;
+        if (this.parents.parents[i].save) {
+          // created request for each parent
+          var request = {};
+          request.name = this.parents.parents[i].name;
+          request.email = this.parents.parents[i].email;
+          request.phone_number = this.parents.parents[i].phone;
+          request.form_entry_id = this.formEntry.created.id;
 
-        // push to array of promises
-        promises.push(axios.post(this.api + '/guardians/create', request));
+          // push to array of promises
+          promises.push(axios.post(this.api + '/guardians/create', request));
+        }
 
       }
 
@@ -734,13 +760,17 @@ var fscrForm = new Vue({
           var student = this.getStudent(studentId),
               request = {};
 
-          request.student_name = student.name;
-          request.student_date_of_birth = student.dobOriginal;
-          request.guardian_id = guardianId;
-          request.form_entry_id = this.formEntry.created.id;
+          if (student.save) {
 
-          console.log('create student ' + studentId + ' : ', request);
-          promises.push(axios.post(this.api + '/students/create', request));
+            request.student_name = student.name;
+            request.student_date_of_birth = student.dobOriginal;
+            request.guardian_id = guardianId;
+            request.form_entry_id = this.formEntry.created.id;
+
+            console.log('create student ' + studentId + ' : ', request);
+            promises.push(axios.post(this.api + '/students/create', request));
+
+          }
 
         });
 
@@ -758,6 +788,58 @@ var fscrForm = new Vue({
       });
 
     },
+
+    allStudentsHaveParents: function() {
+
+      this.studentsNeedParents = null;
+      
+      // get a list of all students with parents
+      var studentsWithParents = [];
+      this.parents.parents.forEach(parent => {
+        if(parent.save) {
+          parent.students.forEach(studentId => {
+            studentsWithParents.push(studentId);
+          });
+        } 
+      });
+
+      // assume all students are unassigned
+      var studentsWithoutParents = [];
+      this.students.students.forEach(student => {
+        var studentId = student.id;
+        if(student.save) {
+          studentsWithoutParents.push(studentId);
+        }
+      });
+
+
+      // take away students that have parents
+      studentsWithParents.forEach(studentId => {
+        console.log('student id: ', studentId);
+        var indexToRemove = studentsWithoutParents.indexOf(studentId);
+        if(indexToRemove !== -1) {
+          studentsWithoutParents.splice(indexToRemove, 1);
+        }
+      });
+
+
+      if(!studentsWithoutParents.length) {
+        studentsWithParents.forEach(studentId => {
+          student = this.getStudent(studentId);
+        });
+        return true;
+      }
+
+      var string = "Students need parents: ";
+      studentsWithoutParents.forEach(student => {
+        string += student.name + ", ";
+      });
+      string = string.replace(/,\s*$/, "");
+      this.studentsNeedParents = string;
+
+      return false;
+
+    }
 
   }
 });
