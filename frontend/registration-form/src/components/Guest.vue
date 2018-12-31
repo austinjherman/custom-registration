@@ -3,7 +3,7 @@
 
     <fieldset class="fieldset">
 
-    <legend>Your Contact Information</legend>
+      <legend>Your Contact Information</legend>
 
       <div class="input-wrap">
       <label>

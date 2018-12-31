@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) or die();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/backend/vendor/autoload.php';
 
 use FloridaSwim\FloridaSwimCustomRegistration;
 
@@ -27,19 +27,19 @@ $plugin->run();
 // shortcode to display form
 function fscr_public_shortcode() {
   ob_start();
-  include __DIR__ . '/public/template-parts/form-florida-swim-custom-registration.php';
+  include __DIR__ . '/frontend/template-parts/form-florida-swim-custom-registration.php';
   return ob_get_clean();
 }
 add_shortcode( 'fscr_form', 'fscr_public_shortcode' );
 
 // enqueue styles
 function fscr_enqueue_styles() {   
-  wp_enqueue_style( 'fscr-main-css', plugin_dir_url( __FILE__ ) . 'public/assets/css/fscr.css', [], false, 'all' );
+  wp_enqueue_style( 'fscr-main-css', plugin_dir_url( __FILE__ ) . 'frontend/assets/css/fscr.css', [], false, 'all' );
 }
 add_action('wp_enqueue_scripts', 'fscr_enqueue_styles');
 
 // enqueue scripts
 function fscr_enqueue_scripts() {   
-  wp_enqueue_script( 'fscr-main-js', plugin_dir_url( __FILE__ ) . 'public/registration-form/src/main.js', [], '1.0', true );
+  wp_enqueue_script( 'fscr-main-js', plugin_dir_url( __FILE__ ) . 'frontend/registration-form/src/main.js', [], '1.0', true );
 }
 add_action('wp_enqueue_scripts', 'fscr_enqueue_scripts');
