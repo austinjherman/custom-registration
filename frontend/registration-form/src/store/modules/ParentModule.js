@@ -21,6 +21,7 @@ const parentModule = {
         temp.push(parent);
       });
       temp.push(newParent);
+      console.log('temp: ', temp);
       Vue.set(state, 'parents', temp);
       Vue.set(state, 'changed', true);
     },
@@ -29,23 +30,70 @@ const parentModule = {
      * Update a parent object in store.
      *
      */
-    updateStudent(state, updatedParent) {
+    updateParent(state, updatedParent) {
       
       var foundExistingParent = false;
 
-      // try to find a current student object to update
+      // try to find a current parent object to update
       state.parents.forEach((parent, i) => {
         if(parent.id === updatedParent.id) {
-          Vue.set(state.students, i, updatedParent);
+
+          // save the parent
+          Vue.set(state.parents, i, updatedParent);
           Vue.set(state, 'changed', true);
           foundExistingParent = true;
+
         }
       });
 
-      // if none is found, push a new student to the array
-      if(!foundExistingParent || state.parent.length == 0) {
+      // if none is found, push a new parent to the array
+      if(!foundExistingParent || state.parents.length == 0) {
         this.commit('parents/createParent', updatedParent);
       }
+
+    },
+
+    addStudent(state, obj) {
+
+      console.log('state.parents: ', state.parents);
+    
+      // look for the parent in question
+      state.parents.forEach((parent, i) => {
+
+        // if found add, the student in question to parent's students
+        // have to rebuild the array to maintain reactivity
+        if(parent.id === obj.parent.id) {
+          var temp = [];
+          parent.students.forEach(student => {
+            temp.push(student);
+          });
+          temp.push(obj.student);
+          Vue.set(state.parents[i], 'students', temp);
+        }
+
+      });
+
+    },
+
+    removeStudent(state, obj) {
+      
+      // look for the parent in question
+      state.parents.forEach((parent, i) => {
+
+        // if found, remove student in question
+        // have to rebuild array to maintain reactivity
+        if(parent.id == obj.parent.id) {
+          if(parent.students.length) {
+            var temp = [];
+            parent.students.forEach(student => {
+              if(student.id != obj.student.id) {
+                temp.push(student);
+              }
+            });
+            Vue.set(state.parents[i], 'students', ['what', 'the', 'heck']);
+          }
+        }
+      });
 
     },
 

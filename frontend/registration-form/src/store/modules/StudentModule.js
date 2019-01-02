@@ -16,7 +16,6 @@ const studentModule = {
      *
      */
     createStudent(state, newStudent) {
-      console.log('running create student');
       var temp = [];
       state.students.forEach(student => {
         temp.push(student);
@@ -37,7 +36,6 @@ const studentModule = {
       // try to find a current student object to update
       state.students.forEach((student, i) => {
         if(student.id === updatedStudent.id) {
-          console.log('update student');
           Vue.set(state.students, i, updatedStudent);
           Vue.set(state, 'changed', true);
           foundExistingStudent = true;
@@ -49,6 +47,22 @@ const studentModule = {
         this.commit('students/createStudent', updatedStudent);
       }
 
+    },
+
+    addParent(state, obj) {
+      state.students.forEach((student, i) => {
+        if(student.id === obj.student.id) {
+          Vue.set(state.students[i], 'parent', obj.parent);
+        }
+      });
+    },
+
+    removeParent(state, obj) {
+      state.students.forEach((student, i) => {
+        if(student.id === obj.student.id) {
+          Vue.set(state.students[i], 'parent', null);
+        }
+      });
     },
 
     /**

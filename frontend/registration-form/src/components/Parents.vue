@@ -33,7 +33,7 @@
         </label>
       </div>
 
-      <div v-for="n in number_parents" v-bind:key="n.id">
+      <div v-for="n in this.$store.state.parents.parents" v-bind:key="n.id">
         <Parent/>
       </div>
     </div>

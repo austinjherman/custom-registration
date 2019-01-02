@@ -2,13 +2,17 @@
 
   <div id="app" class="fscr">
     
-    <Guest/>
+    <!-- Page 1 -->
+    <Guest ref="guest"/>
+    <hr>
+    <div class="fscrForm__btn-container">
+      <button type="button" @click="handleFirstPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+    </div>
 
+    <!-- Page 2 -->
     <Students/>
     <Parents/>
-
     <hr>
-
     <div class="fscrForm__btn-container">
       <button type="button" @click="goToPage(1)" class="fscr__button fscr__button--primary">Back</button>
       <button type="button" @click="handleSecondPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
@@ -39,9 +43,19 @@ export default {
     goToPage(pageNumber) {
       //
     },
+    async handleFirstPageSubmission() {
+      var validated = await this.$refs.guest.validate();
+      if(validated) {
+        console.log('validated: true');
+        this.$refs.guest.makeParent();
+        return true;
+      }
+      console.log('validated: false');
+      return false;
+    },
     handleSecondPageSubmission() {
       console.log('students: ', this.$store.state.students.students);
-      console.log('parents: ', this.$store.state.students.parents);
+      console.log('parents: ', this.$store.state.parents.parents);
     }
   }
 }

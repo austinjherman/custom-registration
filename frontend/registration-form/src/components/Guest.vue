@@ -69,12 +69,6 @@
 
     </fieldset>
 
-    <hr>
-
-    <div class="fscrForm__btn-container">
-      <button type="button" @click="createGuest" class="fscr__button fscr__button--primary">Next</button>
-    </div>
-
   </div>
 </template>
 
@@ -100,20 +94,6 @@
 
     methods: {
 
-      createGuest: async function() {
-
-        var validated = await this.validate();
-        
-        if(validated) {
-          console.log('validated: true');
-          return;
-        }
-
-        console.log('validated: false');
-        return;
-
-      },
-
       validate: async function() {
 
         // validate necessary form fields
@@ -135,6 +115,16 @@
 
         return false;
 
+      }, 
+
+      makeParent() {
+        var guest = this;
+        this.$store.commit('parents/createParent', {
+          name: guest.first_name + " " + guest.last_name,
+          email: guest.email_address, 
+          phone: guest.phone_number,
+          students: []
+        });
       }
 
     }
