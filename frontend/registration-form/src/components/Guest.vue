@@ -8,40 +8,40 @@
       <div class="input-wrap">
       <label>
         <span class="d-block">First Name <span class="asterisk--required">*</span></span>
-        <input name="guest_first_name" type="text" v-model="first_name" v-validate="'required'">
-        <span class="d-block">{{ validator.first('guest_first_name') }}</span>
+        <input name="firstName" type="text" v-model="firstName" v-validate="'required'">
+        <span class="d-block">{{ validator.first('firstName') }}</span>
       </label>
       </div>
 
       <div class="input-wrap">
       <label>
         <span class="d-block">Last Name <span class="asterisk--required">*</span></span>
-        <input name="guest_last_name" type="text" v-model="last_name" v-validate="'required'">
-        <span class="d-block">{{ validator.first('guest_last_name') }}</span>
+        <input name="lastName" type="text" v-model="lastName" v-validate="'required'">
+        <span class="d-block">{{ validator.first('lastName') }}</span>
       </label>
       </div>
 
       <div class="input-wrap">
       <label>
         <span class="d-block">Email <span class="asterisk--required">*</span></span>
-        <input name="guest_email_address" type="email" v-model="email_address" v-validate="'required|email'">
-        <span class="d-block">{{ validator.first('guest_email_address') }}</span>
+        <input name="email" type="email" v-model="email" v-validate="'required|email'">
+        <span class="d-block">{{ validator.first('email') }}</span>
       </label>
       </div>
 
       <div class="input-wrap">
       <label>
         <span class="d-block">Phone <span class="asterisk--required">*</span></span>
-        <input name="guest_phone_number" type="tel" v-model="phone_number" v-validate="'required'">
-        <span class="d-block">{{ validator.first('guest_phone_number') }}</span>
+        <input name="phone" type="tel" v-model="phone" v-validate="'required'">
+        <span class="d-block">{{ validator.first('phone') }}</span>
       </label>
       </div>
 
       <div class="input-wrap">
       <label>
         <span class="d-block">ZIP Code <span class="asterisk--required">*</span></span>
-        <input name="guest_zip_code" type="tel" v-model="zip_code" v-validate="'required'">
-        <span class="d-block">{{ validator.first('guest_zip_code') }}</span>
+        <input name="zip" type="tel" v-model="zip" v-validate="'required'">
+        <span class="d-block">{{ validator.first('zip') }}</span>
       </label>
       </div>
 
@@ -52,18 +52,18 @@
         <div class="input-wrap">
         <label>
           <span class="d-block">Yes</span>
-          <input name="guest_pool_access" type="radio" v-model="pool_access" value="true" v-validate="'required'">
+          <input name="poolAccess" type="radio" v-model="poolAccess" value="true" v-validate="'required'">
         </label>
         </div>
 
         <div class="input-wrap">
         <label>
           <span class="d-block">No</span>
-          <input name="guest_pool_access" type="radio" v-model="pool_access" value="false" v-validate="'required'">
+          <input name="poolAccess" type="radio" v-model="poolAccess" value="false" v-validate="'required'">
         </label>
         </div>
 
-        <span class="d-block">{{ validator.first('guest_pool_access') }}</span>
+        <span class="d-block">{{ validator.first('poolAccess') }}</span>
 
       </fieldset>
 
@@ -74,22 +74,86 @@
 
 <script>
 
-  export default {
+  import Vue from 'vue';
+  import Parent from './Parent';
 
-    data: function() {
-      return {
-        first_name: "",
-        last_name: "",
-        email_address: "",
-        phone_number: "",
-        zip_code: "",
-        pool_access: "",
-        created: null
-      }
-    }, 
+  export default {
 
     mounted () {
       this.id = this._uid
+    },
+
+    computed: {
+      firstName: {
+        get() {
+          return this.$store.state.guest.firstName;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            firstName: value
+          });
+        }
+      },
+      lastName: {
+        get() {
+          return this.$store.state.guest.lastName;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            lastName: value
+          });
+        }
+      },
+      email: {
+        get() {
+          return this.$store.state.guest.email;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            email: value
+          });
+        }
+      },
+      phone: {
+        get() {
+          return this.$store.state.guest.phone;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            phone: value
+          });
+        }
+      },
+      zip: {
+        get() {
+          return this.$store.state.guest.zip;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            zip: value
+          });
+        }
+      },
+      poolAccess: {
+        get() {
+          return this.$store.state.guest.poolAccess;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            poolAccess: value
+          });
+        }
+      },
+      created: {
+        get() {
+          return this.$store.state.guest.created;
+        },
+        set(value) {
+          this.$store.commit('guest/updateGuest', {
+            created: value
+          });
+        }
+      }
     },
 
     methods: {
@@ -98,12 +162,12 @@
 
         // validate necessary form fields
         var validate = Promise.all([
-          this.$validator.validate('guest_first_name'),
-          this.$validator.validate('guest_last_name'),
-          this.$validator.validate('guest_email_address'),
-          this.$validator.validate('guest_phone_number'),
-          this.$validator.validate('guest_zip_code'),
-          this.$validator.validate('guest_pool_access'),
+          this.$validator.validate('firstName'),
+          this.$validator.validate('lastName'),
+          this.$validator.validate('email'),
+          this.$validator.validate('phone'),
+          this.$validator.validate('zip'),
+          this.$validator.validate('poolAccess'),
         ]);
 
         // await results of promise and ensure they are all true
@@ -118,13 +182,13 @@
       }, 
 
       makeParent() {
-        var guest = this;
-        this.$store.commit('parents/createParent', {
-          name: guest.first_name + " " + guest.last_name,
-          email: guest.email_address, 
-          phone: guest.phone_number,
-          students: []
-        });
+        var guest = this,
+            ParentComponent = Vue.extend(Parent),
+            parent = new ParentComponent();
+        parent.name = this.$store.state.guest.firstName + " " + this.$store.state.guest.lastName;
+        parent.email = this.$store.state.guest.email;
+        parent.phone = this.$store.state.guest.phone;
+        //this.$store.commit('parents/createParent', parent);
       }
 
     }

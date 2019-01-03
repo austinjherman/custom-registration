@@ -14,4 +14,18 @@ export default new Vuex.Store({
     students: studentModule
   },
 
+  state: {
+    guestIsOnlyParent: true
+  },
+
+  mutations: {
+    setGuestIsOnlyParent(state, b) {
+      state.guestIsOnlyParent = b;
+    }
+  },
+
+  getters: {
+    guestIsOnlyParent: state => state.guestIsOnlyParent
+  }
+
 })

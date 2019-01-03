@@ -5,7 +5,6 @@ const parentModule = {
   namespaced: true,
 
   state: {
-    changed: false,
     parents: []
   },
 
@@ -21,7 +20,6 @@ const parentModule = {
         temp.push(parent);
       });
       temp.push(newParent);
-      console.log('temp: ', temp);
       Vue.set(state, 'parents', temp);
       Vue.set(state, 'changed', true);
     },
@@ -54,8 +52,6 @@ const parentModule = {
     },
 
     addStudent(state, obj) {
-
-      console.log('state.parents: ', state.parents);
     
       // look for the parent in question
       state.parents.forEach((parent, i) => {
@@ -97,11 +93,10 @@ const parentModule = {
 
     },
 
-  },
+    changeAmount(state, n) {
+      Vue.set(state, 'amount', n);
+    }
 
-  getters: {
-    parents: state => state.parents,
-    changed: state => state.changed
   }
 
 }

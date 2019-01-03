@@ -6,20 +6,20 @@
         <legend>Are you the parent/guardian of all the students? <span class="asterisk--required">*</span></legend>
         <label>
           <span class="d-block">Yes</span>
-          <input type="radio" value="true" v-model="guest_is_only_parent">
+          <input type="radio" value="true" v-model="this.$store.state.guestIsOnlyParent" @input="handleParentGuardianRadio($event)">
         </label>
         <label>
           <span class="d-block">No</span>
-          <input type="radio" value="false" v-model="guest_is_only_parent">
+          <input type="radio" value="false" v-model="this.$store.state.guestIsOnlyParent" @input="handleParentGuardianRadio($event)">
         </label>
       </fieldset>
     </div>
 
-    <div v-if="guest_is_only_parent == 'false'">
+    <div v-if="this.$store.state.guestIsOnlyParent == false">
       <div class="input-wrap">
         <label>
           <span class="d-block">How many parents are you signing up? <span class="asterisk--required">*</span></span>                
-          <select name="number_parents" v-model.number="number_parents" v-validate="'required|min_value:1'">
+          <select name="number_parents" v-validate="'required|min_value:1'" @change="changeNumberOfParents($event)">
             <option selected="selected" value="0">Please Select</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -32,7 +32,9 @@
           </select>
         </label>
       </div>
+    </div>
 
+    <div v-if="this.$store.state.guestIsOnlyParent == false">
       <div v-for="n in this.$store.state.parents.parents" v-bind:key="n.id">
         <Parent/>
       </div>
@@ -51,15 +53,27 @@
       Parent
     },
 
-    data () {
-      return {
-        guest_is_only_parent: true,
-        number_parents: 0
-      }
+    mounted() {
+      this.id = this._uid
     },
 
-    mounted () {
-      this.id = this._uid
+    methods: {
+
+      handleParentGuardianRadio($event) {
+        if($event.target.value == 'true') {
+          this.$store.commit('setGuestIsOnlyParent', true);
+          this.changeNumberOfParents(this.$store.state.parents.length);
+        }
+        else {
+          this.$store.commit('setGuestIsOnlyParent', false);
+          this.changeNumberOfParents(this.$store.state.parents.length);
+        }
+      },
+
+      changeNumberOfParents($event) {
+        this.$store.commit('parents/changeAmount', Number($event.target.value));
+      }
+
     },
 
   }

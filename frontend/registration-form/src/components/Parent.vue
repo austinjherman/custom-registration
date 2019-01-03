@@ -14,7 +14,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">Name <span class="asterisk--required">*</span></span>
-        <input :name="'parent_' + id + '_name'" v-validate="'required'" v-model="name" @input="updateParent($event)">
+        <input :name="'parent_' + id + '_name'" v-validate="'required'" v-model="name">
       </label>
     </div>
 
@@ -39,18 +39,67 @@
 
   export default {
 
-    data () {
+    data() {
       return {
-        id: "",
-        name: "",
-        email: "",
-        phone: "",
         students: []
       }
     }, 
 
-    mounted () {
+    mounted() {
       this.id = this._uid
+    },
+
+    computed: {
+      name: {
+        get() {
+          var parent = this.$store.state.parents.parents.forEach(p => {
+            if(p.id == this.id) {
+              return p;
+            }
+          });
+          if(parent) {
+            return parent.name;
+          }
+          return null;
+        },
+        set() {
+          console.log('parent: ', this.$store);
+          //this.$store.commit('parents/updateParent', this);
+        }
+      },
+      email: {
+        get() {
+          var parent = this.$store.state.parents.parents.forEach(p => {
+            if(p.id == this.id) {
+              return p;
+            }
+          });
+          if(parent) {
+            return parent.email;
+          }
+          return null;
+        },
+        set() {
+          this.$store.commit('parents/updateParent', this);
+        }
+      },
+      phone: {
+        get() {
+          var parent = this.$store.state.parents.parents.forEach(p => {
+            if(p.id == this.id) {
+              return p;
+            }
+          });
+          if(parent) {
+            return parent.phone;
+          }
+          return null;
+        },
+        set() {
+          console.log('parent: ', this);
+          //this.$store.commit('parents/updateParent', this);
+        }
+      }
     },
 
     methods: {

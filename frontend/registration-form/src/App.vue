@@ -28,35 +28,41 @@ import  Students from './components/Students.vue'
 import  Parents from './components/Parents.vue'
 
 export default {
+  
   name: 'app',
+  
   data () {
     return {
       msg: 'Welcome to Your Vue.js App'
     }
   },
+
   components: {
     Guest,
     Students,
     Parents
   },
+
   methods: {
+
     goToPage(pageNumber) {
       //
     },
+
     async handleFirstPageSubmission() {
       var validated = await this.$refs.guest.validate();
       if(validated) {
-        console.log('validated: true');
         this.$refs.guest.makeParent();
         return true;
       }
-      console.log('validated: false');
       return false;
     },
+
     handleSecondPageSubmission() {
       console.log('students: ', this.$store.state.students.students);
       console.log('parents: ', this.$store.state.parents.parents);
     }
+
   }
 }
 </script>

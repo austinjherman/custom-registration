@@ -5,7 +5,6 @@ const studentModule = {
   namespaced: true,
 
   state: {
-    changed: false,
     students: []
   },
 
@@ -83,11 +82,6 @@ const studentModule = {
     }
 
   },
-
-  getters: {
-    students: state => state.students,
-    changed: state => state.changed
-  }
 
 }
 
