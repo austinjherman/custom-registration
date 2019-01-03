@@ -10,8 +10,8 @@
     </div>
 
     <!-- Page 2 -->
-    <Students/>
-    <Parents/>
+    <Students ref="students"/>
+    <Parents ref="parents"/>
     <hr>
     <div class="fscrForm__btn-container">
       <button type="button" @click="goToPage(1)" class="fscr__button fscr__button--primary">Back</button>
@@ -24,8 +24,9 @@
 
 <script>
 import  Guest from './components/Guest.vue'
-import  Students from './components/Students.vue'
+import  Parent from './components/Parent.vue'
 import  Parents from './components/Parents.vue'
+import  Students from './components/Students.vue'
 
 export default {
   
@@ -40,7 +41,8 @@ export default {
   components: {
     Guest,
     Students,
-    Parents
+    Parents,
+    Parent
   },
 
   methods: {
@@ -52,15 +54,16 @@ export default {
     async handleFirstPageSubmission() {
       var validated = await this.$refs.guest.validate();
       if(validated) {
-        this.$refs.guest.makeParent();
+        this.$refs.guest.sendToApi();
         return true;
       }
       return false;
     },
 
     handleSecondPageSubmission() {
-      console.log('students: ', this.$store.state.students.students);
-      console.log('parents: ', this.$store.state.parents.parents);
+      this.$refs.parents.sendToApi();
+      //console.log('students: ', this.$store.state.students.students);
+      //console.log('parents: ', this.$store.state.parents.parents);
     }
 
   }

@@ -3,9 +3,9 @@
 
     <fieldset class="fieldset">
       Parent for which students?
-      <div v-for="student in $store.state.students.students">
+      <div v-for="student in $store.state.students.students" :key="student.id">
         <label>
-          <input type="checkbox" :value="student.id" @click="handleParentStudentRelationship($event)">
+          <input type="checkbox" :value="student" v-model="students">
           <span>{{ student.name }}</span>
         </label>
       </div>
@@ -14,21 +14,24 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">Name <span class="asterisk--required">*</span></span>
-        <input :name="'parent_' + id + '_name'" v-validate="'required'" v-model="name">
+        <input name="name" type="text" v-validate="'required'" v-model="name">
+        <span class="d-block">{{ validator.first('name') }}</span>
       </label>
     </div>
 
     <div class="input-wrap">
       <label>
         <span class="d-block">Email <span class="asterisk--required">*</span></span>
-        <input type="email" :name="'parent_' + id + '_email'" v-model="email" @input="updateParent($event)">
+        <input name="email" type="email" v-validate="'required|email'" v-model="email">
+        <span class="d-block">{{ validator.first('email') }}</span>
       </label>    
     </div>
 
     <div class="input-wrap">
       <label>
         <span class="d-block">Phone <span class="asterisk--required">*</span></span>
-        <input type="tel" :name="'parent_' + id + '_phone'" v-model="phone" @input="updateParent($event)">
+        <input name="phone" type="tel" v-validate="'required'" v-model="phone">
+        <span class="d-block">{{ validator.first('phone') }}</span>
       </label>    
     </div>
 
@@ -39,9 +42,11 @@
 
   export default {
 
+    props: ['store'],
+
     data() {
       return {
-        students: []
+        id: null
       }
     }, 
 
@@ -52,9 +57,10 @@
     computed: {
       name: {
         get() {
-          var parent = this.$store.state.parents.parents.forEach(p => {
+          var parent;
+          this.$store.state.parents.parents.forEach(p => {
             if(p.id == this.id) {
-              return p;
+              parent = p;
             }
           });
           if(parent) {
@@ -62,16 +68,19 @@
           }
           return null;
         },
-        set() {
-          console.log('parent: ', this.$store);
-          //this.$store.commit('parents/updateParent', this);
+        set(value) {
+          this.$store.commit('parents/updateParent', {
+            id: this.id,
+            name: value
+          });
         }
       },
       email: {
         get() {
-          var parent = this.$store.state.parents.parents.forEach(p => {
+          var parent;
+          this.$store.state.parents.parents.forEach(p => {
             if(p.id == this.id) {
-              return p;
+              parent = p;
             }
           });
           if(parent) {
@@ -79,15 +88,19 @@
           }
           return null;
         },
-        set() {
-          this.$store.commit('parents/updateParent', this);
+        set(value) {
+          this.$store.commit('parents/updateParent', {
+            id: this.id,
+            email: value
+          });
         }
       },
       phone: {
         get() {
-          var parent = this.$store.state.parents.parents.forEach(p => {
+          var parent;
+          this.$store.state.parents.parents.forEach(p => {
             if(p.id == this.id) {
-              return p;
+              parent = p;
             }
           });
           if(parent) {
@@ -95,17 +108,30 @@
           }
           return null;
         },
-        set() {
-          console.log('parent: ', this);
-          //this.$store.commit('parents/updateParent', this);
+        set(value) {
+          this.$store.commit('parents/updateParent', {
+            id: this.id,
+            phone: value
+          });
+        }
+      },
+      students: {
+        get() {
+          var students;
+          this.$store.state.parents.parents.forEach(parent => {
+            if(parent.id = this.id) {
+              students = parent.students;
+            }
+          });
+          return students;
+        },
+        set(value) {
+          this.$store.commit('parents/addStudent', value);
         }
       }
     },
 
     methods: {
-      updateParent() {
-        this.$store.commit('parents/updateParent', this);
-      },
       handleParentStudentRelationship($event) {
         var parent = this,
             selectedStudent;

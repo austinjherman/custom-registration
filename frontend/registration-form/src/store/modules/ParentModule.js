@@ -5,6 +5,7 @@ const parentModule = {
   namespaced: true,
 
   state: {
+    count: 0,
     parents: []
   },
 
@@ -21,32 +22,31 @@ const parentModule = {
       });
       temp.push(newParent);
       Vue.set(state, 'parents', temp);
-      Vue.set(state, 'changed', true);
     },
 
     /** 
      * Update a parent object in store.
      *
      */
-    updateParent(state, updatedParent) {
+    updateParent(state, obj) {
       
       var foundExistingParent = false;
 
       // try to find a current parent object to update
       state.parents.forEach((parent, i) => {
-        if(parent.id === updatedParent.id) {
-
-          // save the parent
-          Vue.set(state.parents, i, updatedParent);
-          Vue.set(state, 'changed', true);
+        if(parent.id === obj.id) {
+          for(var prop in obj) {
+            if(prop !== 'id') {
+              Vue.set(state.parents[i], prop, obj[prop]);
+            }
+          }
           foundExistingParent = true;
-
         }
       });
 
       // if none is found, push a new parent to the array
       if(!foundExistingParent || state.parents.length == 0) {
-        this.commit('parents/createParent', updatedParent);
+        this.commit('parents/createParent', obj);
       }
 
     },
@@ -94,7 +94,14 @@ const parentModule = {
     },
 
     changeAmount(state, n) {
-      Vue.set(state, 'amount', n);
+      Vue.set(state, 'count', n);
+      var temp = [];
+      state.parents.forEach((parent, i) => {
+        if(i < n) {
+          temp.push(parent);
+        }
+      });
+      Vue.set(state, 'parents', temp);
     }
 
   }

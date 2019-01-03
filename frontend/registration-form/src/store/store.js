@@ -20,7 +20,7 @@ export default new Vuex.Store({
 
   mutations: {
     setGuestIsOnlyParent(state, b) {
-      state.guestIsOnlyParent = b;
+      Vue.set(state, 'guestIsOnlyParent', b);
     }
   },
 

@@ -179,16 +179,18 @@
 
         return false;
 
-      }, 
+      },
 
-      makeParent() {
-        var guest = this,
-            ParentComponent = Vue.extend(Parent),
-            parent = new ParentComponent();
-        parent.name = this.$store.state.guest.firstName + " " + this.$store.state.guest.lastName;
-        parent.email = this.$store.state.guest.email;
-        parent.phone = this.$store.state.guest.phone;
-        //this.$store.commit('parents/createParent', parent);
+      sendToApi() {
+        // create form entry
+        var request = {};
+        request.first_name = this.firstName;
+        request.last_name = this.lastName;
+        request.email_address = this.email;
+        request.phone_number = this.phone;
+        request.zip_code = this.zip;
+        request.pool_access = this.poolAccess;
+        console.log('guest: ', request);
       }
 
     }
