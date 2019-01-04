@@ -61,7 +61,7 @@
 
       guestIsOnlyParent: {
         get() {
-          return this.$store.state.guestIsOnlyParent;
+          return this.$store.getters.guestIsOnlyParent;
         },
         set(value) {
           this.$store.commit('setGuestIsOnlyParent', value);
@@ -70,7 +70,7 @@
 
       numberOfParents: {
         get() {
-          return this.$store.state.parents.count;
+          return this.$store.getters['parents/getCount'];
         },
         set(value) {
           this.$store.commit('parents/changeAmount', Number(value));
@@ -81,28 +81,28 @@
 
     methods: {
 
-      changeNumberOfParents($event) {
-        this.$store.commit('parents/changeAmount', Number($event.target.value));
-      },
-
       sendToApi() {
 
         var request,
             requests = [];
 
-        if(!this.$store.state.guestIsOnlyParent) {
-          this.$store.state.parents.parents.forEach(parent => {
-            request = {};
-            request.name = parent.name;
-            request.email = parent.email;
-            request.phone_number = parent.phone;
-            requests.push(request);
-          });
+        if(this.$store.getters.guestIsOnlyParent == 'false') {
+          if(Array.isArray(this.$store.getters['parents/getParents'])) {
+            this.$store.getters['parents/getParents'].forEach(parent => {
+              request = {};
+              request.name = parent.name;
+              request.email = parent.email;
+              request.phone_number = parent.phone;
+              requests.push(request);
+            });
+          }
         }
         else {
+          request = {};
           request.name = this.$store.state.guest.firstName + " " + this.$store.state.guest.lastName;
           request.email = this.$store.state.guest.email;
           request.phone_number = this.$store.state.guest.phone;
+          requests.push(request);
         }
 
         console.log('parents: ', requests)

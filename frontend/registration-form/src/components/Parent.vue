@@ -3,9 +3,9 @@
 
     <fieldset class="fieldset">
       Parent for which students?
-      <div v-for="student in $store.state.students.students" :key="student.id">
+      <div v-for="student in $store.getters['students/getStudents']" :key="student.id">
         <label>
-          <input type="checkbox" :value="student" v-model="students">
+          <input type="checkbox" :value="student" @change="handleParentStudentRelationship">
           <span>{{ student.name }}</span>
         </label>
       </div>
@@ -40,9 +40,9 @@
 
 <script>
 
-  export default {
+  import { mapState } from 'vuex'
 
-    props: ['store'],
+  export default {
 
     data() {
       return {
@@ -57,8 +57,9 @@
     computed: {
       name: {
         get() {
-          var parent;
-          this.$store.state.parents.parents.forEach(p => {
+          var parent,
+              parents = this.$store.getters['parents/getParents'];
+          parents.forEach(p => {
             if(p.id == this.id) {
               parent = p;
             }
@@ -77,8 +78,9 @@
       },
       email: {
         get() {
-          var parent;
-          this.$store.state.parents.parents.forEach(p => {
+          var parent,
+              parents = this.$store.getters['parents/getParents'];
+          parents.forEach(p => {
             if(p.id == this.id) {
               parent = p;
             }
@@ -97,8 +99,9 @@
       },
       phone: {
         get() {
-          var parent;
-          this.$store.state.parents.parents.forEach(p => {
+          var parent,
+              parents = this.$store.getters['parents/getParents'];
+          parents.forEach(p => {
             if(p.id == this.id) {
               parent = p;
             }
@@ -115,53 +118,23 @@
           });
         }
       },
-      students: {
-        get() {
-          var students;
-          this.$store.state.parents.parents.forEach(parent => {
-            if(parent.id = this.id) {
-              students = parent.students;
-            }
-          });
-          return students;
-        },
-        set(value) {
-          this.$store.commit('parents/addStudent', value);
-        }
-      }
+      ...mapState({
+        students: state => state.students
+      })
     },
 
     methods: {
-      handleParentStudentRelationship($event) {
+      handleParentStudentRelationship(e) {
         var parent = this,
-            selectedStudent;
-        this.$store.state.students.students.forEach(student => {
-          if(student.id === Number($event.target.value)) {
-            selectedStudent = student;
+            parents = this.$store.getters['parents/getParents'];
+        parents.forEach(p => {
+          if(p.id == parent.id) {
+            this.$store.commit('parents/addStudent', {
+              parentId: this.id,
+              studentId: e.target.value
+            });
           }
         });
-        if(selectedStudent) {
-          if($event.target.checked) {
-            this.$store.commit('parents/addStudent', {
-              student: selectedStudent,
-              parent: parent
-            });
-            this.$store.commit('students/addParent', {
-              student: selectedStudent,
-              parent: parent
-            });
-          }
-          else {
-            this.$store.commit('parents/removeStudent', {
-              student: selectedStudent,
-              parent: parent
-            });
-            this.$store.commit('students/removeParent', {
-              student: selectedStudent,
-              parent: parent
-            });
-          }
-        }
       }
     }
 

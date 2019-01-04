@@ -86,7 +86,7 @@
     computed: {
       firstName: {
         get() {
-          return this.$store.state.guest.firstName;
+          return this.$store.getters['guest/firstName'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -96,7 +96,7 @@
       },
       lastName: {
         get() {
-          return this.$store.state.guest.lastName;
+          return this.$store.getters['guest/lastName'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -106,7 +106,7 @@
       },
       email: {
         get() {
-          return this.$store.state.guest.email;
+          return this.$store.getters['guest/email'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -116,7 +116,7 @@
       },
       phone: {
         get() {
-          return this.$store.state.guest.phone;
+          return this.$store.getters['guest/phone'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -126,7 +126,7 @@
       },
       zip: {
         get() {
-          return this.$store.state.guest.zip;
+          return this.$store.getters['guest/zip'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -136,7 +136,7 @@
       },
       poolAccess: {
         get() {
-          return this.$store.state.guest.poolAccess;
+          return this.$store.getters['guest/poolAccess'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -146,7 +146,7 @@
       },
       created: {
         get() {
-          return this.$store.state.guest.created;
+          return this.$store.getters['guest/created'];
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {

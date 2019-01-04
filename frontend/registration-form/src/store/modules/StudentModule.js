@@ -83,6 +83,10 @@ const studentModule = {
 
   },
 
+  getters: {
+    getStudents: state => state.students
+  }
+
 }
 
 export default studentModule;

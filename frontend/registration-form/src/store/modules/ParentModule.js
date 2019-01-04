@@ -52,22 +52,31 @@ const parentModule = {
     },
 
     addStudent(state, obj) {
-    
-      // look for the parent in question
-      state.parents.forEach((parent, i) => {
 
-        // if found add, the student in question to parent's students
-        // have to rebuild the array to maintain reactivity
-        if(parent.id === obj.parent.id) {
-          var temp = [];
-          parent.students.forEach(student => {
-            temp.push(student);
-          });
-          temp.push(obj.student);
-          Vue.set(state.parents[i], 'students', temp);
+      var student,
+          students = this.getters['students/getStudents'];
+
+      students.forEach(s => {
+        if(s.id == obj.studentId) {
+          student = s;
         }
-
       });
+    
+      if(student) {
+        // look for the parent in question
+        state.parents.forEach((parent, i) => {
+          // if found add, the student in question to parent's students
+          // have to rebuild the array to maintain reactivity
+          if(parent.id === obj.parentId) {
+            var temp = [];
+            parent.students.forEach(student => {
+              temp.push(student);
+            });
+            temp.push(student);
+            Vue.set(state.parents[i], 'students', temp);
+          }
+        });
+      }
 
     },
 
@@ -104,7 +113,15 @@ const parentModule = {
       Vue.set(state, 'parents', temp);
     }
 
-  }
+  },
+
+  getters: {
+    getCount: state => state.count,
+    getParents: state => state.parents,
+    getStudents (state, getters, rootState, rootGetters) {
+      return rootGetters['students/getStudents'];
+    }
+  },
 
 }
 
