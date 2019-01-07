@@ -25,25 +25,25 @@ const guestModule = {
   },
 
   getters: {
-    firstName(state) {
+    getFirstName(state) {
       return state.firstName;
     },
-    lastName(state) {
+    getLastName(state) {
       return state.lastName;
     },
-    email(state) {
+    getEmail(state) {
       return state.email;
     },
-    phone(state) {
+    getPhone(state) {
       return state.phone;
     },
-    zip(state) {
+    getZip(state) {
       return state.zip;
     },
-    poolAccess(state) {
+    getPoolAccess(state) {
       return state.poolAccess;
     },
-    created(state) {
+    getCreated(state) {
       return state.created;
     }
   }

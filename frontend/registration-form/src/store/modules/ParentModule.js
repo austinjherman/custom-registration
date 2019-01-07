@@ -5,23 +5,18 @@ const parentModule = {
   namespaced: true,
 
   state: {
-    count: 0,
-    parents: []
+    numberOfParents: 0,
+    parents: [],
   },
 
   mutations: {
 
-    /** 
-     * Create a parent object in store.
-     *
-     */
-    createParent(state, newParent) {
-      var temp = [];
-      state.parents.forEach(parent => {
-        temp.push(parent);
-      });
-      temp.push(newParent);
-      Vue.set(state, 'parents', temp);
+    setNumberOfParents(state, n) {
+      Vue.set(state, 'numberOfParents', n);
+    },
+
+    updateParents(state, parents) {
+      Vue.set(state, 'parents', parents);
     },
 
     /** 
@@ -29,99 +24,125 @@ const parentModule = {
      *
      */
     updateParent(state, obj) {
-      
-      var foundExistingParent = false;
 
       // try to find a current parent object to update
-      state.parents.forEach((parent, i) => {
-        if(parent.id === obj.id) {
-          for(var prop in obj) {
-            if(prop !== 'id') {
-              Vue.set(state.parents[i], prop, obj[prop]);
-            }
-          }
-          foundExistingParent = true;
-        }
-      });
+      parent = parentModule.helpers.getParent(obj.id);
 
-      // if none is found, push a new parent to the array
-      if(!foundExistingParent || state.parents.length == 0) {
-        this.commit('parents/createParent', obj);
+      if(parent) {
+
+        // loop through the provided obj
+        for(var prop in obj) {
+
+          // if we have a studentId, then we need to add to students array
+          if(prop == 'studentId' && obj.action == 'add') {
+            this.commit('parents/addStudent', obj);
+          }
+
+          else if(prop == 'studentId' && obj.action == 'remove') {
+            this.commit('parents/removeStudent', obj);
+          }
+
+          else if(parent.isEditable(prop)) {
+            Vue.set(parent, prop, obj[prop]);
+          }
+
+        }
+
       }
 
     },
 
     addStudent(state, obj) {
 
-      var student,
-          students = this.getters['students/getStudents'];
+      var temp    = [],
+          parent  = parentModule.helpers.getParent(obj.id),
+          student = getStudent(id);
 
-      students.forEach(s => {
-        if(s.id == obj.studentId) {
-          student = s;
-        }
-      });
-    
-      if(student) {
-        // look for the parent in question
-        state.parents.forEach((parent, i) => {
-          // if found add, the student in question to parent's students
-          // have to rebuild the array to maintain reactivity
-          if(parent.id === obj.parentId) {
-            var temp = [];
-            parent.students.forEach(student => {
-              temp.push(student);
-            });
-            temp.push(student);
-            Vue.set(state.parents[i], 'students', temp);
-          }
+      if(parent && student) {
+        parent.students.forEach(s => {
+          temp.push(s);
+          s.parent = parent;
         });
+        temp.push(student);
+        Vue.set(parent, 'students', temp);
       }
 
     },
 
     removeStudent(state, obj) {
       
-      // look for the parent in question
-      state.parents.forEach((parent, i) => {
+      var temp    = [],
+          parent  = parentModule.helpers.getParent(obj.id),
+          student = parentModule.helpers.getStudent(obj.studentId);
 
-        // if found, remove student in question
-        // have to rebuild array to maintain reactivity
-        if(parent.id == obj.parent.id) {
-          if(parent.students.length) {
-            var temp = [];
-            parent.students.forEach(student => {
-              if(student.id != obj.student.id) {
-                temp.push(student);
-              }
-            });
-            Vue.set(state.parents[i], 'students', ['what', 'the', 'heck']);
+      if(parent && student) {
+        parent.students.forEach(s => {
+          if(s.id != obj.studentId) {
+            temp.push(s);
           }
-        }
-      });
+          else {
+            s.parent = null;
+          }
+        });
+        temp.push(student);
+        Vue.set(parent, 'students', temp);
+      }
 
     },
-
-    changeAmount(state, n) {
-      Vue.set(state, 'count', n);
-      var temp = [];
-      state.parents.forEach((parent, i) => {
-        if(i < n) {
-          temp.push(parent);
-        }
-      });
-      Vue.set(state, 'parents', temp);
-    }
 
   },
 
   getters: {
-    getCount: state => state.count,
+    getNumberOfParents: state => state.numberOfParents,
     getParents: state => state.parents,
-    getStudents (state, getters, rootState, rootGetters) {
+    getStudents: (state, getters, rootState, rootGetters) => {
       return rootGetters['students/getStudents'];
     }
   },
+
+  helpers: {
+
+    /**
+     * This function returns an existing parent object.
+     * If a parent object with the exiting ID does not
+     * already exist, it will create one.
+     *
+     */
+    getParent(id) {
+
+      var parent = null,
+          parents = parentModule.state.parents;
+      
+      // search for existing parent
+      parents.forEach((p, i) => {
+        if(p.id == id) {
+          parent = p;
+          parent.key = i;
+        }
+      });
+
+      return parent;
+
+    },
+
+    getStudent(id) {
+      
+      var student = null,
+          students = parentModule.getters.getStudents;
+
+      console.log('getStudent students: ', students);
+
+      students.forEach(s => {
+        if(s.id == id) {
+          student = s;
+        }
+      });
+
+      return student;
+
+    }
+
+  }
 
 }
 

@@ -35,8 +35,8 @@
     </div>
 
     <div v-if="guestIsOnlyParent == 'false'">
-      <div v-for="n in numberOfParents" v-bind:key="n.id">
-        <Parent/>
+      <div v-for="n in numberOfParents" v-bind:key="n">
+        <Parent />
       </div>
     </div>
 
@@ -70,12 +70,12 @@
 
       numberOfParents: {
         get() {
-          return this.$store.getters['parents/getCount'];
+          return this.$store.getters['parents/getNumberOfParents'];
         },
         set(value) {
-          this.$store.commit('parents/changeAmount', Number(value));
+          this.$store.commit('parents/setNumberOfParents', Number(value));
         },
-      }
+      },
 
     },
 
@@ -99,9 +99,9 @@
         }
         else {
           request = {};
-          request.name = this.$store.state.guest.firstName + " " + this.$store.state.guest.lastName;
-          request.email = this.$store.state.guest.email;
-          request.phone_number = this.$store.state.guest.phone;
+          request.name = this.$store.getters['guest/getFirstName'] + " " + this.$store.getters['guest/getLastName'];
+          request.email = this.$store.getters['guest/getEmail'];
+          request.phone_number = this.$store.getters['guest/getPhone'];
           requests.push(request);
         }
 

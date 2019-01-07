@@ -4,7 +4,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">How many students are you enrolling? <span class="asterisk--required">*</span></span>                
-        <select name="number_students_enrolling" v-model.number="number_students_enrolling" v-validate="'required|min_value:1'" @change="updateNumberOfStudents">
+        <select name="number_students_enrolling" v-model.number="numberOfStudents" v-validate="'required|min_value:1'">
           <option selected="selected" value="0">Please Select</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -19,7 +19,7 @@
       </label>
     </div>
 
-    <div v-for="n in number_students_enrolling" v-bind:key="n.id">
+    <div v-for="n in numberOfStudents" v-bind:key="n">
       <Student/>
     </div>
 
@@ -36,22 +36,26 @@
       Student
     },
 
-    data () {
+    data() {
       return {
-        number_students_enrolling: 0,
-        error: ""
+        id: null
       }
     },
 
-    mounted () {
+    mounted() {
       this.id = this._uid
     },
 
-    methods: {
-      updateNumberOfStudents() {
-        this.$store.commit('students/updateNumberOfStudents', this.number_students_enrolling);
+    computed: {
+      numberOfStudents: {
+        get() {
+          return this.$store.getters['students/getNumberOfStudents'];
+        },
+        set(value) {
+          this.$store.commit('students/setNumberOfStudents', Number(value));
+        },
       }
-    }
+    },
 
   }
 

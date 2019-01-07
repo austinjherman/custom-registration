@@ -5,86 +5,57 @@ const studentModule = {
   namespaced: true,
 
   state: {
+    numberOfStudents: 0,
     students: []
   },
 
   mutations: {
 
-    /** 
-     * Create a student object in store.
-     *
-     */
-    createStudent(state, newStudent) {
-      var temp = [];
-      state.students.forEach(student => {
-        temp.push(student);
-      });
-      temp.push(newStudent);
-      Vue.set(state, 'students', temp);
-      Vue.set(state, 'changed', true);
+    setNumberOfStudents(state, n) {
+      Vue.set(state, 'numberOfStudents', n);
+    },
+
+    updateStudents(state, students) {
+      Vue.set(state, 'students', students);
     },
 
     /** 
      * Update a student object in store.
      *
      */
-    updateStudent(state, updatedStudent) {
-      
-      var foundExistingStudent = false;
+    updateStudent(state, obj) {
 
-      // try to find a current student object to update
-      state.students.forEach((student, i) => {
-        if(student.id === updatedStudent.id) {
-          Vue.set(state.students, i, updatedStudent);
-          Vue.set(state, 'changed', true);
-          foundExistingStudent = true;
+      // try to find a current parent object to update
+      var student = studentModule.helpers.getStudent(obj.id);
+
+      if(student) {
+        // loop through the provided obj
+        for(var prop in obj) {
+          if(student.isEditable(prop)) {
+            Vue.set(student, prop, obj[prop]);
+          }
         }
-      });
-
-      // if none is found, push a new student to the array
-      if(!foundExistingStudent || state.students.length == 0) {
-        this.commit('students/createStudent', updatedStudent);
       }
-
-    },
-
-    addParent(state, obj) {
-      state.students.forEach((student, i) => {
-        if(student.id === obj.student.id) {
-          Vue.set(state.students[i], 'parent', obj.parent);
-        }
-      });
-    },
-
-    removeParent(state, obj) {
-      state.students.forEach((student, i) => {
-        if(student.id === obj.student.id) {
-          Vue.set(state.students[i], 'parent', null);
-        }
-      });
-    },
-
-    /**
-     * Change the amount of students in store. 
-     * This simply un-saves the student so we don't have 
-     * to delete the user's input.
-     *
-     */
-    updateNumberOfStudents(state, targetNumberOfStudents) {
-      var temp = [];
-      state.students.forEach((student, i) => {
-      if(i < targetNumberOfStudents) {
-        temp.push(student);
-      }
-      Vue.set(state, 'students', temp);
-      Vue.set(state, 'changed', true);
-     });
     }
 
   },
 
   getters: {
+    getNumberOfStudents: state => state.numberOfStudents,
     getStudents: state => state.students
+  },
+
+  helpers: {
+    getStudent(id) {
+      var student = null;
+      studentModule.state.students.forEach((s, i) => {
+        if(s.id == id) {
+          student = s;
+          student.key = i;
+        }
+      });
+      return student;
+    }
   }
 
 }

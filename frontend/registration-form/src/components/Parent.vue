@@ -5,7 +5,7 @@
       Parent for which students?
       <div v-for="student in $store.getters['students/getStudents']" :key="student.id">
         <label>
-          <input type="checkbox" :value="student" @change="handleParentStudentRelationship">
+          <input type="checkbox" :value="Number(student.id)" @change="handleParentStudentRelationship">
           <span>{{ student.name }}</span>
         </label>
       </div>
@@ -41,6 +41,7 @@
 <script>
 
   import { mapState } from 'vuex'
+  import Parent from '../store/models/ParentModel'
 
   export default {
 
@@ -51,7 +52,39 @@
     }, 
 
     mounted() {
-      this.id = this._uid
+      
+      // make ID easier to access
+      this.id = this._uid;
+      
+      // add this parent to the store
+      var temp = [],
+          parent = new Parent(),
+          parents = this.$store.getters['parents/getParents'];
+
+      parents.forEach(p => {
+        temp.push(p);
+      });
+
+      parent.id = this.id;
+      temp.push(parent);
+
+      this.$store.commit('parents/updateParents', temp);
+
+    },
+
+    beforeDestroy() {
+
+      var temp = [],
+      parents = this.$store.getters['parents/getParents'];
+
+      parents.forEach(p => {
+        if(p.id !== this.id) {
+          temp.push(p);
+        }
+      });
+
+      this.$store.commit('parents/updateParents', temp);
+
     },
 
     computed: {
@@ -124,18 +157,24 @@
     },
 
     methods: {
+  
       handleParentStudentRelationship(e) {
-        var parent = this,
-            parents = this.$store.getters['parents/getParents'];
-        parents.forEach(p => {
-          if(p.id == parent.id) {
-            this.$store.commit('parents/addStudent', {
-              parentId: this.id,
-              studentId: e.target.value
-            });
-          }
+  
+        var action = 'remove',
+            parent = this;
+
+        if(e.target.checked) {
+          action = 'add';
+        }
+
+        this.$store.commit('parents/updateParent', {
+          id: parent.id,
+          studentId: e.target.value,
+          action: action
         });
+
       }
+
     }
 
   }
