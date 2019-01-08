@@ -8,7 +8,7 @@
       <div class="input-wrap">
       <label>
         <span class="d-block">First Name <span class="asterisk--required">*</span></span>
-        <input name="firstName" type="text" v-model="firstName" v-validate="'required'">
+        <input name="firstName" type="text" v-model="firstName" v-validate="'required'" data-vv-as="First Name">
         <span class="d-block">{{ validator.first('firstName') }}</span>
       </label>
       </div>
@@ -16,7 +16,7 @@
       <div class="input-wrap">
       <label>
         <span class="d-block">Last Name <span class="asterisk--required">*</span></span>
-        <input name="lastName" type="text" v-model="lastName" v-validate="'required'">
+        <input name="lastName" type="text" v-model="lastName" v-validate="'required'" data-vv-as="Last Name">
         <span class="d-block">{{ validator.first('lastName') }}</span>
       </label>
       </div>
@@ -24,7 +24,7 @@
       <div class="input-wrap">
       <label>
         <span class="d-block">Email <span class="asterisk--required">*</span></span>
-        <input name="email" type="email" v-model="email" v-validate="'required|email'">
+        <input name="email" type="email" v-model="email" v-validate="'required|email'" data-vv-as="Email">
         <span class="d-block">{{ validator.first('email') }}</span>
       </label>
       </div>
@@ -32,7 +32,7 @@
       <div class="input-wrap">
       <label>
         <span class="d-block">Phone <span class="asterisk--required">*</span></span>
-        <input name="phone" type="tel" v-model="phone" v-validate="'required'">
+        <input name="phone" type="tel" v-model="phone" v-validate="'required|length:17'" v-mask="['+1 (###) ###-####']" data-vv-as="Phone">
         <span class="d-block">{{ validator.first('phone') }}</span>
       </label>
       </div>
@@ -40,7 +40,7 @@
       <div class="input-wrap">
       <label>
         <span class="d-block">ZIP Code <span class="asterisk--required">*</span></span>
-        <input name="zip" type="tel" v-model="zip" v-validate="'required'">
+        <input name="zip" type="tel" v-model="zip" v-validate="'required|length:5'" v-mask="['#####']" data-vv-as="ZIP Code">
         <span class="d-block">{{ validator.first('zip') }}</span>
       </label>
       </div>
@@ -52,14 +52,14 @@
         <div class="input-wrap">
         <label>
           <span class="d-block">Yes</span>
-          <input name="poolAccess" type="radio" v-model="poolAccess" value="true" v-validate="'required'">
+          <input name="poolAccess" type="radio" v-model="poolAccess" value="true" v-validate="'required'" data-vv-as="Pool Access">
         </label>
         </div>
 
         <div class="input-wrap">
         <label>
           <span class="d-block">No</span>
-          <input name="poolAccess" type="radio" v-model="poolAccess" value="false" v-validate="'required'">
+          <input name="poolAccess" type="radio" v-model="poolAccess" value="false" v-validate="'required'" data-vv-as="Pool Access">
         </label>
         </div>
 
@@ -76,6 +76,7 @@
 
   import Vue from 'vue';
   import Parent from './Parent';
+  import { getGuest } from '../store/helpers';
 
   export default {
 
@@ -86,7 +87,7 @@
     computed: {
       firstName: {
         get() {
-          return this.$store.getters['guest/firstName'];
+          return getGuest().firstName;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -96,7 +97,7 @@
       },
       lastName: {
         get() {
-          return this.$store.getters['guest/lastName'];
+          return getGuest().lastName;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -106,7 +107,7 @@
       },
       email: {
         get() {
-          return this.$store.getters['guest/email'];
+          return getGuest().email;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -116,7 +117,7 @@
       },
       phone: {
         get() {
-          return this.$store.getters['guest/phone'];
+          return getGuest().phone;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -126,7 +127,7 @@
       },
       zip: {
         get() {
-          return this.$store.getters['guest/zip'];
+          return getGuest().zip;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -136,7 +137,7 @@
       },
       poolAccess: {
         get() {
-          return this.$store.getters['guest/poolAccess'];
+          return getGuest().poolAccess;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -146,7 +147,7 @@
       },
       created: {
         get() {
-          return this.$store.getters['guest/created'];
+          return getGuest().created;
         },
         set(value) {
           this.$store.commit('guest/updateGuest', {
@@ -183,6 +184,7 @@
 
       sendToApi() {
         // create form entry
+        // create guest
         var request = {};
         request.first_name = this.firstName;
         request.last_name = this.lastName;

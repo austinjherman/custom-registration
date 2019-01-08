@@ -3,8 +3,7 @@ export default class Student {
   get editable() {
     return [
       'name',
-      'dob',
-      'parentId'
+      'dob'
     ];
   }
 
@@ -12,7 +11,6 @@ export default class Student {
     this.id = null;
     this.name = null;
     this.dob = null;
-    this.parentId = null;
   }
 
   setId(id) {

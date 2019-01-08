@@ -19,7 +19,7 @@
       <div class="input-wrap">
         <label>
           <span class="d-block">How many parents are you signing up? <span class="asterisk--required">*</span></span>                
-          <select name="number_parents" v-validate="'required|min_value:1'" v-model="numberOfParents">
+          <select name="numberOfParents" v-validate="'required|min_value:1'" v-model="numberOfParents">
             <option selected="selected" value="0">Please Select</option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -30,13 +30,14 @@
             <option value="7">7</option>
             <option value="8">8</option>
           </select>
+          <span class="d-block">{{ validator.first('numberOfParents') }}</span>
         </label>
       </div>
     </div>
 
     <div v-if="guestIsOnlyParent == 'false'">
       <div v-for="n in numberOfParents" v-bind:key="n">
-        <Parent />
+        <Parent :allParents="allParents" :vvScope="'parent_' + (n-1)" />
       </div>
     </div>
 
@@ -46,11 +47,19 @@
 <script>
 
   import Parent from './Parent.vue';
+  import { getParents, getGuest, getStudents } from '../store/helpers';
 
   export default {
 
     components: {
       Parent
+    },
+
+    data() {
+      return {
+        id: null,
+        allParents: []
+      }
     },
 
     mounted() {
@@ -81,31 +90,29 @@
 
     methods: {
 
-      sendToApi() {
+      async validate() {
 
-        var request,
-            requests = [];
+        var promises = [],
+            parents = this.allParents;
 
-        if(this.$store.getters.guestIsOnlyParent == 'false') {
-          if(Array.isArray(this.$store.getters['parents/getParents'])) {
-            this.$store.getters['parents/getParents'].forEach(parent => {
-              request = {};
-              request.name = parent.name;
-              request.email = parent.email;
-              request.phone_number = parent.phone;
-              requests.push(request);
-            });
-          }
-        }
-        else {
-          request = {};
-          request.name = this.$store.getters['guest/getFirstName'] + " " + this.$store.getters['guest/getLastName'];
-          request.email = this.$store.getters['guest/getEmail'];
-          request.phone_number = this.$store.getters['guest/getPhone'];
-          requests.push(request);
+        promises.push(this.$validator.validate('numberOfParents'));
+
+        parents.forEach(p => {
+          promises.push(this.$validator.validate(p.vvScope + '.name'));
+          promises.push(this.$validator.validate(p.vvScope + '.email'));
+          promises.push(this.$validator.validate(p.vvScope + '.phone'));
+        });
+
+        var validate = Promise.all(promises);
+
+        // await results of promise and ensure they are all true
+        var validated = await validate.then(result => validated = result.every(isValid => isValid));
+
+        if(validated) {
+          return true;
         }
 
-        console.log('parents: ', requests)
+        return false;
 
       }
 

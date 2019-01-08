@@ -19,8 +19,8 @@
       </label>
     </div>
 
-    <div v-for="n in numberOfStudents" v-bind:key="n">
-      <Student/>
+    <div v-for="n in numberOfStudents" v-bind:key="(n-1)">
+      <Student :allStudents="allStudents" :vvScope="'student_' + (n-1)" />
     </div>
 
   </div>
@@ -38,7 +38,8 @@
 
     data() {
       return {
-        id: null
+        id: null,
+        allStudents: []
       }
     },
 
@@ -56,6 +57,35 @@
         },
       }
     },
+
+    methods: {
+
+      async validate() {
+        
+        var promises = [],
+            students = this.allStudents;
+
+        promises.push(this.$validator.validate('number_students_enrolling'));
+
+        students.forEach(s => {
+          promises.push(this.$validator.validate(s.vvScope + '.name'));
+          promises.push(this.$validator.validate(s.vvScope + '.dob'));
+        });
+
+        var validate = Promise.all(promises);
+
+        // await results of promise and ensure they are all true
+        var validated = await validate.then(result => validated = result.every(isValid => isValid));
+
+        if(validated) {
+          return true;
+        }
+
+        return false;
+
+      }
+
+    }
 
   }
 

@@ -18,35 +18,11 @@ const guestModule = {
     updateGuest(state, obj) {
       for(var prop in obj) {
         if(state.hasOwnProperty(prop)) {
-          state[prop] = obj[prop];
+          Vue.set(state, prop, obj[prop]);
         }
       }
     }
   },
-
-  getters: {
-    getFirstName(state) {
-      return state.firstName;
-    },
-    getLastName(state) {
-      return state.lastName;
-    },
-    getEmail(state) {
-      return state.email;
-    },
-    getPhone(state) {
-      return state.phone;
-    },
-    getZip(state) {
-      return state.zip;
-    },
-    getPoolAccess(state) {
-      return state.poolAccess;
-    },
-    getCreated(state) {
-      return state.created;
-    }
-  }
 
 }
 

@@ -26,6 +26,7 @@ export default new Vuex.Store({
 
   getters: {
     guestIsOnlyParent: state => state.guestIsOnlyParent,
+    getParents: state => state.parents.parents
   }
 
 })

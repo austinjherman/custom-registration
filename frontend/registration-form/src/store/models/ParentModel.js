@@ -4,7 +4,7 @@ export default class Parent {
     return [
       'name',
       'email',
-      'phone'
+      'phone',
     ];
   }
 
@@ -14,6 +14,7 @@ export default class Parent {
     this.email = null;
     this.phone = null;
     this.students = [];
+    this.studentCheckboxes = [];
   }
 
   setId(id) {

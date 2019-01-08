@@ -18,6 +18,9 @@
       <button type="button" @click="handleSecondPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
     </div>
 
+    <!-- Page 3 -->
+    
+
   </div>
 
 </template>
@@ -27,6 +30,7 @@ import  Guest from './components/Guest.vue'
 import  Parent from './components/Parent.vue'
 import  Parents from './components/Parents.vue'
 import  Students from './components/Students.vue'
+import { sendParentsAndStudentsToApi } from './store/helpers'
 
 export default {
   
@@ -60,8 +64,21 @@ export default {
       return false;
     },
 
-    handleSecondPageSubmission() {
-      this.$refs.parents.sendToApi();
+    async handleSecondPageSubmission() {
+      var parentsValidated = false,
+          studentsValidated = false;
+      if(this.$store.getters.guestIsOnlyParent == 'true') {
+        parentsValidated  = true;
+        studentsValidated = await this.$refs.students.validate();
+      }
+      else {
+        parentsValidated  = await this.$refs.parents.validate();
+        studentsValidated = await this.$refs.students.validate();
+      }
+      if(parentsValidated && studentsValidated) {
+        console.log('validated: ', sendParentsAndStudentsToApi());
+      }
+      //this.$refs.parents.sendToApi();
       //console.log('students: ', this.$store.state.students.students);
       //console.log('parents: ', this.$store.state.parents.parents);
     }

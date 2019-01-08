@@ -29,25 +29,21 @@ class Guardian extends BaseModel
         "form_entry"
     ];
 
-    public function __construct() 
-    {
+    public function __construct() {
         $this->created_at = new \DateTime();
     }
 
-    public function addFormEntry(FormEntry $formEntry) 
-    {
+    public function addFormEntry(FormEntry $formEntry) {
         $formEntry->addGuardian($this);
         $this->form_entry = $formEntry;
     }
 
-    public function addStudent(Student $student) 
-    {
+    public function addStudent(Student $student) {
         $student->addGuardian($this);
         $this->students[] = $student;
     }
 
-    public static function loadMetadata(ClassMetadata $metadata)
-    {
+    public static function loadMetadata(ClassMetadata $metadata) {
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_guardians");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();

@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { getStudent } from '../helpers'
 
 const studentModule = {
 
@@ -26,14 +27,12 @@ const studentModule = {
     updateStudent(state, obj) {
 
       // try to find a current parent object to update
-      var student = studentModule.helpers.getStudent(obj.id);
+      var student = getStudent(obj.id);
 
       if(student) {
         // loop through the provided obj
         for(var prop in obj) {
-          if(student.isEditable(prop)) {
-            Vue.set(student, prop, obj[prop]);
-          }
+          Vue.set(student, prop, obj[prop]);
         }
       }
     }
@@ -44,19 +43,6 @@ const studentModule = {
     getNumberOfStudents: state => state.numberOfStudents,
     getStudents: state => state.students
   },
-
-  helpers: {
-    getStudent(id) {
-      var student = null;
-      studentModule.state.students.forEach((s, i) => {
-        if(s.id == id) {
-          student = s;
-          student.key = i;
-        }
-      });
-      return student;
-    }
-  }
 
 }
 

@@ -25,10 +25,12 @@ class FloridaSwimCustomRegistration {
   public function run() 
   {
     $this->bootDoctrine();
-    $this->extendValidator();
     register_activation_hook($this->pathToPluginFile, [$this, 'handleActivation']);
     register_deactivation_hook($this->pathToPluginFile, [$this, 'handleDeactivation']);
     add_action( 'rest_api_init', [$this, 'registerApiRoutes'] );
+    add_action('wp_enqueue_scripts', [$this, 'fscr_enqueue_styles'] );
+    add_action('wp_enqueue_scripts', [$this, 'fscr_enqueue_scripts'] );
+    add_shortcode( 'fscr_form', [$this, 'fscr_public_shortcode'] );
   }
 
   public function bootDoctrine() 
@@ -56,12 +58,6 @@ class FloridaSwimCustomRegistration {
 
   public function orm() {
     return $this->doctrineEm;
-  }
-
-  public function extendValidator() {
-    Validator::addRule('whitelist', function($field, $value, array $params, array $fields) {
-      return false;
-    }, 'Everything you do is wrong. You fail.');
   }
 
   public function handleActivation() 
@@ -142,6 +138,23 @@ class FloridaSwimCustomRegistration {
     $studentController->registerRoutes();
     $guardianController = new GuardianController($this->orm());
     $guardianController->registerRoutes();
+  }
+
+  // shortcode to display form
+  public function fscr_public_shortcode() {
+    ob_start();
+    include dirname($this->pathToPluginFile) . '/frontend/template-parts/form-florida-swim-custom-registration.php';
+    return ob_get_clean();
+  }
+
+  // enqueue styles
+  public function fscr_enqueue_styles() {   
+    wp_enqueue_style( 'fscr-main-css', dirname($this->pathToPluginFile) . 'frontend/assets/css/fscr.css', [], false, 'all' );
+  }
+
+  // enqueue scripts
+  public function fscr_enqueue_scripts() {   
+    wp_enqueue_script( 'fscr-main-js', dirname($this->pathToPluginFile) . 'frontend/registration-form/src/main.js', [], '1.0', true );
   }
 
 }

@@ -4,14 +4,15 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">Name <span class="asterisk--required">*</span></span>
-        <input :name="'student_name'" v-validate="'required'" v-model="name">
-        <span class="d-block">{{ this.validator.first('student_name') }}</span>
+        <input :name="'name'" v-validate="'required'" v-model="name" data-vv-as="Student Name" :data-vv-scope="vvScope">
+        <span class="d-block">{{ validator.first('name', vvScope) }}</span>
       </label>
     </div>
 
     <div class="input-wrap">
-      <label :for="'student_' + id + '_dob'"><span>Date of Birth <span class="asterisk--required">*</span></span></label>
-      <Datepicker :name="'student_name'" :id="'student_' + id + '_dob'" v-model="dob" v-validate="'required'"/>
+      <label :for="'student_' + vvScope + '_dob'"><span>Date of Birth <span class="asterisk--required">*</span></span></label>
+      <Datepicker :name="'dob'" :id="vvScope + '_dob'" v-model="dob" v-validate="'required'" data-vv-as="Student Date of Birth" :data-vv-scope="vvScope"/>
+      <span class="d-block">{{ validator.first('dob', vvScope) }}</span>
     </div>
 
   </div>
@@ -21,8 +22,11 @@
 
   import Datepicker from 'vuejs-datepicker';
   import Student from '../store/models/StudentModel';
+  import { getStudent, getStudents } from '../store/helpers';
 
   export default {
+
+    props: ['allStudents', 'vvScope'],
 
     components: {
       Datepicker
@@ -30,7 +34,7 @@
 
     data() {
       return {
-        id: null,
+        id: null
       }
     }, 
 
@@ -42,7 +46,7 @@
       // add this parent to the store
       var temp = [],
           student = new Student(),
-          students = this.$store.getters['students/getStudents'];
+          students = getStudents();
 
       students.forEach(p => {
         temp.push(p);
@@ -52,13 +56,14 @@
       temp.push(student);
 
       this.$store.commit('students/updateStudents', temp);
+      this.allStudents.push(this);
 
     },
 
     beforeDestroy() {
 
       var temp = [],
-      students = this.$store.getters['students/getStudents'];
+          students = getStudents();
 
       students.forEach(p => {
         if(p.id !== this.id) {
@@ -68,18 +73,18 @@
 
       this.$store.commit('students/updateStudents', temp);
 
+      this.allStudents.forEach((s, i) => {
+        if(s.id == this.id) {
+          this.allStudents.splice(i, 1);
+        }
+      });
+
     },
 
     computed: {
       name: {
         get() {
-          var student,
-              students = this.$store.getters['students/getStudents'];
-          students.forEach(s => {
-            if(s.id == this.id) {
-              student = s;
-            }
-          });
+          var student = getStudent(this.id);
           if(student) {
             return student.name;
           }
@@ -94,13 +99,7 @@
       },
       dob: {
         get() {
-          var student,
-              students = this.$store.getters['students/getStudents'];
-          students.forEach(s => {
-            if(s.id == this.id) {
-              student = s;
-            }
-          });
+          var student = getStudent(this.id);
           if(student) {
             return student.dob;
           }
@@ -113,8 +112,7 @@
           })
         }
       }
-    }
-
+    },
   }
 
 </script>
