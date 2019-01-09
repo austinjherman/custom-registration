@@ -3,9 +3,9 @@
 
     <fieldset class="fieldset">
       Parent for which students?
-      <div v-for="student in $store.getters['students/getStudents']" :key="student.id">
+      <div v-for="student in this.$parent.$refs.students" :key="student.id">
         <label>
-          <input type="checkbox" @change="handleParentStudentRelationship" :data-student-id="student.id" :data-parent-id="id" ref="studentCheckbox">
+          <input type="checkbox" @change="handleParentStudentRelationship" :data-student-id="student.id" :data-parent-id="id" ref="studentCheckboxes">
           <span>{{ student.name }}</span>
         </label>
       </div>
@@ -40,17 +40,17 @@
 
 <script>
 
-  import { mapState } from 'vuex'
-  import Parent from '../store/models/ParentModel'
-  import { getParents, getParent } from '../store/helpers'
-
   export default {
 
-    props: ['allParents', 'vvScope'],
+    props: ['vvScope'],
 
     data() {
       return {
-        id: null
+        id: null, 
+        name: null,
+        email: null,
+        phone: null,
+        students: []
       }
     }, 
 
@@ -59,26 +59,7 @@
      * mounted event. 
      */
     mounted() {
-      
-      // make ID easier to access
       this.id = Number(this._uid);
-      
-      // add this parent to the store
-      var temp    = [],
-          parent  = new Parent(),
-          parents = getParents()
-
-      parents.forEach(p => {
-        temp.push(p);
-      });
-
-      parent.id = this.id;
-      parent.studentCheckboxes = this.$refs['studentCheckbox'];
-      temp.push(parent);
-
-      this.$store.commit('parents/updateParents', temp);
-      this.allParents.push(this);
-
     },
 
     /**
@@ -86,94 +67,21 @@
      * beforeDestroy event.
      */
     beforeDestroy() {
-
-      var temp = [],
-      parents = getParents()
-
-      parents.forEach(p => {
-        if(p.id !== this.id) {
-          temp.push(p);
-        }
-      });
-
-      this.$store.commit('parents/updateParents', temp);
-
-      this.allParents.forEach((p, i) => {
-        if(p.id == this.id) {
-          this.allParents.splice(i, 1);
-        }
-      });
-
-    },
-
-    computed: {
-
-      name: {
-        get() {
-          var parent = getParent(this.id);
-          if(parent) {
-            return parent.name;
-          }
-          return null;
-        },
-        set(value) {
-          this.$store.commit('parents/updateParent', {
-            parentId: this.id,
-            name: value
-          });
-        }
-      },
-
-      email: {
-        get() {
-          var parent = getParent(this.id);
-          if(parent) {
-            return parent.email;
-          }
-          return null;
-        },
-        set(value) {
-          this.$store.commit('parents/updateParent', {
-            parentId: this.id,
-            email: value
-          });
-        }
-      },
-
-      phone: {
-        get() {
-          var parent = getParent(this.id);
-          if(parent) {
-            return parent.phone;
-          }
-          return null;
-        },
-        set(value) {
-          this.$store.commit('parents/updateParent', {
-            parentId: this.id,
-            phone: value
-          });
-        }
-      },
-
-      ...mapState({
-        students: state => state.students
-      })
-      
+      //
     },
 
     methods: {
   
       handleParentStudentRelationship(e) {
 
-        var allParents    = getParents(),
-            clickedParent = getParent(this.id),
+        var allParents    = this.$parent.$refs.parents,
+            clickedParent = this,
             studentId     = Number(e.target.getAttribute('data-student-id')),
             allCheckboxes = [];
 
         // collect all of the student checkboxes for each parent
         allParents.forEach(p => {
-          allCheckboxes = allCheckboxes.concat(p.studentCheckboxes);
+          allCheckboxes = allCheckboxes.concat(p.$refs.studentCheckboxes);
         });
 
         if(clickedParent) {
@@ -201,10 +109,14 @@
               // uncheck if the parent is not the current parent && student is the same
               if(checkboxParentId != clickedParent.id && checkboxStudentId == studentId) {
                 sc.checked = false;
-                this.$set(sc, 'checked', false);
 
-                // now update the students associated with the checkbox parent in store
-                var checkboxParent = getParent(checkboxParentId);
+                // now update the students associated with the checkbox parent
+                var checkboxParent = null;
+                this.$parent.$refs.parents.forEach(p => {
+                  if(p.id == checkboxParentId) {
+                    checkboxParent = p;
+                  }
+                });
                 if(checkboxParent) {
                   var temp2 = [];
                   checkboxParent.students.forEach(s2 => {
@@ -212,10 +124,8 @@
                       temp2.push(s2);
                     }
                   });
-                  this.$store.commit('parents/updateStudents', {
-                    parentId: checkboxParentId,
-                    studentIds: temp2
-                  });
+                  console.log('found parent to update: ', checkboxParent);
+                  checkboxParent.students = temp2;
                 }
 
               }
@@ -233,10 +143,8 @@
             });
           }
 
-          this.$store.commit('parents/updateStudents', {
-            parentId: this.id,
-            studentIds: temp
-          });
+          console.log('parent you just edited students: ', temp);
+          clickedParent.$set(clickedParent, 'students', temp);
 
         }
 

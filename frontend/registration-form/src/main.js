@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import App from './App.vue'
-import store from './store/store'
 import VueTheMask from 'vue-the-mask'
 import VeeValidate from 'vee-validate'
 import { Validator } from 'vee-validate'
@@ -12,9 +11,8 @@ Vue.use(VeeValidate, {
   events: 'input|blur|closed'
 })
 
-new Vue({
+window['app'] = new Vue({
   el: '#app',
-  store,
   render: h => h(App)
 })
 

@@ -84,6 +84,7 @@ class FloridaSwimCustomRegistration {
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Schedule'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\PromoCode'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Duration'),
     );
     $tool->createSchema($classes);
   }
@@ -100,6 +101,7 @@ class FloridaSwimCustomRegistration {
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\LessonPackage'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Schedule'),
       $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\PromoCode'),
+      $this->doctrineEm->getClassMetadata('FloridaSwim\Entities\Duration'),
     );
     $tool->dropSchema($classes);
   }

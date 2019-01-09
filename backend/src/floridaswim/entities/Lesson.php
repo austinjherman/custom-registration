@@ -12,12 +12,12 @@ class Lesson extends BaseModel
 
     protected $id;
     protected $name;
-    protected $duration_to_price;
     protected $created_at;
     protected $updated_at;
 
     protected $lesson_packages;
     protected $promo_codes;
+    protected $durations;
 
     public function __construct() 
     {
@@ -39,8 +39,8 @@ class Lesson extends BaseModel
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createOneToMany('promo_codes', 'FloridaSwim\Entities\PromoCode')->mappedBy('lesson_id')->build();
         $builder->addField('name', 'string');
-        $builder->addField('duration_to_price', 'array');
         $builder->createOneToMany('lesson_packages', 'FloridaSwim\Entities\LessonPackage')->mappedBy('lesson_id')->build();
+        $builder->createOneToMany('durations', 'FloridaSwim\Entities\Duration')->mappedBy('lesson_id')->build();
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
     }

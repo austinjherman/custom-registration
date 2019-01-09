@@ -6,16 +6,18 @@ use FloridaSwim\Entities\BaseModel;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class LessonDuration extends BaseModel {
+class Duration extends BaseModel {
 
     protected $id;
-    protected $duration_in_minutes;
+    protected $lesson_id;
+    protected $lesson;
+    protected $duration;
+    protected $price;
     protected $created_at;
     protected $updated_at;
-    protected $completed_at;
 
     protected $expose = [
-        'id', 'created_at', 'updated_at', 'completed_at'
+        'id', 'duration', 'price', 'created_at', 'updated_at'
     ];
 
     public function __construct() {
@@ -24,12 +26,13 @@ class LessonDuration extends BaseModel {
 
     public static function loadMetadata(ClassMetadata $metadata) {
         $builder = new ClassMetadataBuilder($metadata);
-        $builder->setTable(parent::tablePrefix() . "fwcr_lesson_durations");
+        $builder->setTable(parent::tablePrefix() . "fwcr_durations");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
-        $builder->addField('duration_in_minutes', 'integer');
+        $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', true, false)->inversedBy('durations')->build();
+        $builder->addField('duration', 'string');
+        $builder->addField('price', 'decimal');
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
-        $builder->addField('completed_at', 'datetime', ['nullable' => true]);
     }
 
 }
