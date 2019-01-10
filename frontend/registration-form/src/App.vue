@@ -110,6 +110,28 @@
     </fieldset>
 
     <!-- Page 4 -->
+    <fieldset class="fieldset">
+      <legend>Preferred Schedule</legend>
+      <label>
+        <span class="d-block">What days work for you?</span>
+        <multiselect name="daysThatWork" v-model="daysThatWork" :options="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
+          <span class="d-block">{{ validator.first('daysThatWork') }}</span>
+      </label>
+      <label>
+        <span class="d-block">Select your time range availability for weekdays.</span>
+        <multiselect name="weekdayTimeRangeAvailability" v-model="weekdayTimeRangeAvailability" :options="['Morning (8am - 12pm)', 'Afternoon (12pm - 4pm)', 'Evening (4pm - 8pm)']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
+        <span class="d-block">{{ validator.first('weekdayTimeRangeAvailability') }}</span>
+      </label>
+      <label>
+        <span class="d-block">Additional scheduling information, if any.</span>
+        <textarea></textarea>
+      </label>
+      <hr>
+      <div class="fscrForm__btn-container">
+        <button type="button" @click="goToPage(2)" class="fscr__button fscr__button--primary">Back</button>
+        <button type="button" @click="handleFourthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+      </div>
+    </fieldset>
 
 
   </div>
@@ -118,6 +140,7 @@
 
 <script>
   
+import Multiselect from 'vue-multiselect'
 import Guest from './components/Guest.vue'
 import Parent from './components/Parent.vue'
 import Student from './components/Student.vue'
@@ -131,16 +154,20 @@ export default {
     Guest,
     Parent,
     Student,
+    Multiselect,
     LessonPackage
   },
 
   data() {
     return {
+      apiResponse: {},
+      daysThatWork: null,
       numberOfParents: 0,
       numberOfStudents: 0,
       guestIsOnlyParent: true,
       selectedLessonDuration: 30,
       displayableLessonPackages: [],
+      weekdayTimeRangeAvailability: null,
       allLessonPackages: [
         {
           title: "Learn to Swim Program",
@@ -188,32 +215,127 @@ export default {
       //
     },
 
+    /**
+     * Valdiate Guest
+     * If valid, create Form Entry and Guest 
+     *
+     */
     async handleFirstPageSubmission() {
-      var validated = await this.$refs.guest.validate();
+      var request = {},
+          validated = await this.$refs.guest.validate();
       if(validated) {
-        this.$refs.guest.sendToApi();
+        this.$http.post(this.API_BASE_URL + '/forms/create', request)
+          .then(response => {
+            this.$set(this.apiResponse, 'form', response.data.form);
+            this.$emit('form:create');
+          })
+          .catch(error => {
+            this.$set(this.apiResponse, 'form', JSON.stringify(error));
+            this.$emit('form:error');
+          });
+        this.$on('form:create', () => {
+          request = {};
+          request.first_name = this.$refs.guest.firstName;
+          request.last_name = this.$refs.guest.lastName;
+          request.email_address = this.$refs.guest.email;
+          request.phone_number = this.$refs.guest.phone;
+          request.zip_code = this.$refs.guest.zip;
+          request.pool_access = this.$refs.guest.poolAccess;
+          request.form_entry_id = this.apiResponse.form.id;
+          this.$http.post(this.API_BASE_URL + '/guests/create', request)
+          .then(response => {
+            // update formEntry id so we know we have one
+            this.$set(this.apiResponse, 'guest', response.data.guest);
+            this.$emit('guest:create');
+          })
+          .catch(error => {
+            this.$set(this.apiResponse, 'guest', error.data);
+            console.log('guest error', error);
+            this.$emit('guest:error');
+          });
+        });
         return true;
       }
       return false;
     },
 
+    /**
+     * Validate Parents & Students
+     * If valid, create Parents & Students
+     *
+     */
     async handleSecondPageSubmission() {
       var parentsValidated = false,
           studentsValidated = false;
-      if(this.$store.getters.guestIsOnlyParent == 'true') {
+      if(this.guestIsOnlyParent == true) {
         parentsValidated  = true;
-        studentsValidated = await this.$refs.students.validate();
+        studentsValidated = await this.validateStudents();
       }
       else {
-        parentsValidated  = await this.$refs.parents.validate();
-        studentsValidated = await this.$refs.students.validate();
+        parentsValidated  = await this.validateParents();
+        studentsValidated = await this.validateStudents();
       }
-      if(parentsValidated && studentsValidated) {
-        console.log('validated: ', sendParentsAndStudentsToApi());
+      if(studentsValidated && parentsValidated) {
+        console.log('validated');
       }
       //this.$refs.parents.sendToApi();
       //console.log('students: ', this.$store.state.students.students);
       //console.log('parents: ', this.$store.state.parents.parents);
+    },
+
+    /**
+     * Validate Students
+     *
+     */
+    async validateStudents() {
+      
+      var promises = [],
+          studentValidators = [];
+
+      for(var i=0; i < this.numberOfStudents; i++) {
+        studentValidators = studentValidators.concat([
+          this.$validator.validate('student_' + (i + 1) + '.name'),
+          this.$validator.validate('student_' + (i + 1) + '.dob'),
+        ]);
+      }
+
+      promises = promises.concat([this.$validator.validate('numberOfStudents')]);
+      promises = promises.concat(...studentValidators);
+
+      var validate = Promise.all(promises);
+
+      // await results of promise and ensure they are all true
+      var validated = await validate.then(result => validated = result.every(isValid => isValid));
+      if(validated) {
+        return true;
+      }
+      return false;
+    },
+
+    async validateParents() {
+      
+      var promises = [],
+          parentValidators = [];
+
+      for(var i=0; i < this.numberOfParents; i++) {
+        parentValidators = parentValidators.concat([
+          this.$validator.validate('parent_' + (i) + '.name'),
+          this.$validator.validate('parent_' + (i) + '.email'),
+          this.$validator.validate('parent_' + (i) + '.phone'),
+        ]);
+      }
+
+      promises = promises.concat([this.$validator.validate('numberOfParents')]);
+      promises = promises.concat(...parentValidators);
+
+      var validate = Promise.all(promises);
+
+      // await results of promise and ensure they are all true
+      var validated = await validate.then(result => validated = result.every(isValid => isValid));
+      if(validated) {
+        return true;
+      }
+      return false;
     },
 
     handleThirdPageSubmission() {
@@ -240,7 +362,7 @@ export default {
   }
 }
 </script>
-
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
 <style lang="scss">
 
   .fscr {

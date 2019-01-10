@@ -3,6 +3,10 @@ import App from './App.vue'
 import VueTheMask from 'vue-the-mask'
 import VeeValidate from 'vee-validate'
 import { Validator } from 'vee-validate'
+import Axios from 'axios'
+
+Vue.prototype.$http = Axios;
+Vue.prototype.API_BASE_URL = 'http://localhost/floridaswim/wp-json/fscr/v1';
 
 Vue.use(VueTheMask)
 

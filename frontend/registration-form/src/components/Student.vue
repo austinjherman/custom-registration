@@ -34,8 +34,7 @@
       return {
         id: null,
         name: null,
-        dob: null,
-        students: []
+        dob: null
       }
     }, 
 

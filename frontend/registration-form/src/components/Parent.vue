@@ -54,101 +54,72 @@
       }
     }, 
 
-    /**
-     * Push an bare parent object to the store on the
-     * mounted event. 
-     */
     mounted() {
       this.id = Number(this._uid);
     },
 
-    /**
-     * Remove this parent instance from store on the
-     * beforeDestroy event.
-     */
-    beforeDestroy() {
-      //
-    },
-
     methods: {
-  
+
       handleParentStudentRelationship(e) {
 
-        var allParents    = this.$parent.$refs.parents,
-            clickedParent = this,
-            studentId     = Number(e.target.getAttribute('data-student-id')),
-            allCheckboxes = [];
+        var allParents        = this.$parent.$refs.parents,
+            clickedParent     = this,
+            clickedParentId   = this.id,
+            clickedStudentId  = Number(e.target.getAttribute('data-student-id')),
+            index             = null,
+            scParentId        = null,
+            scStudentId       = null,
+            checkboxParentId  = null,
+            checkboxStudentId = null;
 
-        // collect all of the student checkboxes for each parent
-        allParents.forEach(p => {
-          allCheckboxes = allCheckboxes.concat(p.$refs.studentCheckboxes);
-        });
+        // if a box was checked, add student to parent component
+        // loop through all parent components and remove student if
+        // it's checked on another parent component
+        if(e.target.checked) {
 
-        if(clickedParent) {
-          
-          // get this ready to rebuild students array
-          var temp = [];
+          // add student to this parent
+          this.students.push({id: clickedStudentId});
 
-          // if the checkbox is checked
-          // add student to checkbox parent
-          // remove student from all other checkbox parents
-          if(e.target.checked) {
+          // loop through parent components
+          // and remove student from other parent components
+          allParents.forEach((p, i) => {
+            checkboxParentId  = p.id,
 
-            // rebuild current students array for the clicked parent
-            clickedParent.students.forEach(s => {
-              temp.push(s);
-            });
-            // add checked student
-            temp.push({id: studentId});
+            // loop through checkboxes on parent component
+            p.$refs.studentCheckboxes.forEach(sc => {
+              checkboxStudentId = Number(sc.getAttribute('data-student-id'));
 
-            // uncheck this checkbox in other parents
-            allCheckboxes.forEach(sc => {
-              var checkboxParentId  = Number(sc.getAttribute('data-parent-id')),
-                  checkboxStudentId = Number(sc.getAttribute('data-student-id'));
-
-              // uncheck if the parent is not the current parent && student is the same
-              if(checkboxParentId != clickedParent.id && checkboxStudentId == studentId) {
+              // if the parent is not the parent that was clicked
+              // and the student has the same ID of the student that was clicked
+              // uncheck student and update this parents students array
+              if(checkboxParentId != clickedParentId && checkboxStudentId == clickedStudentId) {
                 sc.checked = false;
-
-                // now update the students associated with the checkbox parent
-                var checkboxParent = null;
-                this.$parent.$refs.parents.forEach(p => {
-                  if(p.id == checkboxParentId) {
-                    checkboxParent = p;
+                index = null;
+                p.students.forEach((s, j) => {
+                  if(s.id == clickedStudentId) {
+                    index = j;
                   }
                 });
-                if(checkboxParent) {
-                  var temp2 = [];
-                  checkboxParent.students.forEach(s2 => {
-                    if(studentId != checkboxStudentId) {
-                      temp2.push(s2);
-                    }
-                  });
-                  console.log('found parent to update: ', checkboxParent);
-                  checkboxParent.students = temp2;
+                if(index !== null) {
+                  p.students.splice(index, 1);
                 }
-
               }
             });
-
-          }
-
-          // if unchecked, simply rebuild students array without
-          // unchecked student
-          else {
-            clickedParent.students.forEach(s => {
-              if(s.id != studentId) {
-                temp.push(s);
-              }
-            });
-          }
-
-          console.log('parent you just edited students: ', temp);
-          clickedParent.$set(clickedParent, 'students', temp);
-
+          });
         }
 
-
+        else {
+          index = null;
+          this.students.forEach((s, i) => {
+            if(s.id == clickedStudentId) {
+              index = i;
+            }
+          });
+          if(index !== null) {
+            this.students.splice(index, 1);
+          }
+        }
+        
       }
 
     }
