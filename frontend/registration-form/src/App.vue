@@ -128,11 +128,44 @@
       </label>
       <hr>
       <div class="fscrForm__btn-container">
-        <button type="button" @click="goToPage(2)" class="fscr__button fscr__button--primary">Back</button>
+        <button type="button" @click="goToPage(3)" class="fscr__button fscr__button--primary">Back</button>
         <button type="button" @click="handleFourthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
       </div>
     </fieldset>
 
+    <!-- Page 5 -->
+    <fieldset class="fieldset">
+      <legend>Order Summary</legend>
+      <label>
+        <span class="d-block">Apply a promo code.</span>
+        <input type="text" v-model="promoCode">
+      </label>
+      <button type="button" @click="checkPromoCode">Apply</button>
+      <section>
+        <h1>Lesson Package Cost Breakdown</h1>
+      </section>
+      <label>
+        <span class="d-block">How did you hear about us?</span>
+        <input name="customerReferredBy" type="text" v-model="customerReferredBy" v-validate="'required'">
+      </label>
+      <hr>
+      <div class="fscrForm__btn-container">
+        <button type="button" @click="goToPage(4)" class="fscr__button fscr__button--primary">Back</button>
+        <button type="button" @click="handleFfifthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+      </div>
+    </fieldset>
+
+    <!-- Page 6 -->
+    <fieldset class="fieldset">
+      <label>
+        <input type="checkbox" v-model="disclaimerAccepted" :value="true">
+        <span>I, the enrolled participant(s) and/or parent/guardian of the participant(s) agree and understand that swimming is a hazardous activity. I recognize that there are risks inherent in the sport of swimming, including but not limited to, paralyzing injuries and death. I am aware that participation in swim lessons does not guarantee that participant will be water-safe.</span>
+      </label>
+      <label>
+        <span class="d-block">Order total - Your card will not be charged until you are matched with an instructor.</span>
+        <input type="text" readonly> USD
+      </label>
+    </fieldset>
 
   </div>
 
@@ -160,11 +193,14 @@ export default {
 
   data() {
     return {
+      promoCode: null,
       apiResponse: {},
       daysThatWork: null,
       numberOfParents: 0,
       numberOfStudents: 0,
       guestIsOnlyParent: true,
+      customerReferredBy: null,
+      disclaimerAccepted: false,
       selectedLessonDuration: 30,
       displayableLessonPackages: [],
       weekdayTimeRangeAvailability: null,
@@ -207,10 +243,6 @@ export default {
 
   methods: {
 
-    getParents() {
-
-    },
-
     goToPage(pageNumber) {
       //
     },
@@ -221,8 +253,11 @@ export default {
      *
      */
     async handleFirstPageSubmission() {
+
       var request = {},
           validated = await this.$refs.guest.validate();
+
+      // if guest is valid, create form entry
       if(validated) {
         this.$http.post(this.API_BASE_URL + '/forms/create', request)
           .then(response => {
@@ -233,6 +268,8 @@ export default {
             this.$set(this.apiResponse, 'form', JSON.stringify(error));
             this.$emit('form:error');
           });
+
+        // on successful form entry creation, create guest entry
         this.$on('form:create', () => {
           request = {};
           request.first_name = this.$refs.guest.firstName;
@@ -254,9 +291,7 @@ export default {
             this.$emit('guest:error');
           });
         });
-        return true;
       }
-      return false;
     },
 
     /**
@@ -357,6 +392,10 @@ export default {
         });
       });
       return res;
+    },
+
+    checkPromoCode() {
+
     }
 
   }
