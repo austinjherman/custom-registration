@@ -193,6 +193,8 @@ export default {
 
   data() {
     return {
+      step: 1,
+      page: 1,
       promoCode: null,
       apiResponse: {},
       daysThatWork: null,
@@ -257,41 +259,66 @@ export default {
       var request = {},
           validated = await this.$refs.guest.validate();
 
-      // if guest is valid, create form entry
-      if(validated) {
-        this.$http.post(this.API_BASE_URL + '/forms/create', request)
-          .then(response => {
-            this.$set(this.apiResponse, 'form', response.data.form);
-            this.$emit('form:create');
-          })
-          .catch(error => {
-            this.$set(this.apiResponse, 'form', JSON.stringify(error));
-            this.$emit('form:error');
-          });
+      // if guest hasn't been created yet, we need to do a post request
+      if(typeof this.apiResponse.guest == 'undefined') {
 
-        // on successful form entry creation, create guest entry
-        this.$on('form:create', () => {
-          request = {};
-          request.first_name = this.$refs.guest.firstName;
-          request.last_name = this.$refs.guest.lastName;
-          request.email_address = this.$refs.guest.email;
-          request.phone_number = this.$refs.guest.phone;
-          request.zip_code = this.$refs.guest.zip;
-          request.pool_access = this.$refs.guest.poolAccess;
-          request.form_entry_id = this.apiResponse.form.id;
-          this.$http.post(this.API_BASE_URL + '/guests/create', request)
-          .then(response => {
-            // update formEntry id so we know we have one
-            this.$set(this.apiResponse, 'guest', response.data.guest);
-            this.$emit('guest:create');
-          })
-          .catch(error => {
-            this.$set(this.apiResponse, 'guest', error.data);
-            console.log('guest error', error);
-            this.$emit('guest:error');
+        // if guest is valid, create form entry
+        if(validated) {
+          this.$http.post(this.API_BASE_URL + '/forms/create', request)
+            .then(response => {
+              this.$set(this.apiResponse, 'form', response.data.form);
+              this.$emit('form:create');
+            })
+            .catch(error => {
+              this.$set(this.apiResponse, 'form', JSON.stringify(error));
+              this.$emit('form:error');
+            });
+
+          // on successful form entry creation, create guest entry
+          this.$on('form:create', () => {
+            request = {};
+            request.first_name = this.$refs.guest.firstName;
+            request.last_name = this.$refs.guest.lastName;
+            request.email_address = this.$refs.guest.email;
+            request.phone_number = this.$refs.guest.phone;
+            request.zip_code = this.$refs.guest.zip;
+            request.pool_access = this.$refs.guest.poolAccess;
+            request.form_entry_id = this.apiResponse.form.id;
+            this.$http.post(this.API_BASE_URL + '/guests/create', request)
+            .then(response => {
+              // update formEntry id so we know we have one
+              this.$set(this.apiResponse, 'guest', response.data.guest);
+              this.$emit('guest:create');
+            })
+            .catch(error => {
+              this.$set(this.apiResponse, 'guest', error.data);
+              this.$emit('guest:create:error');
+            });
           });
+        }
+      }
+
+      // otherwise we need to update the guest
+      else {
+        request = {};
+        request.first_name = this.$refs.guest.firstName;
+        request.last_name = this.$refs.guest.lastName;
+        request.email_address = this.$refs.guest.email;
+        request.phone_number = this.$refs.guest.phone;
+        request.zip_code = this.$refs.guest.zip;
+        request.pool_access = this.$refs.guest.poolAccess;
+        this.$http.put(this.API_BASE_URL + '/guests/' + this.apiResponse.guest.id, request)
+        .then(response => {
+          // update formEntry id so we know we have one
+          this.$set(this.apiResponse, 'guest', response.data.guest);
+          this.$emit('guest:update');
+        })
+        .catch(error => {
+          this.$set(this.apiResponse, 'guest', error.data);
+          this.$emit('guest:update:error');
         });
       }
+
     },
 
     /**
