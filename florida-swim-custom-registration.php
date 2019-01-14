@@ -26,7 +26,7 @@ $dotenv->load();
 const STRIPE_TEST_KEY_SECRET = getenv('STRIPE_TEST_KEY_SECRET');
 const STRIPE_LIVE_KEY_SECRET = getenv('STRIPE_LIVE_KEY_SECRET');
 
-var stripe = new \stdClass();
+$stripe = new \stdClass();
 $stripe->testKey = STRIPE_TEST_KEY_SECRET;
 $stripe->liveKey = STRIPE_LIVE_KEY_SECRET;
 
