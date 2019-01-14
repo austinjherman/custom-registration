@@ -15,6 +15,8 @@ use FloridaSwim\Controllers\FormEntryController;
 class FloridaSwimCustomRegistration {
 
   private $doctrineEm;
+  private $stripeTestKey;
+  private $stripeLiveKey;
   private $pathToPluginFile;
 
   public function __construct(string $pathToPluginFile) 
@@ -142,6 +144,11 @@ class FloridaSwimCustomRegistration {
     $guardianController->registerRoutes();
   }
 
+  public function setStripeKeys(\stdClass $stripe) {
+    $this->stripeTestKey = $stripe->testKey;
+    $this->stripeLiveKey = $stripe->liveKey;
+  }
+
   // shortcode to display form
   public function fscr_public_shortcode() {
     ob_start();
@@ -157,6 +164,7 @@ class FloridaSwimCustomRegistration {
   // enqueue scripts
   public function fscr_enqueue_scripts() {   
     wp_enqueue_script( 'fscr-main-js', dirname($this->pathToPluginFile) . 'frontend/registration-form/src/main.js', [], '1.0', true );
+    wp_enqueue_script( 'fscr-stripe', 'https://js.stripe.com/v3/', [], '1.0', true );
   }
 
 }
