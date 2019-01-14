@@ -145,8 +145,7 @@ class FloridaSwimCustomRegistration {
   }
 
   public function setStripeKeys(\stdClass $stripe) {
-    $this->stripeTestKey = $stripe->testKey;
-    $this->stripeLiveKey = $stripe->liveKey;
+    $this->stripeTestKeySecret = $stripe->testKeySecret;
   }
 
   // shortcode to display form
