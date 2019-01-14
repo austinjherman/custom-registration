@@ -28,8 +28,7 @@ class Guest extends BaseModel
         "first_name", 
         "last_name",
         "email_address",
-        "phone_number",
-        "form_entry"
+        "phone_number"
     ];
 
     public function __construct() 

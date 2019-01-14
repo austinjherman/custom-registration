@@ -177,7 +177,7 @@ class GuestController extends BaseController {
     // update guest
     $incomingJson = $request->get_json_params();
     foreach($incomingJson as $key => $value) {
-      // okay because set() will only set a value if its key already exists
+      // ok because set() will only set a value if its key already exists
       $guest->set($key, $value);
     }
     $arr = $guest->toArray();
