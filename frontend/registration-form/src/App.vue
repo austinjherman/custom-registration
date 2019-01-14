@@ -167,6 +167,35 @@
       </label>
     </fieldset>
 
+    <form action="/charge" method="post" id="payment-form">
+      <div class="form-row">
+        <label for="card-element">
+          Credit or debit card
+        </label>
+
+        <div id="card-number-element">
+          <!-- A Stripe Element will be inserted here. -->
+        </div>
+        <!-- Used to display Element errors. -->
+        <div id="card-number-errors" role="alert"></div>
+
+        <div id="card-expiry-element">
+          <!-- A Stripe Element will be inserted here. -->
+        </div>
+        <!-- Used to display Element errors. -->
+        <div id="card-expiry-errors" role="alert"></div>
+
+        <div id="card-cvc-element">
+          <!-- A Stripe Element will be inserted here. -->
+        </div>
+        <!-- Used to display Element errors. -->
+        <div id="card-cvc-errors" role="alert"></div>
+
+      </div>
+
+      <button>Submit Payment</button>
+    </form>
+
   </div>
 
 </template>
@@ -195,6 +224,7 @@ export default {
     return {
       step: 1,
       page: 1,
+      lessons: [],
       promoCode: null,
       apiResponse: {},
       daysThatWork: null,
@@ -234,6 +264,7 @@ export default {
   },
 
   mounted() {
+    this.lessons = this.getLessonsFromApi();
     this.displayableLessonPackages = this.getDisplayableLessonPackages();
   },
 
@@ -327,7 +358,7 @@ export default {
      *
      */
     async handleSecondPageSubmission() {
-      var parentsValidated = false,
+      var parentsValidated  = false,
           studentsValidated = false;
       if(this.guestIsOnlyParent == true) {
         parentsValidated  = true;
@@ -337,7 +368,10 @@ export default {
         parentsValidated  = await this.validateParents();
         studentsValidated = await this.validateStudents();
       }
-      if(studentsValidated && parentsValidated) {
+      if(studentsValidated && parentsValidated && this.guestIsOnlyParent) {
+        console.log('validated');
+      }
+      else if (studentsValidated && parentsValidated && !this.guestIsOnlyParent) {
         console.log('validated');
       }
       //this.$refs.parents.sendToApi();
@@ -402,6 +436,10 @@ export default {
 
     handleThirdPageSubmission() {
 
+    },
+
+    getLessonsFromApi() {
+      
     },
 
     getDisplayableLessonPackages() {

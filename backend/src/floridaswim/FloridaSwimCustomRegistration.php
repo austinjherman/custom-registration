@@ -7,6 +7,7 @@ use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
 use FloridaSwim\Controllers\GuestController;
+use FloridaSwim\Controllers\LessonController;
 use FloridaSwim\Controllers\StudentController;
 use FloridaSwim\Controllers\GuardianController;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
@@ -29,6 +30,7 @@ class FloridaSwimCustomRegistration {
     $this->bootDoctrine();
     register_activation_hook($this->pathToPluginFile, [$this, 'handleActivation']);
     register_deactivation_hook($this->pathToPluginFile, [$this, 'handleDeactivation']);
+    //register_uninstall_hook($this->pathToPluginFile, [$this, 'handleUninstall']);
     add_action( 'rest_api_init', [$this, 'registerApiRoutes'] );
     add_action('wp_enqueue_scripts', [$this, 'fscr_enqueue_styles'] );
     add_action('wp_enqueue_scripts', [$this, 'fscr_enqueue_scripts'] );
@@ -70,8 +72,13 @@ class FloridaSwimCustomRegistration {
 
   public function handleDeactivation() 
   {
-    $this->dropTables();
     $this->deletePublicFormPage();
+    $this->dropTables();
+  }
+
+  public function handleUninstall() 
+  {
+    //$this->dropTables();
   }
 
   public function createTables() 
@@ -142,6 +149,8 @@ class FloridaSwimCustomRegistration {
     $studentController->registerRoutes();
     $guardianController = new GuardianController($this->orm());
     $guardianController->registerRoutes();
+    $lessonController = new LessonController($this->orm());
+    $lessonController->registerRoutes();
   }
 
   public function setStripeKeys(\stdClass $stripe) {

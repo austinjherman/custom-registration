@@ -20,7 +20,7 @@ class FormEntry extends BaseModel
     protected $completed_at;
 
     protected $expose = [
-        'id', 'created_at', 'updated_at', 'completed_at'
+        'id', 'created_at', 'updated_at', 'completed_at', 'guest'
     ];
 
     public function __construct() 

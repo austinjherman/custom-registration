@@ -6,6 +6,47 @@
   </head>
   <body>
     <div id="app"></div>
+
     <script src="/dist/build.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <script>
+      var stripe = Stripe('pk_test_6W7TGNtkRczIilZBXUAdcmyy');
+      var elements = stripe.elements();
+      // Custom styling can be passed to options when creating an Element.
+      // Create an instance of the card Element.
+      var cardNumber = elements.create('cardNumber');
+      var cardExpiry = elements.create('cardExpiry');
+      var cardCvc = elements.create('cardCvc');
+      // Add an instance of the card Element into the `card-element` <div>.
+      cardNumber.mount('#card-number-element');
+      cardExpiry.mount('#card-expiry-element');
+      cardCvc.mount('#card-cvc-element');
+      cardNumber.addEventListener('change', function(event) {
+        var displayError = document.getElementById('card-number-errors');
+        if (event.error) {
+          displayError.textContent = event.error.message;
+        } else {
+          displayError.textContent = '';
+        }
+      });
+      cardExpiry.addEventListener('change', function(event) {
+        var displayError = document.getElementById('card-expire-errors');
+        if (event.error) {
+          displayError.textContent = event.error.message;
+        } else {
+          displayError.textContent = '';
+        }
+      });
+      cardCvc.addEventListener('change', function(event) {
+        var displayError = document.getElementById('card-cvc-errors');
+        if (event.error) {
+          displayError.textContent = event.error.message;
+        } else {
+          displayError.textContent = '';
+        }
+      });
+    </script>
+
   </body>
 </html>

@@ -95,6 +95,7 @@ class GuestController extends BaseController {
     $guest->set('email_address', $request->get_param('email_address'));
     $guest->set('zip_code', $request->get_param('zip_code'));
     $guest->set('pool_access', $request->get_param('pool_access'));
+    $guest->set('updated_at', new \DateTime());
     $this->orm()->persist($guest);
     $this->orm()->flush();
     if(!$guest->get('id')) {
