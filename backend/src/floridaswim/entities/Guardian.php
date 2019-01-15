@@ -18,7 +18,6 @@ class Guardian extends BaseModel
     protected $email_address;
     protected $created_at;
     protected $updated_at;
-
     protected $students;
 
     protected $expose = [
@@ -26,11 +25,14 @@ class Guardian extends BaseModel
         "name",
         "email_address",
         "phone_number",
-        "form_entry"
+        "form_entry",
+        "created_at",
+        "updated_at"
     ];
 
     public function __construct() {
         $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
     }
 
     public function addFormEntry(FormEntry $formEntry) {
@@ -47,16 +49,12 @@ class Guardian extends BaseModel
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_guardians");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
-
-        // One form_entry can have many parent/guardians
         $builder->createManyToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->addJoinColumn('form_entry_id', 'id', true, false, 'cascade')->build();
-
-        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian_id')->build();
-
         $builder->addField('name', 'string');
         $builder->addField('email_address', 'string');
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
+        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian_id')->build();
     }
 
 }

@@ -4,7 +4,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">First Name <span class="asterisk--required">*</span></span>
-        <input name="firstName" type="text" v-model="firstName" v-validate="'required'" data-vv-as="First Name">
+        <input name="firstName" type="text" v-model="frontend.firstName" v-validate="'required'" data-vv-as="First Name">
         <span class="d-block">{{ validator.first('firstName') }}</span>
       </label>
     </div>
@@ -12,7 +12,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">Last Name <span class="asterisk--required">*</span></span>
-        <input name="lastName" type="text" v-model="lastName" v-validate="'required'" data-vv-as="Last Name">
+        <input name="lastName" type="text" v-model="frontend.lastName" v-validate="'required'" data-vv-as="Last Name">
         <span class="d-block">{{ validator.first('lastName') }}</span>
       </label>
     </div>
@@ -20,7 +20,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">Email <span class="asterisk--required">*</span></span>
-        <input name="email" type="email" v-model="email" v-validate="'required|email'" data-vv-as="Email">
+        <input name="email" type="email" v-model="frontend.email" v-validate="'required|email'" data-vv-as="Email">
         <span class="d-block">{{ validator.first('email') }}</span>
       </label>
     </div>
@@ -28,7 +28,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">Phone <span class="asterisk--required">*</span></span>
-        <input name="phone" type="tel" v-model="phone" v-validate="'required|length:17'" v-mask="['+1 (###) ###-####']" data-vv-as="Phone">
+        <input name="phone" type="tel" v-model="frontend.phone" v-validate="'required|length:17'" v-mask="['+1 (###) ###-####']" data-vv-as="Phone">
         <span class="d-block">{{ validator.first('phone') }}</span>
       </label>
     </div>
@@ -36,7 +36,7 @@
     <div class="input-wrap">
       <label>
         <span class="d-block">ZIP Code <span class="asterisk--required">*</span></span>
-        <input name="zip" type="tel" v-model="zip" v-validate="'required|length:5'" v-mask="['#####']" data-vv-as="ZIP Code">
+        <input name="zip" type="tel" v-model="frontend.zip" v-validate="'required|length:5'" v-mask="['#####']" data-vv-as="ZIP Code">
         <span class="d-block">{{ validator.first('zip') }}</span>
       </label>
     </div>
@@ -48,14 +48,14 @@
       <div class="input-wrap">
         <label>
           <span class="d-block">Yes</span>
-          <input name="poolAccess" type="radio" v-model="poolAccess" value="true" v-validate="'required'" data-vv-as="Pool Access">
+          <input name="poolAccess" type="radio" v-model="frontend.poolAccess" value="true" v-validate="'required'" data-vv-as="Pool Access">
         </label>
       </div>
 
       <div class="input-wrap">
         <label>
           <span class="d-block">No</span>
-          <input name="poolAccess" type="radio" v-model="poolAccess" value="false" v-validate="'required'" data-vv-as="Pool Access">
+          <input name="poolAccess" type="radio" v-model="frontend.poolAccess" value="false" v-validate="'required'" data-vv-as="Pool Access">
         </label>
       </div>
 
@@ -72,17 +72,20 @@
 
     data() {
       return {
-        firstName: null,
-        lastName: null,
-        email: null,
-        phone: null,
-        zip: null,
-        poolAccess: null
+        serverResponse: {},
+        frontend: {
+          firstName: null,
+          lastName: null,
+          email: null,
+          phone: null,
+          zip: null,
+          poolAccess: null
+        }
       }
     },
 
     mounted () {
-      this.id = this._uid
+      this.frontend.id = this._uid
     },
 
     methods: {
@@ -110,17 +113,25 @@
 
       },
 
-      sendToApi() {
-        // create form entry
-        // create guest
+      sendToApi(formEntryId) {
         var request = {};
-        request.first_name = this.firstName;
-        request.last_name = this.lastName;
-        request.email_address = this.email;
-        request.phone_number = this.phone;
-        request.zip_code = this.zip;
-        request.pool_access = this.poolAccess;
-        console.log('guest: ', request);
+        request.first_name = this.frontend.firstName;
+        request.last_name = this.frontend.lastName;
+        request.email_address = this.frontend.email;
+        request.phone_number = this.frontend.phone;
+        request.zip_code = this.frontend.zip;
+        request.pool_access = this.frontend.poolAccess;
+        request.form_entry_id = formEntryId;
+        this.$http.post(this.API_BASE_URL + '/guests/create', request)
+          .then(response => {
+            // update formEntry id so we know we have one
+            this.$set(this.apiResponse.guest, 'success', response.data.guest);
+            this.$emit('guest:create');
+          })
+          .catch(error => {
+            this.$set(this.apiResponse.guest, 'error', JSON.stringify(error.data));
+            this.$emit('guest:create:error');
+          });
       }
 
     }

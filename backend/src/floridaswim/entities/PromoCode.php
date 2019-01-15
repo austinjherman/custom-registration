@@ -14,13 +14,18 @@ class PromoCode extends BaseModel
     protected $lesson;
     protected $lesson_id;
     protected $promo_code;
+    protected $active;
     protected $created_at;
 
-    protected $schedule;
+    protected $expose = [
+        'promo_code',
+        'active',
+        'created_at'
+    ];
 
-    public function __construct() 
-    {
+    public function __construct() {
         $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
     }
 
     public function addLesson(Lesson $lesson) {
@@ -31,10 +36,11 @@ class PromoCode extends BaseModel
     public static function loadMetadata(ClassMetadata $metadata)
     {
         $builder = new ClassMetadataBuilder($metadata);
-        $builder->setTable(parent::tablePrefix(). "fwcr_promo_codes");
+        $builder->setTable(parent::tablePrefix() . "fwcr_promo_codes");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', false, false, 'cascade')->inversedBy('students')->build();
         $builder->addField('promo_code', 'string');
+        $builder->addField('active', 'boolean');
         $builder->addField('created_at', 'datetime');
     }
 

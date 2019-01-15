@@ -6,8 +6,7 @@ use FloridaSwim\Entities\BaseModel;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
-class Schedule extends BaseModel
-{
+class Schedule extends BaseModel {
 
     protected $id;
     protected $student;
@@ -20,9 +19,19 @@ class Schedule extends BaseModel
     protected $created_at;
     protected $updated_at;
 
-    public function __construct() 
-    {
+    protected $expose = [
+        'lesson_frequency_per_week',
+        'lessons_begin',
+        'days_available',
+        'time_availability_weekdays',
+        'description',
+        'created_at',
+        'updated_at'
+    ];
+
+    public function __construct() {
         $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
     }
 
     public function addStudent(Student $student) 

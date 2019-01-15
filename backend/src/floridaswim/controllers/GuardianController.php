@@ -93,6 +93,7 @@ class GuardianController extends BaseController {
     $guardian->set('email_address', $request->get_param('email'));
     $guardian->set('phone_number', $request->get_param('phone_number'));
     $guardian->set('form_entry_id', $request->get_param('form_entry_id'));
+    $guardian->set('updated_at', new \DateTime());
     $this->orm()->persist($guardian);
     $this->orm()->flush();
     if(!$guardian->get('id')) {

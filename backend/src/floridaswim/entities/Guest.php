@@ -19,21 +19,23 @@ class Guest extends BaseModel
     protected $phone_number;
     protected $zip_code;
     protected $pool_access;
+    protected $stripe_token;
     protected $created_at;
     protected $updated_at;
-    protected $stripe_token;
 
     protected $expose = [
         "id", 
         "first_name", 
         "last_name",
         "email_address",
-        "phone_number"
+        "phone_number",
+        "created_at",
+        "updated_at"
     ];
 
-    public function __construct() 
-    {
+    public function __construct() {
         $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
     }
 
     public function addFormEntry(FormEntry $formEntry) 

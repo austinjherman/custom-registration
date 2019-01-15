@@ -20,12 +20,15 @@ class FormEntry extends BaseModel
     protected $completed_at;
 
     protected $expose = [
-        'id', 'created_at', 'updated_at', 'completed_at', 'guest'
+        'id', 
+        'created_at', 
+        'updated_at', 
+        'completed_at'
     ];
 
-    public function __construct() 
-    {
+    public function __construct() {
         $this->created_at = new \DateTime();
+        $this->updated_at = new \DateTime();
     }
 
     public function addGuest(Guest $guest) {
@@ -40,13 +43,11 @@ class FormEntry extends BaseModel
         $this->students[] = $student;
     } 
 
-    public static function loadMetadata(ClassMetadata $metadata)
-    {
+    public static function loadMetadata(ClassMetadata $metadata) {
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_form_entries");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createOneToOne('guest', 'FloridaSwim\Entities\Guest')->mappedBy('form_entry')->build();
-        // One form_entry can have many parent/guardians
         $builder->createOneToMany('guardians', 'FloridaSwim\Entities\Guardian')->mappedBy('form_entry')->build();
         $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('form_entry')->build();
         $builder->addField('created_at', 'datetime');

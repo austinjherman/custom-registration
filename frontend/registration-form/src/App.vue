@@ -226,7 +226,9 @@ export default {
       page: 1,
       lessons: [],
       promoCode: null,
-      apiResponse: {},
+      form: {
+        serverResponse: {}
+      },
       daysThatWork: null,
       numberOfParents: 0,
       numberOfStudents: 0,
@@ -280,76 +282,81 @@ export default {
       //
     },
 
+    getStudent(id) {
+      var student = null,
+          students = this.$refs.students;
+      students.forEach(s => {
+        if(s.id == id) {
+          student = s;
+        }
+      });
+      return student;
+    },
+
     /**
      * Valdiate Guest
-     * If valid, create Form Entry and Guest 
+     * If guest is valid, create Form Entry and Guest 
      *
      */
     async handleFirstPageSubmission() {
 
-      var request = {},
-          validated = await this.$refs.guest.validate();
+      var guestValidated = await this.$refs.guest.validate();
 
       // if guest hasn't been created yet, we need to do a post request
-      if(typeof this.apiResponse.guest == 'undefined') {
+      if(!this.$refs.guest.serverResponse.hasOwnProperty('id')) {
 
         // if guest is valid, create form entry
-        if(validated) {
-          this.$http.post(this.API_BASE_URL + '/forms/create', request)
-            .then(response => {
-              this.$set(this.apiResponse, 'form', response.data.form);
-              this.$emit('form:create');
-            })
-            .catch(error => {
-              this.$set(this.apiResponse, 'form', JSON.stringify(error));
-              this.$emit('form:error');
-            });
+        if(guestValidated) {
+
+          if (!this.form.serverResponse.hasOwnProperty('id')) {
+            this.saveForm();
+          }
 
           // on successful form entry creation, create guest entry
           this.$on('form:create', () => {
-            request = {};
-            request.first_name = this.$refs.guest.firstName;
-            request.last_name = this.$refs.guest.lastName;
-            request.email_address = this.$refs.guest.email;
-            request.phone_number = this.$refs.guest.phone;
-            request.zip_code = this.$refs.guest.zip;
-            request.pool_access = this.$refs.guest.poolAccess;
-            request.form_entry_id = this.apiResponse.form.id;
-            this.$http.post(this.API_BASE_URL + '/guests/create', request)
-            .then(response => {
-              // update formEntry id so we know we have one
-              this.$set(this.apiResponse, 'guest', response.data.guest);
-              this.$emit('guest:create');
-            })
-            .catch(error => {
-              this.$set(this.apiResponse, 'guest', error.data);
-              this.$emit('guest:create:error');
-            });
+            this.$refs.guest.sendToApi(this.form.serverResponse.id);
           });
         }
+
       }
 
       // otherwise we need to update the guest
       else {
-        request = {};
-        request.first_name = this.$refs.guest.firstName;
-        request.last_name = this.$refs.guest.lastName;
-        request.email_address = this.$refs.guest.email;
-        request.phone_number = this.$refs.guest.phone;
-        request.zip_code = this.$refs.guest.zip;
-        request.pool_access = this.$refs.guest.poolAccess;
-        this.$http.put(this.API_BASE_URL + '/guests/' + this.apiResponse.guest.id, request)
+        this.updateGuest();
+      }
+
+    },
+
+    saveForm() {
+      var request = {};
+      this.$http.post(this.API_BASE_URL + '/forms/create', request)
         .then(response => {
-          // update formEntry id so we know we have one
-          this.$set(this.apiResponse, 'guest', response.data.guest);
+          this.$set(this.form, 'serverResponse', response.data.form);
+          this.$emit('form:create');
+        })
+        .catch(error => {
+          this.$set(this.form, 'serverResponse', JSON.stringify(error.data));
+          this.$emit('form:error');
+        });
+    },
+
+    updateGuest() {
+      var request = {};
+      request.first_name = this.$refs.guest.firstName;
+      request.last_name = this.$refs.guest.lastName;
+      request.email_address = this.$refs.guest.email;
+      request.phone_number = this.$refs.guest.phone;
+      request.zip_code = this.$refs.guest.zip;
+      request.pool_access = this.$refs.guest.poolAccess;
+      this.$http.put(this.API_BASE_URL + '/guests/' + this.apiResponse.guest.success.id, request)
+        .then(response => {
+          this.$set(this.apiResponse.guest, 'success', response.data.guest);
           this.$emit('guest:update');
         })
         .catch(error => {
-          this.$set(this.apiResponse, 'guest', error.data);
+          this.$set(this.apiResponse.guest, 'error', error.data);
           this.$emit('guest:update:error');
         });
-      }
-
     },
 
     /**
@@ -358,25 +365,73 @@ export default {
      *
      */
     async handleSecondPageSubmission() {
-      var parentsValidated  = false,
-          studentsValidated = false;
-      if(this.guestIsOnlyParent == true) {
-        parentsValidated  = true;
-        studentsValidated = await this.validateStudents();
+
+      var condition = this.apiResponse.form.success != 'undefined' && this.apiResponse.guest.success != 'undefined' && !this.apiResponse.parents.lenth;
+
+      if(condition) {
+        var request           = {},
+            parentsValidated  = false,
+            studentsValidated = false;
+        if(this.guestIsOnlyParent == true) {
+          parentsValidated  = true;
+          studentsValidated = await this.validateStudents();
+        }
+        else {
+          parentsValidated  = await this.validateParents();
+          studentsValidated = await this.validateStudents();
+        }
+        if(studentsValidated && parentsValidated && this.guestIsOnlyParent) {
+          request = {};
+          request.name = this.$refs.guest.firstName + " " + this.$refs.guest.lastName;
+          request.email = this.$refs.guest.email;
+          request.phone_number = this.$refs.guest.phone;
+          request.form_entry_id = this.apiResponse.form.success.id;
+          request.students = this.$refs.students.map(s => s.id);
+          this.saveParents([request]);
+        }
+        else if (studentsValidated && parentsValidated && !this.guestIsOnlyParent) {
+          console.log('validated');
+        }
       }
-      else {
-        parentsValidated  = await this.validateParents();
-        studentsValidated = await this.validateStudents();
-      }
-      if(studentsValidated && parentsValidated && this.guestIsOnlyParent) {
-        console.log('validated');
-      }
-      else if (studentsValidated && parentsValidated && !this.guestIsOnlyParent) {
-        console.log('validated');
-      }
-      //this.$refs.parents.sendToApi();
-      //console.log('students: ', this.$store.state.students.students);
-      //console.log('parents: ', this.$store.state.parents.parents);
+    },
+
+    saveParents(parentRequests) {
+      parentRequests.forEach(parentRequest => {
+        console.log('making the following request: ', parentRequest);
+        this.$http.post(this.API_BASE_URL + '/guardians/create', parentRequest)
+          .then(response => {
+            this.apiResponse.parents.push(response.data.guardian);
+            var parentId = response.data.guardian.id;
+            parentRequest.students.forEach(id => {
+              var request = {},
+                  student = this.getStudent(id);
+              if(student) {
+                request.student_name = student.name;
+                request.student_date_of_birth = student.dob;
+                request.form_entry_id = this.apiResponse.form.success.id;
+                request.guardian_id = parentId;
+                this.saveStudent(request);
+              }
+            });
+          })
+          .catch(error => {
+            console.log('parent creation error', error.response);
+            this.apiResponse.parentsErrors.push({error: JSON.stringify(error.response)});
+            this.$emit('parent:create:error');
+          });
+      })
+    },
+
+    saveStudent(studentRequest) {
+      this.$http.post(this.API_BASE_URL + '/students/create', studentRequest)
+        .then(response => {
+          this.apiResponse.students.push(response.data.student);
+          this.$emit('student:create');
+        })
+        .catch(error => {
+          this.apiResponse.parentsErrors.push(error.data);
+          this.$emit('student:create:error');
+        });
     },
 
     /**

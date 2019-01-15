@@ -13,40 +13,36 @@ class Lesson extends BaseModel
 
     protected $id;
     protected $name;
+    protected $promo_codes;
+    protected $durations;
+    protected $students;
     protected $created_at;
     protected $updated_at;
 
-    protected $lesson_packages;
-    protected $promo_codes;
-    protected $durations;
-
     protected $expose = [
-        'name', 'durations'
+        'name', 
+        'created_at',
+        'updated_at'
     ];
 
-    public function __construct() 
-    {
-        $this->durations = new ArrayCollection();
+    public function __construct() {
         $this->created_at = new \DateTime();
-    }
-
-    public function addLessonPackage(LessonPackage $lessonPackage) {
-        $this->lesson_packages[] = $lessonPackage;
+        $this->updated_at = new \DateTime();
+        $this->durations = new ArrayCollection();
     }
 
     public function addPromoCode(PromoCode $promoCode) {
         $this->promo_codes[] = $promoCode;
     }
 
-    public static function loadMetadata(ClassMetadata $metadata)
-    {
+    public static function loadMetadata(ClassMetadata $metadata) {
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_lessons");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createOneToMany('promo_codes', 'FloridaSwim\Entities\PromoCode')->mappedBy('lesson')->build();
         $builder->addField('name', 'string');
-        $builder->createOneToMany('lesson_packages', 'FloridaSwim\Entities\LessonPackage')->mappedBy('lesson')->build();
         $builder->createOneToMany('durations', 'FloridaSwim\Entities\Duration')->mappedBy('lesson')->build();
+        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('lesson')->build();
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
     }

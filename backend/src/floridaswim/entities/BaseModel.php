@@ -1,6 +1,8 @@
 <?php
 
 namespace FloridaSwim\Entities;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
 class BaseModel implements \JsonSerializable {
 
