@@ -242,9 +242,9 @@ export default {
       form: {
         serverResponse: {}
       },
-      parent: {
+      parents: [
         serverResponse: {}
-      },
+      ],
       activePage: 1,
       daysThatWork: null,
       numberOfParents: 0,
@@ -412,11 +412,13 @@ export default {
             this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
               .then(response => {
                 // update formEntry id so we know we have one
-                this.parent.serverResponse = response.data.guardian;
+                var serverResponse = response.data.guardian;
+                serverResponse.frontEndId = this.$refs.guest.id;
+                this.parents.push(serverResponse);
                 this.$emit('parent:create');
               })
               .catch(error => {
-                this.parent.serverResponse = JSON.stringify(error.data);
+                this.parents.push(error.data);
                 this.$emit('parent:create:error');
               });
 
