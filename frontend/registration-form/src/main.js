@@ -27,8 +27,16 @@ const dict = {
       length: 'Please enter a valid phone number.'
     },
     zip: {
-      required: 'Please enter a valid zip code.',
-      length: 'Please enter a valid zip code.'
+      required: 'Please enter a valid ZIP Code.',
+      length: 'Please enter a valid ZIP Code.'
+    },
+    email: {
+      required: 'Please enter a valid email address.',
+      email: 'Please enter a valid email address.'
+    },
+    numberOfStudents: {
+      required: 'Please select the amount of students you\'d like to enroll.',
+      min_value: 'Please select the amount of students you\'d like to enroll.'
     }
   }
 };

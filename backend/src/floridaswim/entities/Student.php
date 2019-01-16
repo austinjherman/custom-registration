@@ -66,7 +66,7 @@ class Student extends BaseModel
         $builder->createManyToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->addJoinColumn('form_entry_id', 'id', true, false, 'cascade')->build();
         $builder->createManyToOne('guardian', 'FloridaSwim\Entities\Guardian')->addJoinColumn('guardian_id', 'id', true, false)->inversedBy('students')->build();
         $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', true, false)->inversedBy('students')->build();
-        $builder->addField('lesson_qty', 'integer');
+        $builder->addField('lesson_qty', 'integer', ['nullable' => true]);
         $builder->createManyToOne('duration', 'FloridaSwim\Entities\Duration')->addJoinColumn('duration_id', 'id', true, false)->build();
         $builder->addField('name', 'string');
         $builder->addField('date_of_birth', 'datetime');

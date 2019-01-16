@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="fscr-parent-component">
 
-    <fieldset class="fieldset">
-      Parent for which students?
+    <fieldset class="fscr-fieldset">
+      <span class="fscr-d-block fscr-input-label">Parent for which students?</span>
       <div v-for="student in this.$parent.$refs.students" :key="student.id">
         <label>
           <input type="checkbox" @change="handleParentStudentRelationship" :data-student-id="student.id" :data-parent-id="id" ref="studentCheckboxes">
@@ -10,29 +10,33 @@
         </label>
       </div>
     </fieldset>
+
+    <div class="fscr-d-flex wrap">
     
-    <div class="input-wrap">
-      <label>
-        <span class="d-block">Name <span class="asterisk--required">*</span></span>
-        <input name="name" type="text" v-validate="'required'" v-model="name" :data-vv-scope="vvScope">
-        <span class="d-block">{{ validator.first('name', vvScope) }}</span>
-      </label>
-    </div>
+      <div class="fscr-input-wrap fscr-input-wrap--half">
+        <label class="fscr-input-label">
+          <span class="fscr-d-block">Name <span class="fscr-asterisk--required">*</span></span>
+          <input name="name" type="text" v-validate="'required'" v-model="name" :data-vv-scope="vvScope" class="fscr-input">
+          <span class="d-block">{{ validator.first('name', vvScope) }}</span>
+        </label>
+      </div>
 
-    <div class="input-wrap">
-      <label>
-        <span class="d-block">Email <span class="asterisk--required">*</span></span>
-        <input name="email" type="email" v-validate="'required|email'" v-model="email" :data-vv-scope="vvScope">
-        <span class="d-block">{{ validator.first('email', vvScope) }}</span>
-      </label>    
-    </div>
+      <div class="fscr-input-wrap fscr-input-wrap--half">
+        <label class="fscr-input-label">
+          <span class="fscr-d-block">Email <span class="fscr-asterisk--required">*</span></span>
+          <input name="email" type="email" v-validate="'required|email'" v-model="email" :data-vv-scope="vvScope" class="fscr-input">
+          <span class="d-block">{{ validator.first('email', vvScope) }}</span>
+        </label>    
+      </div>
 
-    <div class="input-wrap">
-      <label>
-        <span class="d-block">Phone <span class="asterisk--required">*</span></span>
-        <input name="phone" type="tel" v-validate="'required|length:17'" v-model="phone" v-mask="['+1 (###) ###-####']" :data-vv-scope="vvScope">
-        <span class="d-block">{{ validator.first('phone', vvScope) }}</span>
-      </label>    
+      <div class="fscr-input-wrap fscr-input-wrap--half">
+        <label class="fscr-input-label">
+          <span class="fscr-d-block">Phone <span class="fscr-asterisk--required">*</span></span>
+          <input name="phone" type="tel" v-validate="'required|length:17'" v-model="phone" v-mask="['+1 (###) ###-####']" :data-vv-scope="vvScope" class="fscr-input">
+          <span class="d-block">{{ validator.first('phone', vvScope) }}</span>
+        </label>    
+      </div>
+
     </div>
 
   </div>
@@ -50,7 +54,8 @@
         name: null,
         email: null,
         phone: null,
-        students: []
+        students: [],
+        serverResponse: {}
       }
     }, 
 
@@ -59,6 +64,10 @@
     },
 
     methods: {
+
+      save() {
+        
+      },
 
       handleParentStudentRelationship(e) {
 
@@ -91,7 +100,7 @@
 
               // if the parent is not the parent that was clicked
               // and the student has the same ID of the student that was clicked
-              // uncheck student and update this parents students array
+              // uncheck student and update this parent's array of students
               if(checkboxParentId != clickedParentId && checkboxStudentId == clickedStudentId) {
                 sc.checked = false;
                 index = null;

@@ -29,6 +29,8 @@ class Guest extends BaseModel
         "last_name",
         "email_address",
         "phone_number",
+        "zip_code",
+        "pool_access",
         "created_at",
         "updated_at"
     ];

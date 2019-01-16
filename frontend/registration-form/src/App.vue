@@ -1,201 +1,218 @@
 <template>
 
   <div id="app" class="fscr">
+  <div class="fscr-app-container">
     
     <!-- Page 1 -->
-    <fieldset class="fieldset">
-      <legend>Your Contact Information</legend>
-      <Guest ref="guest"/>
-      <hr>
-      <div class="fscrForm__btn-container">
-        <button type="button" @click="handleFirstPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
-      </div>
-    </fieldset>
+    <div v-show="activePage==1" class="fscr-fieldset-wrap">
+      <fieldset class="fscr-fieldset">
+        <legend class="fscr-page-title">Your Contact Information</legend>
+        <Guest ref="guest"/>
+        <hr class="fscr-line-break">
+        <div class="fscr-d-flex fscr-justify-content-end">
+          <button type="button" @click="handleFirstPageSubmission()" class="fscr-button fscr-button--primary">Next</button>
+        </div>
+      </fieldset>
+    </div>
 
     <!-- Page 2 -->
-    <fieldset class="fieldset">
-      <legend>Student Information</legend>
-      <div class="input-wrap">
-        <label>
-          <span class="d-block">How many students are you enrolling? <span class="asterisk--required">*</span></span>                
-          <select name="numberOfStudents" v-validate="'required|min_value:1'" v-model.number="numberOfStudents">
-            <option selected="selected" value="0">Please Select</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-          </select>
-          <span class="d-block">{{ this.validator.first('numberOfStudents') }}</span>
-        </label>
-      </div>
-      <div v-for="n in numberOfStudents" v-bind:key="n">
-        <Student :vvScope="'student_' + n" :ref="'students'" />
-      </div>
-    </fieldset>
+    <div v-show="activePage==2">
+      <div class="fscr-fieldset-wrap">
+        <fieldset class="fscr-fieldset">
+          <legend class="fscr-page-title">Student Information</legend>
+          <div class="fscr-input-wrap">
+            <label class="fscr-input-label">
+              <span class="fscr-d-block fscr-input-label-text">How many students are you enrolling? <span class="fscr-asterisk--required">*</span></span>                
+              <select name="numberOfStudents" v-validate="'required|min_value:1'" v-model.number="numberOfStudents" class="fscr-input">
+                <option selected="selected" value="0">Please Select</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+              </select>
+              <span class="fscr-d-block fscr-input-error">{{ this.validator.first('numberOfStudents') }}</span>
+            </label>
+          </div>
+          <div v-for="n in numberOfStudents" v-bind:key="n">
+            <Student :vvScope="'student_' + n" :ref="'students'" />
+          </div>
+        </fieldset>
 
-    <fieldset class="fieldset">
-      <legend>Parent Information</legend>
-      <div class="input-wrap">
-        <fieldset class="fieldset">
-          <legend>Are you the parent/guardian of all the students? <span class="asterisk--required">*</span></legend>
-          <label>
-            <span class="d-block">Yes</span>
-            <input type="radio" value="true" v-model="guestIsOnlyParent">
-          </label>
-          <label>
-            <span class="d-block">No</span>
-            <input type="radio" value="false" v-model="guestIsOnlyParent">
-          </label>
+        <fieldset class="fscr-fieldset">
+          <legend class="fscr-page-title fscr-d-none">Parent Information</legend>
+          <div class="fscr-input-wrap">
+            <fieldset class="fscr-fieldset">
+              <legend class="fscr-input-label fscr-input-label-text">Are you the parent/guardian of all the students? <span class="fscr-asterisk--required">*</span></legend>
+              <label class="fscr-input-label">
+                <span class="fscr-d-inline-block">Yes</span>
+                <input name="guestIsOnlyParent" type="radio" value="true" v-model="guestIsOnlyParent">
+              </label>
+              <label class="fscr-input-label">
+                <span class="fscr-d-inline-block">No</span>
+                <input name="guestIsOnlyParent" type="radio" value="false" v-model="guestIsOnlyParent">
+              </label>
+              <span class="fscr-d-block fscr-input-error">{{ this.validator.first('guestIsOnlyParent') }}</span>
+            </fieldset>
+          </div>
+          <div v-if="guestIsOnlyParent == 'false'">
+            <div class="fscr-input-wrap">
+              <label class="fscr-input-label">
+                <span class="fscr-d-block fscr-input-label-text">How many parents are you signing up? <span class="fscr-asterisk--required">*</span></span>
+                <select name="numberOfParents" v-validate="'required|min_value:1'" v-model.number="numberOfParents" class="fscr-input">
+                  <option selected="selected" value="0">Please Select</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                </select>
+                <span class="fscr-d-block fscr-input-error">{{ validator.first('numberOfParents') }}</span>
+              </label>
+            </div>
+          </div>
+          <div v-if="guestIsOnlyParent == 'false'">
+            <div v-for="n in numberOfParents" v-bind:key="n">
+              <Parent :vvScope="'parent_' + (n-1)" ref="parents"/>
+            </div>
+          </div>
+          <hr class="fscr-line-break">
+          <div class="fscr-d-flex fscr-justify-content-between">
+            <button type="button" @click="goToPage(1)" class="fscr__button fscr__button--primary">Back</button>
+            <button type="button" @click="handleSecondPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+          </div>
         </fieldset>
       </div>
-      <div v-if="guestIsOnlyParent == 'false'">
-        <div class="input-wrap">
-          <label>
-            <span class="d-block">How many parents are you signing up? <span class="asterisk--required">*</span></span>           
-            <select name="numberOfParents" v-validate="'required|min_value:1'" v-model.number="numberOfParents">
-              <option selected="selected" value="0">Please Select</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-            </select>
-            <span class="d-block">{{ validator.first('numberOfParents') }}</span>
-          </label>
-        </div>
-      </div>
-      <div v-if="guestIsOnlyParent == 'false'">
-        <div v-for="n in numberOfParents" v-bind:key="n">
-          <Parent :vvScope="'parent_' + (n-1)" ref="parents"/>
-        </div>
-      </div>
-      <hr>
-      <div class="fscrForm__btn-container">
-        <button type="button" @click="goToPage(1)" class="fscr__button fscr__button--primary">Back</button>
-        <button type="button" @click="handleSecondPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
-      </div>
-    </fieldset>
+    </div>
 
     <!-- Page 3 -->
-    <fieldset class="fieldset">
-      <legend>Swim Lesson Package Selection</legend>
-      <fieldset class="fieldset">
-        <legend>How long would you like each lesson to last for your student(s)?</legend>
-        <label>
-          <span class="d-block">30</span>
-          <input name="lessonDuration" type="radio" v-model="selectedLessonDuration" value="30" v-validate="'required'">
-        </label>
-        <label>
-          <span class="d-block">60</span>
-          <input name="lessonDuration" type="radio" v-model="selectedLessonDuration" value="60" v-validate="'required'">
-        </label>
-      </fieldset>
-      <fieldset class="fieldset">
-        <div v-for="lp in displayableLessonPackages">
-          <LessonPackage :title="lp.title" :duration="lp.duration" :price="lp.price" />
+    <div v-show="activePage==3">
+      <fieldset class="fscr-fieldset">
+        <legend class="fscr-page-title">Swim Lesson Package Selection</legend>
+        <fieldset class="fscr-fieldset">
+          <legend>How long would you like each lesson to last for your student(s)?</legend>
+          <label>
+            <span class="d-block">30</span>
+            <input name="lessonDuration" type="radio" v-model="selectedLessonDuration" value="30" v-validate="'required'">
+          </label>
+          <label>
+            <span class="d-block">60</span>
+            <input name="lessonDuration" type="radio" v-model="selectedLessonDuration" value="60" v-validate="'required'">
+          </label>
+        </fieldset>
+        <fieldset class="fscr-fieldset">
+          <div v-for="lp in displayableLessonPackages">
+
+          </div>
+        </fieldset>
+        <hr>
+        <div class="fscrForm__btn-container">
+          <button type="button" @click="goToPage(2)" class="fscr__button fscr__button--primary">Back</button>
+          <button type="button" @click="handleThirdPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
         </div>
       </fieldset>
-      <hr>
-      <div class="fscrForm__btn-container">
-        <button type="button" @click="goToPage(2)" class="fscr__button fscr__button--primary">Back</button>
-        <button type="button" @click="handleThirdPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
-      </div>
-    </fieldset>
+    </div>
 
     <!-- Page 4 -->
-    <fieldset class="fieldset">
-      <legend>Preferred Schedule</legend>
-      <label>
-        <span class="d-block">What days work for you?</span>
-        <multiselect name="daysThatWork" v-model="daysThatWork" :options="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
-          <span class="d-block">{{ validator.first('daysThatWork') }}</span>
-      </label>
-      <label>
-        <span class="d-block">Select your time range availability for weekdays.</span>
-        <multiselect name="weekdayTimeRangeAvailability" v-model="weekdayTimeRangeAvailability" :options="['Morning (8am - 12pm)', 'Afternoon (12pm - 4pm)', 'Evening (4pm - 8pm)']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
-        <span class="d-block">{{ validator.first('weekdayTimeRangeAvailability') }}</span>
-      </label>
-      <label>
-        <span class="d-block">Additional scheduling information, if any.</span>
-        <textarea></textarea>
-      </label>
-      <hr>
-      <div class="fscrForm__btn-container">
-        <button type="button" @click="goToPage(3)" class="fscr__button fscr__button--primary">Back</button>
-        <button type="button" @click="handleFourthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
-      </div>
-    </fieldset>
+    <div v-show="activePage==4">
+      <fieldset class="fscr-fieldset">
+        <legend class="fscr-page-title">Preferred Schedule</legend>
+        <label>
+          <span class="d-block">What days work for you?</span>
+          <multiselect name="daysThatWork" v-model="daysThatWork" :options="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
+            <span class="d-block">{{ validator.first('daysThatWork') }}</span>
+        </label>
+        <label>
+          <span class="d-block">Select your time range availability for weekdays.</span>
+          <multiselect name="weekdayTimeRangeAvailability" v-model="weekdayTimeRangeAvailability" :options="['Morning (8am - 12pm)', 'Afternoon (12pm - 4pm)', 'Evening (4pm - 8pm)']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
+          <span class="d-block">{{ validator.first('weekdayTimeRangeAvailability') }}</span>
+        </label>
+        <label>
+          <span class="d-block">Additional scheduling information, if any.</span>
+          <textarea></textarea>
+        </label>
+        <hr>
+        <div class="fscrForm__btn-container">
+          <button type="button" @click="goToPage(3)" class="fscr__button fscr__button--primary">Back</button>
+          <button type="button" @click="handleFourthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+        </div>
+      </fieldset>
+    </div>
 
     <!-- Page 5 -->
-    <fieldset class="fieldset">
-      <legend>Order Summary</legend>
-      <label>
-        <span class="d-block">Apply a promo code.</span>
-        <input type="text" v-model="promoCode">
-      </label>
-      <button type="button" @click="checkPromoCode">Apply</button>
-      <section>
-        <h1>Lesson Package Cost Breakdown</h1>
-      </section>
-      <label>
-        <span class="d-block">How did you hear about us?</span>
-        <input name="customerReferredBy" type="text" v-model="customerReferredBy" v-validate="'required'">
-      </label>
-      <hr>
-      <div class="fscrForm__btn-container">
-        <button type="button" @click="goToPage(4)" class="fscr__button fscr__button--primary">Back</button>
-        <button type="button" @click="handleFfifthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
-      </div>
-    </fieldset>
+    <div v-show="activePage==5">
+      <fieldset class="fscr-fieldset">
+        <legend class="fscr-page-title">Order Summary</legend>
+        <label>
+          <span class="d-block">Apply a promo code.</span>
+          <input type="text" v-model="promoCode">
+        </label>
+        <button type="button" @click="checkPromoCode">Apply</button>
+        <section>
+          <h1>Lesson Package Cost Breakdown</h1>
+        </section>
+        <label>
+          <span class="d-block">How did you hear about us?</span>
+          <input name="customerReferredBy" type="text" v-model="customerReferredBy" v-validate="'required'">
+        </label>
+        <hr>
+        <div class="fscrForm__btn-container">
+          <button type="button" @click="goToPage(4)" class="fscr__button fscr__button--primary">Back</button>
+          <button type="button" @click="handleFfifthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+        </div>
+      </fieldset>
+    </div>
 
     <!-- Page 6 -->
-    <fieldset class="fieldset">
-      <label>
-        <input type="checkbox" v-model="disclaimerAccepted" :value="true">
-        <span>I, the enrolled participant(s) and/or parent/guardian of the participant(s) agree and understand that swimming is a hazardous activity. I recognize that there are risks inherent in the sport of swimming, including but not limited to, paralyzing injuries and death. I am aware that participation in swim lessons does not guarantee that participant will be water-safe.</span>
-      </label>
-      <label>
-        <span class="d-block">Order total - Your card will not be charged until you are matched with an instructor.</span>
-        <input type="text" readonly> USD
-      </label>
-    </fieldset>
-
-    <form action="/charge" method="post" id="payment-form">
-      <div class="form-row">
-        <label for="card-element">
-          Credit or debit card
+    <div v-show="activePage==6">
+      <fieldset class="fscr-fieldset">
+        <label>
+          <input type="checkbox" v-model="disclaimerAccepted" :value="true">
+          <span>I, the enrolled participant(s) and/or parent/guardian of the participant(s) agree and understand that swimming is a hazardous activity. I recognize that there are risks inherent in the sport of swimming, including but not limited to, paralyzing injuries and death. I am aware that participation in swim lessons does not guarantee that participant will be water-safe.</span>
         </label>
+        <label>
+          <span class="d-block">Order total - Your card will not be charged until you are matched with an instructor.</span>
+          <input type="text" readonly> USD
+        </label>
+      </fieldset>
 
-        <div id="card-number-element">
-          <!-- A Stripe Element will be inserted here. -->
+      <form action="/charge" method="post" id="payment-form">
+        <div class="form-row">
+          <label for="card-element">
+            Credit or debit card
+          </label>
+
+          <div id="card-number-element">
+            <!-- A Stripe Element will be inserted here. -->
+          </div>
+          <!-- Used to display Element errors. -->
+          <div id="card-number-errors" role="alert"></div>
+
+          <div id="card-expiry-element">
+            <!-- A Stripe Element will be inserted here. -->
+          </div>
+          <!-- Used to display Element errors. -->
+          <div id="card-expiry-errors" role="alert"></div>
+
+          <div id="card-cvc-element">
+            <!-- A Stripe Element will be inserted here. -->
+          </div>
+          <!-- Used to display Element errors. -->
+          <div id="card-cvc-errors" role="alert"></div>
+
         </div>
-        <!-- Used to display Element errors. -->
-        <div id="card-number-errors" role="alert"></div>
 
-        <div id="card-expiry-element">
-          <!-- A Stripe Element will be inserted here. -->
-        </div>
-        <!-- Used to display Element errors. -->
-        <div id="card-expiry-errors" role="alert"></div>
+        <button>Submit Payment</button>
+      </form>
+    </div>
 
-        <div id="card-cvc-element">
-          <!-- A Stripe Element will be inserted here. -->
-        </div>
-        <!-- Used to display Element errors. -->
-        <div id="card-cvc-errors" role="alert"></div>
-
-      </div>
-
-      <button>Submit Payment</button>
-    </form>
-
+  </div>
   </div>
 
 </template>
@@ -206,7 +223,6 @@ import Multiselect from 'vue-multiselect'
 import Guest from './components/Guest.vue'
 import Parent from './components/Parent.vue'
 import Student from './components/Student.vue'
-import LessonPackage from './components/LessonPackage.vue'
 
 export default {
   
@@ -216,19 +232,20 @@ export default {
     Guest,
     Parent,
     Student,
-    Multiselect,
-    LessonPackage
+    Multiselect
   },
 
   data() {
     return {
-      step: 1,
-      page: 1,
       lessons: [],
       promoCode: null,
       form: {
         serverResponse: {}
       },
+      parent: {
+        serverResponse: {}
+      },
+      activePage: 1,
       daysThatWork: null,
       numberOfParents: 0,
       numberOfStudents: 0,
@@ -268,6 +285,9 @@ export default {
   mounted() {
     this.lessons = this.getLessonsFromApi();
     this.displayableLessonPackages = this.getDisplayableLessonPackages();
+    if(this.getAllUrlParams().page) {
+      this.goToPage(this.getAllUrlParams().page);
+    }
   },
 
   watch: {
@@ -278,10 +298,18 @@ export default {
 
   methods: {
 
+    /**
+     * Go to a page of the form
+     *
+     */
     goToPage(pageNumber) {
-      //
+      this.activePage = pageNumber;
     },
 
+    /**
+     * Get a student component instance
+     * 
+     */
     getStudent(id) {
       var student = null,
           students = this.$refs.students;
@@ -302,28 +330,32 @@ export default {
 
       var guestValidated = await this.$refs.guest.validate();
 
-      // if guest hasn't been created yet, we need to do a post request
-      if(!this.$refs.guest.serverResponse.hasOwnProperty('id')) {
+      if(guestValidated) {
 
-        // if guest is valid, create form entry
-        if(guestValidated) {
+        // if guest hasn't been created yet, we need to do a post request
+        if(!this.$refs.guest.serverResponse.hasOwnProperty('id')) {
 
-          if (!this.form.serverResponse.hasOwnProperty('id')) {
-            this.saveForm();
+            if (!this.form.serverResponse.hasOwnProperty('id')) {
+              this.saveForm();
+            }
+
+            // on successful form entry creation, create guest entry
+            this.$on('form:create', () => {
+              this.$refs.guest.store(this.form.serverResponse.id);
+            });
+
           }
 
-          // on successful form entry creation, create guest entry
-          this.$on('form:create', () => {
-            this.$refs.guest.sendToApi(this.form.serverResponse.id);
-          });
+          // otherwise we need to update the guest
+          else {
+            if(this.$refs.guest.isDirty() && guestValidated) {
+              this.$refs.guest.update(this.form.serverResponse.id);
+            }
+          }
+
+          this.activePage += 1;
+
         }
-
-      }
-
-      // otherwise we need to update the guest
-      else {
-        this.updateGuest();
-      }
 
     },
 
@@ -340,25 +372,6 @@ export default {
         });
     },
 
-    updateGuest() {
-      var request = {};
-      request.first_name = this.$refs.guest.firstName;
-      request.last_name = this.$refs.guest.lastName;
-      request.email_address = this.$refs.guest.email;
-      request.phone_number = this.$refs.guest.phone;
-      request.zip_code = this.$refs.guest.zip;
-      request.pool_access = this.$refs.guest.poolAccess;
-      this.$http.put(this.API_BASE_URL + '/guests/' + this.apiResponse.guest.success.id, request)
-        .then(response => {
-          this.$set(this.apiResponse.guest, 'success', response.data.guest);
-          this.$emit('guest:update');
-        })
-        .catch(error => {
-          this.$set(this.apiResponse.guest, 'error', error.data);
-          this.$emit('guest:update:error');
-        });
-    },
-
     /**
      * Validate Parents & Students
      * If valid, create Parents & Students
@@ -366,20 +379,70 @@ export default {
      */
     async handleSecondPageSubmission() {
 
-      var condition = this.apiResponse.form.success != 'undefined' && this.apiResponse.guest.success != 'undefined' && !this.apiResponse.parents.lenth;
+          // need to have a form ID provided by server
+      var savedForm    = this.form.serverResponse.hasOwnProperty('id'),
+          // need to have a guest ID provided by server
+          savedGuest   = this.$refs.guest.serverResponse.hasOwnProperty('id'),
+          // could have already saved parents
+          savedParents = this.$refs.hasOwnProperty('parents') ? this.$refs.parents.every(p => { p.serverResponse.hasOwnProperty('id'); }) : null,
+          // need to be enrolling students
+          enrollingStudents = await this.$validator.validate('numberOfStudents'),
+          // -- //
+          parentsValidated  = false,
+          studentsValidated = false,
+          parent  = {},
+          request = {};
 
-      if(condition) {
-        var request           = {},
-            parentsValidated  = false,
-            studentsValidated = false;
+      if(savedForm && savedGuest && !savedParents && enrollingStudents) {
+
+        // if guest is only parent
         if(this.guestIsOnlyParent == true) {
+
           parentsValidated  = true;
           studentsValidated = await this.validateStudents();
+
+          if(studentsValidated) {
+
+            parent.name = this.$refs.guest.firstName + " " + this.$refs.guest.lastName;
+            parent.email = this.$refs.guest.email;
+            parent.phone_number = this.$refs.guest.phone;
+            parent.form_entry_id = this.form.serverResponse.id;
+
+            // create one parent
+            this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
+              .then(response => {
+                // update formEntry id so we know we have one
+                this.parent.serverResponse = response.data.guardian;
+                this.$emit('parent:create');
+              })
+              .catch(error => {
+                this.parent.serverResponse = JSON.stringify(error.data);
+                this.$emit('parent:create:error');
+              });
+
+            // create students with the one parent's ID
+            this.$on('parent:create', () => {
+              if(this.parent.serverResponse.hasOwnProperty('id')) {
+                this.$refs.students.forEach(s => {
+                  s.store({
+                    guardian_id: this.parent.serverResponse.id,
+                    form_entry_id: this.form.serverResponse.id
+                  });
+                });
+              }
+            });
+
+          }
+
         }
+
+        // if guest is not only parent
         else {
           parentsValidated  = await this.validateParents();
           studentsValidated = await this.validateStudents();
         }
+
+        /*
         if(studentsValidated && parentsValidated && this.guestIsOnlyParent) {
           request = {};
           request.name = this.$refs.guest.firstName + " " + this.$refs.guest.lastName;
@@ -392,7 +455,25 @@ export default {
         else if (studentsValidated && parentsValidated && !this.guestIsOnlyParent) {
           console.log('validated');
         }
+        */
       }
+    },
+
+    /**
+     * Validate Students
+     *
+     */
+    async validateStudents() {
+      var promise = null,
+          results = [],
+          validate  = null,
+          validated = false;
+      this.$refs.students.forEach( async (s) => {
+        results.push(...s.validate());
+      });
+      validate = Promise.all(results);
+      validated = await validate.then(result => validated = result.every(isValid => isValid));
+      return validated;
     },
 
     saveParents(parentRequests) {
@@ -432,35 +513,6 @@ export default {
           this.apiResponse.parentsErrors.push(error.data);
           this.$emit('student:create:error');
         });
-    },
-
-    /**
-     * Validate Students
-     *
-     */
-    async validateStudents() {
-      
-      var promises = [],
-          studentValidators = [];
-
-      for(var i=0; i < this.numberOfStudents; i++) {
-        studentValidators = studentValidators.concat([
-          this.$validator.validate('student_' + (i + 1) + '.name'),
-          this.$validator.validate('student_' + (i + 1) + '.dob'),
-        ]);
-      }
-
-      promises = promises.concat([this.$validator.validate('numberOfStudents')]);
-      promises = promises.concat(...studentValidators);
-
-      var validate = Promise.all(promises);
-
-      // await results of promise and ensure they are all true
-      var validated = await validate.then(result => validated = result.every(isValid => isValid));
-      if(validated) {
-        return true;
-      }
-      return false;
     },
 
     async validateParents() {
@@ -516,7 +568,72 @@ export default {
 
     checkPromoCode() {
 
-    }
+    },
+
+    getAllUrlParams(url) {
+
+      // get query string from url (optional) or window
+      var queryString = url ? url.split('?')[1] : window.location.search.slice(1);
+
+      // we'll store the parameters here
+      var obj = {};
+
+      // if query string exists
+      if (queryString) {
+
+        // stuff after # is not part of query string, so get rid of it
+        queryString = queryString.split('#')[0];
+
+        // split our query string into its component parts
+        var arr = queryString.split('&');
+
+        for (var i = 0; i < arr.length; i++) {
+          // separate the keys and the values
+          var a = arr[i].split('=');
+
+          // set parameter name and value (use 'true' if empty)
+          var paramName = a[0];
+          var paramValue = typeof (a[1]) === 'undefined' ? true : a[1];
+
+          // (optional) keep case consistent
+          paramName = paramName.toLowerCase();
+          if (typeof paramValue === 'string') paramValue = paramValue.toLowerCase();
+
+          // if the paramName ends with square brackets, e.g. colors[] or colors[2]
+          if (paramName.match(/\[(\d+)?\]$/)) {
+
+            // create key if it doesn't exist
+            var key = paramName.replace(/\[(\d+)?\]/, '');
+            if (!obj[key]) obj[key] = [];
+
+            // if it's an indexed array e.g. colors[2]
+            if (paramName.match(/\[\d+\]$/)) {
+              // get the index value and add the entry at the appropriate position
+              var index = /\[(\d+)\]/.exec(paramName)[1];
+              obj[key][index] = paramValue;
+            } else {
+              // otherwise add the value to the end of the array
+              obj[key].push(paramValue);
+            }
+          } else {
+            // we're dealing with a string
+            if (!obj[paramName]) {
+              // if it doesn't exist, create property
+              obj[paramName] = paramValue;
+            } else if (obj[paramName] && typeof obj[paramName] === 'string'){
+              // if property does exist and it's a string, convert it to an array
+              obj[paramName] = [obj[paramName]];
+              obj[paramName].push(paramValue);
+            } else {
+              // otherwise add the property
+              obj[paramName].push(paramValue);
+            }
+          }
+        }
+      }
+
+      return obj;
+    },
 
   }
 }
@@ -526,18 +643,110 @@ export default {
 
   .fscr {
 
-    .d-block {
+    font-family: 'Open Sans', sans-serif;
+
+    .fscr-d-none {
+      display: none;
+    }
+
+    .fscr-d-block {
       display: block;
     }
 
-    .input-wrap {
-      margin: 15px 0;
+    .fscr-d-inline-block {
+      display: inline-block;
     }
 
-    .fieldset {
+    .fscr-d-flex {
+      display: flex;
+    }
+
+    .fscr-d-flex.wrap {
+      flex-wrap: wrap;
+    }
+
+    .fscr-justify-content-end {
+      justify-content: flex-end;
+    }
+
+    .fscr-justify-content-between {
+      justify-content: space-between;
+    }
+
+    .fscr-app-container {
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    .fscr-line-break {
+      margin-bottom: 25px;
+    }
+
+    .fscr-fieldset-wrap {
+      margin: 25px 0;
+    }
+
+    .fscr-page-title {
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+      width: 100%;
+      padding: 15px 0;
+      font-weight: bold;
+      margin-bottom: 25px;
+    }
+
+    .fscr-input-error {
+      height: 16px;
+      color: tomato;
+      font-size: 0.65rem;
+      padding: 5px 0 0 0;
+      font-weight: bold;
+    }
+
+    .fscr-asterisk--required {
+      color: tomato;
+      font-size: 0.75rem;
+      vertical-align: top;
+    }
+
+    .fscr-input-wrap {
+      margin: 5px 0;
+    }
+
+    .fscr-input-wrap--half {
+      flex: 1 1 50%;
+    }
+
+    .fscr-input {
+      font-size: 0.9rem;
+      padding: 5px;
+    }
+
+    .fscr-input-label {
+      font-weight: bold;
+      padding: 0;
+    }
+
+    .fscr-input-label-text {
+      margin-bottom: 5px;
+    }
+
+    .fscr-fieldset {
       border: none;
       margin: 0;
       padding: 0;
+    }
+
+    .fscr-parent-component {
+      margin: 0 0 25px 0;
+      border: 1px dashed #222;
+      padding: 15px;
+    }
+
+    .fscr-student-component {
+      margin: 0 0 25px 0;
+      border: 1px dashed #222;
+      padding: 15px;
     }
 
   }

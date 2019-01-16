@@ -181,6 +181,8 @@ class GuestController extends BaseController {
       // ok because set() will only set a value if its key already exists
       $guest->set($key, $value);
     }
+    $this->orm()->persist($guest);
+    $this->orm()->flush();
     $arr = $guest->toArray();
     return new \WP_REST_Response([
       "guest" => $arr

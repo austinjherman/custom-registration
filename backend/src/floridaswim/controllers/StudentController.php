@@ -98,6 +98,7 @@ class StudentController extends BaseController {
     $student->addFormEntry($formEntry);
     $this->orm()->persist($student);
     $this->orm()->flush();
+
     if(!$student->get('id')) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
