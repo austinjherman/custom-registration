@@ -79,7 +79,7 @@
           </div>
           <div v-if="guestIsOnlyParent == 'false'">
             <div v-for="n in numberOfParents" v-bind:key="n">
-              <Parent :vvScope="'parent_' + (n-1)" ref="parents"/>
+              <Parent :vvScope="'parent_' + (n-1)" ref="parents" :getStudent="getStudent"/>
             </div>
           </div>
           <hr class="fscr-line-break">
@@ -239,12 +239,11 @@ export default {
     return {
       lessons: [],
       promoCode: null,
-      form: {
-        serverResponse: {}
+      serverResponse: {
+        form: {},
+        parents: {},
+        students: {}
       },
-      parents: [
-        serverResponse: {}
-      ],
       activePage: 1,
       daysThatWork: null,
       numberOfParents: 0,
@@ -322,6 +321,21 @@ export default {
     },
 
     /**
+     * Get a parent component instance
+     * 
+     */
+    getParent(id) {
+      var parent = null,
+          parents = this.$refs.parents;
+      parents.forEach(p => {
+        if(p.id == id) {
+          parent = p;
+        }
+      });
+      return parent;
+    },
+
+    /**
      * Valdiate Guest
      * If guest is valid, create Form Entry and Guest 
      *
@@ -333,23 +347,34 @@ export default {
       if(guestValidated) {
 
         // if guest hasn't been created yet, we need to do a post request
-        if(!this.$refs.guest.serverResponse.hasOwnProperty('id')) {
+        if(!this.$refs.guest.serverResponse.guest.hasOwnProperty('id')) {
 
-            if (!this.form.serverResponse.hasOwnProperty('id')) {
+            if (!this.serverResponse.form.hasOwnProperty('id')) {
               this.saveForm();
             }
 
             // on successful form entry creation, create guest entry
             this.$on('form:create', () => {
-              this.$refs.guest.store(this.form.serverResponse.id);
+              this.$refs.guest.store(this.serverResponse.form.id);
             });
 
           }
 
           // otherwise we need to update the guest
           else {
+
             if(this.$refs.guest.isDirty() && guestValidated) {
-              this.$refs.guest.update(this.form.serverResponse.id);
+
+              this.$refs.guest.update(this.serverResponse.form.id);
+              
+              // if guest is parent then we need to update the parent
+              if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+                this.$refs.guest.updateAsParent(this.serverResponse.form.id)
+                  .catch((error) => {
+                    console.log('error: ', error);
+                  });
+              }
+
             }
           }
 
@@ -363,11 +388,11 @@ export default {
       var request = {};
       this.$http.post(this.API_BASE_URL + '/forms/create', request)
         .then(response => {
-          this.$set(this.form, 'serverResponse', response.data.form);
+          this.$set(this.serverResponse, 'form', response.data.form);
           this.$emit('form:create');
         })
         .catch(error => {
-          this.$set(this.form, 'serverResponse', JSON.stringify(error.data));
+          this.$set(this.serverResponse, 'form', JSON.stringify(error.data));
           this.$emit('form:error');
         });
     },
@@ -379,85 +404,56 @@ export default {
      */
     async handleSecondPageSubmission() {
 
-          // need to have a form ID provided by server
-      var savedForm    = this.form.serverResponse.hasOwnProperty('id'),
-          // need to have a guest ID provided by server
-          savedGuest   = this.$refs.guest.serverResponse.hasOwnProperty('id'),
-          // could have already saved parents
-          savedParents = this.$refs.hasOwnProperty('parents') ? this.$refs.parents.every(p => { p.serverResponse.hasOwnProperty('id'); }) : null,
-          // need to be enrolling students
+
+
+      var savedForm    = this.serverResponse.form.hasOwnProperty('id'),
+          savedGuest   = this.$refs.guest.serverResponse.guest.hasOwnProperty('id'),
           enrollingStudents = await this.$validator.validate('numberOfStudents'),
-          // -- //
           parentsValidated  = false,
           studentsValidated = false,
           parent  = {},
+          promise = null,
           request = {};
 
-      if(savedForm && savedGuest && !savedParents && enrollingStudents) {
+      if(savedForm && savedGuest && enrollingStudents) {
 
-        // if guest is only parent
-        if(this.guestIsOnlyParent == true) {
+        studentsValidated = await this.validateStudents();
 
-          parentsValidated  = true;
-          studentsValidated = await this.validateStudents();
+        if(studentsValidated) {
 
-          if(studentsValidated) {
+          // if guest is only parent
+          if(this.guestIsOnlyParent == true) {
 
-            parent.name = this.$refs.guest.firstName + " " + this.$refs.guest.lastName;
-            parent.email = this.$refs.guest.email;
-            parent.phone_number = this.$refs.guest.phone;
-            parent.form_entry_id = this.form.serverResponse.id;
+            // if we don't have a guest/parent
+            if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+              this.$refs.guest.saveAsParent(this.serverResponse.form.id);
+            }
 
-            // create one parent
-            this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
-              .then(response => {
-                // update formEntry id so we know we have one
-                var serverResponse = response.data.guardian;
-                serverResponse.frontEndId = this.$refs.guest.id;
-                this.parents.push(serverResponse);
-                this.$emit('parent:create');
-              })
-              .catch(error => {
-                this.parents.push(error.data);
-                this.$emit('parent:create:error');
-              });
-
-            // create students with the one parent's ID
-            this.$on('parent:create', () => {
-              if(this.parent.serverResponse.hasOwnProperty('id')) {
-                this.$refs.students.forEach(s => {
+            // if we do...
+            // parent/guest are updated on first page submission
+            // so they remain in sync
+            else {
+              this.$refs.students.forEach(s => {
+                if(s.isDirty) {
                   s.store({
-                    guardian_id: this.parent.serverResponse.id,
-                    form_entry_id: this.form.serverResponse.id
+                    guardian_id: this.$refs.guest.serverResponse.parent.id,
+                    form_entry_id: this.serverResponse.form.id
                   });
-                });
-              }
-            });
+                }
+              });
+    
+            }
+            
+          }
 
+          // if guest is not only parent
+          else {
+            parentsValidated  = await this.validateParents();
+            studentsValidated = await this.validateStudents();
           }
 
         }
 
-        // if guest is not only parent
-        else {
-          parentsValidated  = await this.validateParents();
-          studentsValidated = await this.validateStudents();
-        }
-
-        /*
-        if(studentsValidated && parentsValidated && this.guestIsOnlyParent) {
-          request = {};
-          request.name = this.$refs.guest.firstName + " " + this.$refs.guest.lastName;
-          request.email = this.$refs.guest.email;
-          request.phone_number = this.$refs.guest.phone;
-          request.form_entry_id = this.apiResponse.form.success.id;
-          request.students = this.$refs.students.map(s => s.id);
-          this.saveParents([request]);
-        }
-        else if (studentsValidated && parentsValidated && !this.guestIsOnlyParent) {
-          console.log('validated');
-        }
-        */
       }
     },
 

@@ -82,7 +82,10 @@
         phone: null,
         zip: null,
         poolAccess: null,
-        serverResponse: {}
+        serverResponse: {
+          guest: {},
+          parent: {}
+        }
       }
     },
 
@@ -127,11 +130,11 @@
         this.$http.post(this.API_BASE_URL + '/guests/create', request)
           .then(response => {
             // update formEntry id so we know we have one
-            this.serverResponse = response.data.guest;
+            this.serverResponse.guest = response.data.guest;
             this.$emit('guest:create');
           })
           .catch(error => {
-            this.serverResponse = JSON.stringify(error.data);
+            this.serverResponse.guest = JSON.stringify(error.data);
             this.$emit('guest:create:error');
           });
       },
@@ -145,27 +148,73 @@
         request.zip_code = this.zip;
         request.pool_access = this.poolAccess;
         request.form_entry_id = formEntryId;
-        this.$http.put(this.API_BASE_URL + '/guests/update/' + this.serverResponse.id, request)
+        this.$http.put(this.API_BASE_URL + '/guests/update/' + this.serverResponse.guest.id, request)
           .then(response => {
             // update formEntry id so we know we have one
-            this.serverResponse = response.data.guest;
+            this.serverResponse.guest = response.data.guest;
             this.$emit('guest:create');
           })
           .catch(error => {
-            this.serverResponse = JSON.stringify(error.data);
+            this.serverResponse.guest = JSON.stringify(error.data);
             this.$emit('guest:create:error');
           });
       },
 
+      saveAsParent(formEntryId) {
+
+        var parent = {};
+        parent.name = this.firstName + " " + this.lastName;
+        parent.email = this.email;
+        parent.phone_number = this.phone;
+        parent.form_entry_id = formEntryId;
+
+        return new Promise((resolve, reject) => {
+
+          this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
+            .then((response) => {
+              this.$set(this.serverResponse, 'parent', response.data.guardian);
+              resolve(this.serverResponse.parent);
+            })
+            .catch((error) => {
+              reject(error);
+            })
+
+        });
+
+      },
+
+      updateAsParent(formEntryId) {
+
+        var parent = {};
+        parent.name = this.firstName + " " + this.lastName;
+        parent.email = this.email;
+        parent.phone_number = this.phone;
+        parent.form_entry_id = formEntryId;
+
+        return new Promise((resolve, reject) => {
+
+          this.$http.post(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.parent.id, parent)
+            .then((response) => {
+              this.$set(this.serverResponse, 'parent', response.data.guardian);
+              resolve(this.serverResponse.parent);
+            })
+            .catch((error) => {
+              reject(error);
+            })
+
+        });
+
+      },
+
       isDirty() {
-        if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+        if(Object.keys(this.serverResponse.guest).length !== 0 && this.serverResponse.guest.hasOwnProperty('id')) {
           var isDirty = 
-            this.firstName  != this.serverResponse.first_name ||
-            this.lastName   != this.serverResponse.last_name ||
-            this.email      != this.serverResponse.email_address ||
-            this.phone      != this.serverResponse.phone_number ||
-            this.zip        != this.serverResponse.zip_code ||
-            this.poolAccess != this.serverResponse.pool_access;
+            this.firstName  != this.serverResponse.guest.first_name ||
+            this.lastName   != this.serverResponse.guest.last_name ||
+            this.email      != this.serverResponse.guest.email_address ||
+            this.phone      != this.serverResponse.guest.phone_number ||
+            this.zip        != this.serverResponse.guest.zip_code ||
+            this.poolAccess != this.serverResponse.guest.pool_access;
           console.log('guest is dirty: ', isDirty);
           return isDirty;
         }

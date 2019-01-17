@@ -39,6 +39,7 @@
         id: null,
         name: null,
         dob: null,
+        parent: null,
         serverResponse: {}
       }
     }, 
@@ -74,6 +75,21 @@
             this.serverResponse = JSON.stringify(error.data);
             this.$emit('student:create:error');
           });
+      },
+
+      isDirty() {
+
+        if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+
+          var isDirty = 
+            this.name != this.serverResponse.name || 
+            new Date(this.dob).getTime() !== new Date(this.serverResponse.student_date_of_birth).getTime()
+          console.log('student ' + this.id + " is dirty: ", isDirty);
+          return isDirty;
+        }
+
+        return true;
+
       }
 
     }

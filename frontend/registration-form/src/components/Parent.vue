@@ -46,7 +46,7 @@
 
   export default {
 
-    props: ['vvScope'],
+    props: ['vvScope', 'getStudent'],
 
     data() {
       return {
@@ -89,6 +89,10 @@
           // add student to this parent
           this.students.push({id: clickedStudentId});
 
+          // add parent to this student
+          var student = this.getStudent(clickedStudentId);
+          student.parent = this.id;
+
           // loop through parent components
           // and remove student from other parent components
           allParents.forEach((p, i) => {
@@ -119,6 +123,8 @@
 
         else {
           index = null;
+          var student = this.getStudent(clickedStudentId);
+          student.parent = null;
           this.students.forEach((s, i) => {
             if(s.id == clickedStudentId) {
               index = i;

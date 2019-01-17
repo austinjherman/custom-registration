@@ -170,12 +170,16 @@ class GuardianController extends BaseController {
       $response = new \WP_REST_Response(['errors' => $v->errors()], 400);
     }
 
-    // update student
+    // update guardian
     $incomingJson = $request->get_json_params();
     foreach($incomingJson as $key => $value) {
       // okay because set() will only set a value if its key already exists
       $guardian->set($key, $value);
     }
+
+    $this->orm()->persist($guardian);
+    $this->orm()->flush();
+
     $arr = $guardian->toArray();
     return new \WP_REST_Response([
       "guardian" => $arr
