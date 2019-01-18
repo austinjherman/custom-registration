@@ -297,48 +297,29 @@ export default {
 
   methods: {
 
+    // work these out
+    getLessonsFromApi() {},
+    checkPromoCode() {},
+    getDisplayableLessonPackages() {},
+
     /**
-     * Go to a page of the form
+     | ----------------------------------------------------------
+     | Button Handlers
+     | ----------------------------------------------------------
+     |
+     | The following functions deal with the buttons that submit
+     | each page of the form.
+     |
+     */
+
+    /**
+     * Handle the page 1 submission button.
+     * --------------------------------------
+     * If Form Entry / Guest haven't yet been saved, save them to DB.
+     * If Form Entry / Guest have been saved already, update them if inputs have changed.
      *
-     */
-    goToPage(pageNumber) {
-      this.activePage = pageNumber;
-    },
-
-    /**
-     * Get a student component instance
-     * 
-     */
-    getStudent(id) {
-      var student = null,
-          students = this.$refs.students;
-      students.forEach(s => {
-        if(s.id == id) {
-          student = s;
-        }
-      });
-      return student;
-    },
-
-    /**
-     * Get a parent component instance
-     * 
-     */
-    getParent(id) {
-      var parent = null,
-          parents = this.$refs.parents;
-      parents.forEach(p => {
-        if(p.id == id) {
-          parent = p;
-        }
-      });
-      return parent;
-    },
-
-    /**
-     * Valdiate Guest
-     * If guest is valid, create Form Entry and Guest 
-     *
+     * @params none
+     * @return void
      */
     async handleFirstPageSubmission() {
 
@@ -346,65 +327,55 @@ export default {
 
       if(guestValidated) {
 
-        // if guest hasn't been created yet, we need to do a post request
+        // if guest hasn't been saved in DB yet, we need to do that
         if(!this.$refs.guest.serverResponse.guest.hasOwnProperty('id')) {
 
-            if (!this.serverResponse.form.hasOwnProperty('id')) {
-              this.saveForm();
-            }
-
-            // on successful form entry creation, create guest entry
-            this.$on('form:create', () => {
-              this.$refs.guest.store(this.serverResponse.form.id);
-            });
-
+          // save form to DB
+          if (!this.serverResponse.form.hasOwnProperty('id')) {
+            this.saveForm();
           }
 
-          // otherwise we need to update the guest
-          else {
-
-            if(this.$refs.guest.isDirty() && guestValidated) {
-
-              this.$refs.guest.update(this.serverResponse.form.id);
-              
-              // if guest is parent then we need to update the parent
-              if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
-                this.$refs.guest.updateAsParent(this.serverResponse.form.id)
-                  .catch((error) => {
-                    console.log('error: ', error);
-                  });
-              }
-
-            }
-          }
-
-          this.activePage += 1;
+          // on successful form entry creation, save guest to DB
+          this.$on('form:create', () => {
+            this.$refs.guest.store(this.serverResponse.form.id);
+          });
 
         }
 
-    },
+        // otherwise we need to update the guest
+        else {
 
-    saveForm() {
-      var request = {};
-      this.$http.post(this.API_BASE_URL + '/forms/create', request)
-        .then(response => {
-          this.$set(this.serverResponse, 'form', response.data.form);
-          this.$emit('form:create');
-        })
-        .catch(error => {
-          this.$set(this.serverResponse, 'form', JSON.stringify(error.data));
-          this.$emit('form:error');
-        });
+          if(this.$refs.guest.isDirty() && guestValidated) {
+
+            this.$refs.guest.update(this.serverResponse.form.id);
+            
+            // if guest is parent then we need to update the parent
+            if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+              this.$refs.guest.updateAsParent(this.serverResponse.form.id)
+                .catch((error) => {
+                  console.log('error: ', error);
+                });
+            }
+
+          }
+        }
+
+        this.activePage += 1;
+
+      }
+
     },
 
     /**
-     * Validate Parents & Students
-     * If valid, create Parents & Students
+     * Handle page 2 submission button.
+     * -----------------------------------
+     * If Form Entry / Guest haven't yet been saved, save them to DB.
+     * If Form Entry / Guest have been saved already, update them if inputs have changed.
      *
+     * @params none
+     * @return void
      */
     async handleSecondPageSubmission() {
-
-
 
       var savedForm    = this.serverResponse.form.hasOwnProperty('id'),
           savedGuest   = this.$refs.guest.serverResponse.guest.hasOwnProperty('id'),
@@ -421,35 +392,34 @@ export default {
 
         if(studentsValidated) {
 
-          // if guest is only parent
           if(this.guestIsOnlyParent == true) {
 
-            // if we don't have a guest/parent
+            // TODO 
+            // remove/delete previously created parents
+            /* 
+              this.$refs.parents.forEach(p => {
+                p.delete();
+              });
+            */
+
+            // if the guest is not already the parent
+            // create a new parent with guest info and save to DB
             if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
               this.$refs.guest.saveAsParent(this.serverResponse.form.id);
-            }
-
-            // if we do...
-            // parent/guest are updated on first page submission
-            // so they remain in sync
-            else {
-              this.$refs.students.forEach(s => {
-                if(s.isDirty) {
-                  s.store({
-                    guardian_id: this.$refs.guest.serverResponse.parent.id,
-                    form_entry_id: this.serverResponse.form.id
-                  });
-                }
-              });
-    
             }
             
           }
 
           // if guest is not only parent
           else {
+
             parentsValidated  = await this.validateParents();
             studentsValidated = await this.validateStudents();
+
+            // TODO
+            // remove/delete guest-parent if created
+
+
           }
 
         }
@@ -458,8 +428,12 @@ export default {
     },
 
     /**
-     * Validate Students
-     *
+     | ----------------------------------------------------------
+     | Validation Helpers
+     | ----------------------------------------------------------
+     |
+     | The following functions deal with field validation.
+     |
      */
     async validateStudents() {
       var promise = null,
@@ -472,6 +446,54 @@ export default {
       validate = Promise.all(results);
       validated = await validate.then(result => validated = result.every(isValid => isValid));
       return validated;
+    },
+
+    async validateParents() {
+      
+      var promises = [],
+          parentValidators = [];
+
+      for(var i=0; i < this.numberOfParents; i++) {
+        parentValidators = parentValidators.concat([
+          this.$validator.validate('parent_' + (i) + '.name'),
+          this.$validator.validate('parent_' + (i) + '.email'),
+          this.$validator.validate('parent_' + (i) + '.phone'),
+        ]);
+      }
+
+      promises = promises.concat([this.$validator.validate('numberOfParents')]);
+      promises = promises.concat(...parentValidators);
+
+      var validate = Promise.all(promises);
+
+      // await results of promise and ensure they are all true
+      var validated = await validate.then(result => validated = result.every(isValid => isValid));
+      if(validated) {
+        return true;
+      }
+      return false;
+    },
+
+    /**
+     | ----------------------------------------------------------
+     | Database Helpers
+     | ----------------------------------------------------------
+     |
+     | The following functions help with CRUD operations.
+     |
+     */
+
+    saveForm() {
+      var request = {};
+      this.$http.post(this.API_BASE_URL + '/forms/create', request)
+        .then(response => {
+          this.$set(this.serverResponse, 'form', response.data.form);
+          this.$emit('form:create');
+        })
+        .catch(error => {
+          this.$set(this.serverResponse, 'form', JSON.stringify(error.data));
+          this.$emit('form:error');
+        });
     },
 
     saveParents(parentRequests) {
@@ -501,73 +523,65 @@ export default {
       })
     },
 
-    saveStudent(studentRequest) {
-      this.$http.post(this.API_BASE_URL + '/students/create', studentRequest)
-        .then(response => {
-          this.apiResponse.students.push(response.data.student);
-          this.$emit('student:create');
-        })
-        .catch(error => {
-          this.apiResponse.parentsErrors.push(error.data);
-          this.$emit('student:create:error');
-        });
+    /**
+     | ----------------------------------------------------------
+     | Helper Functions
+     | ----------------------------------------------------------
+     |
+     | The following functions perform some helpful actions
+     |
+     */
+
+    /**
+     * Go to a page of the form
+     *
+     * @param int pageNumber
+     * @return void
+     */
+    goToPage(pageNumber) {
+      this.activePage = pageNumber;
     },
 
-    async validateParents() {
-      
-      var promises = [],
-          parentValidators = [];
-
-      for(var i=0; i < this.numberOfParents; i++) {
-        parentValidators = parentValidators.concat([
-          this.$validator.validate('parent_' + (i) + '.name'),
-          this.$validator.validate('parent_' + (i) + '.email'),
-          this.$validator.validate('parent_' + (i) + '.phone'),
-        ]);
-      }
-
-      promises = promises.concat([this.$validator.validate('numberOfParents')]);
-      promises = promises.concat(...parentValidators);
-
-      var validate = Promise.all(promises);
-
-      // await results of promise and ensure they are all true
-      var validated = await validate.then(result => validated = result.every(isValid => isValid));
-      if(validated) {
-        return true;
-      }
-      return false;
-    },
-
-    handleThirdPageSubmission() {
-
-    },
-
-    getLessonsFromApi() {
-      
-    },
-
-    getDisplayableLessonPackages() {
-      var res = [],
-          lesson = {};
-      this.allLessonPackages.forEach(lp => {
-        lp.durations.forEach(d => {
-          if(d.duration == this.selectedLessonDuration) {
-            lesson = {};
-            lesson.title    = lp.title;
-            lesson.duration = d.duration;
-            lesson.price    = d.price;
-            res.push(lesson);
-          }
-        });
+    /**
+     * Get a student component instance
+     * 
+     * @param int id
+     * @return Component student
+     */
+    getStudent(id) {
+      var student = null,
+          students = this.$refs.students;
+      students.forEach(s => {
+        if(s.id == id) {
+          student = s;
+        }
       });
-      return res;
+      return student;
     },
 
-    checkPromoCode() {
-
+    /**
+     * Get a parent component instance
+     * 
+     * @param int id
+     * @return Component parent
+     */
+    getParent(id) {
+      var parent = null,
+          parents = this.$refs.parents;
+      parents.forEach(p => {
+        if(p.id == id) {
+          parent = p;
+        }
+      });
+      return parent;
     },
 
+    /**
+     * Parse the query string and get all URL params.
+     * 
+     * @param string url
+     * @return Object the URL params
+     */
     getAllUrlParams(url) {
 
       // get query string from url (optional) or window

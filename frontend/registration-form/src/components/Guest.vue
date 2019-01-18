@@ -169,7 +169,6 @@
         parent.form_entry_id = formEntryId;
 
         return new Promise((resolve, reject) => {
-
           this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
             .then((response) => {
               this.$set(this.serverResponse, 'parent', response.data.guardian);
@@ -178,7 +177,6 @@
             .catch((error) => {
               reject(error);
             })
-
         });
 
       },
