@@ -72,10 +72,13 @@
 
 <script>
 
+  import GlobalState from '../GlobalState'
+
   export default {
 
     data() {
       return {
+        globalState: GlobalState,
         firstName: null,
         lastName: null,
         email: null,
@@ -95,6 +98,12 @@
 
     methods: {
 
+      /**
+       * Validate the guest input fields.
+       *
+       * @param none
+       * @return boolean
+       */
       validate: async function() {
 
         // validate necessary form fields
@@ -118,7 +127,14 @@
 
       },
 
-      store(formEntryId) {
+      /**
+       * Store this guest in the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      store() {
+
         var request = {};
         request.first_name = this.firstName;
         request.last_name = this.lastName;
@@ -126,20 +142,30 @@
         request.phone_number = this.phone;
         request.zip_code = this.zip;
         request.pool_access = this.poolAccess;
-        request.form_entry_id = formEntryId;
-        this.$http.post(this.API_BASE_URL + '/guests/create', request)
-          .then(response => {
-            // update formEntry id so we know we have one
-            this.serverResponse.guest = response.data.guest;
-            this.$emit('guest:create');
-          })
-          .catch(error => {
-            this.serverResponse.guest = JSON.stringify(error.data);
-            this.$emit('guest:create:error');
-          });
+        request.form_entry_id = this.globalState.serverResponse.form.id;
+
+        return new Promise((resolve, reject) => {
+          this.$http.post(this.API_BASE_URL + '/guests/create', request)
+            .then(response => {
+              this.serverResponse.guest = response.data.guest;
+              resolve(response.data.guest);
+            })
+            .catch(error => {
+              this.serverResponse.guest = JSON.stringify(error.data);
+              reject(error);
+            });
+        });
+
       },
 
-      update(formEntryId) {
+      /**
+       * Update this guest in the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      update() {
+
         var request = {};
         request.first_name = this.firstName;
         request.last_name = this.lastName;
@@ -147,26 +173,35 @@
         request.phone_number = this.phone;
         request.zip_code = this.zip;
         request.pool_access = this.poolAccess;
-        request.form_entry_id = formEntryId;
-        this.$http.put(this.API_BASE_URL + '/guests/update/' + this.serverResponse.guest.id, request)
-          .then(response => {
-            // update formEntry id so we know we have one
-            this.serverResponse.guest = response.data.guest;
-            this.$emit('guest:create');
-          })
-          .catch(error => {
-            this.serverResponse.guest = JSON.stringify(error.data);
-            this.$emit('guest:create:error');
-          });
+        request.form_entry_id = this.globalState.serverResponse.form.id;
+
+        return new Promise((resolve, reject) => {
+          this.$http.put(this.API_BASE_URL + '/guests/update/' + this.serverResponse.guest.id, request)
+            .then(response => {
+              this.serverResponse.guest = response.data.guest;
+              resolve(response.data.guest);
+            })
+            .catch(error => {
+              this.serverResponse.guest = JSON.stringify(error.data);
+              reject(error);
+            });
+        });
+
       },
 
-      saveAsParent(formEntryId) {
+      /**
+       * Create a new parent with this guest's information.
+       *
+       * @param none
+       * @return Promise
+       */
+      saveAsParent() {
 
         var parent = {};
         parent.name = this.firstName + " " + this.lastName;
         parent.email = this.email;
         parent.phone_number = this.phone;
-        parent.form_entry_id = formEntryId;
+        parent.form_entry_id = this.globalState.serverResponse.form.id;
 
         return new Promise((resolve, reject) => {
           this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
@@ -181,16 +216,21 @@
 
       },
 
-      updateAsParent(formEntryId) {
+      /**
+       * Update the parent that was created with this guest's information.
+       *
+       * @param none
+       * @return Promise
+       */
+      updateAsParent() {
 
         var parent = {};
         parent.name = this.firstName + " " + this.lastName;
         parent.email = this.email;
         parent.phone_number = this.phone;
-        parent.form_entry_id = formEntryId;
+        parent.form_entry_id = this.globalState.serverResponse.form.id;
 
         return new Promise((resolve, reject) => {
-
           this.$http.post(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.parent.id, parent)
             .then((response) => {
               this.$set(this.serverResponse, 'parent', response.data.guardian);
@@ -199,11 +239,35 @@
             .catch((error) => {
               reject(error);
             })
-
         });
 
       },
 
+      /**
+       * Delete the parent that was created with this guest's information.
+       *
+       * @param none
+       * @return Promise
+       */
+      deleteAsParent() {
+        return new Promise((resolve, reject) => {
+          this.$http.delete(this.API_BASE_URL + '/guardians/delete/' + this.serverResponse.parent.id)
+          .then((response) => {
+            this.$set(this.serverResponse, 'parent', {});
+            resolve(this.serverResponse.parent);
+          })
+          .catch((error) => {
+            reject(error);
+          })
+        });
+      },
+
+      /**
+       * Determines if guest fields are different than what they are on the server.
+       *
+       * @param none
+       * @return Boolean
+       */
       isDirty() {
         if(Object.keys(this.serverResponse.guest).length !== 0 && this.serverResponse.guest.hasOwnProperty('id')) {
           var isDirty = 

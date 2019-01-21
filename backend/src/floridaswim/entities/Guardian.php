@@ -16,6 +16,7 @@ class Guardian extends BaseModel
     protected $form_entry_id;
     protected $name;
     protected $email_address;
+    protected $phone_number;
     protected $created_at;
     protected $updated_at;
     protected $students;
@@ -52,6 +53,7 @@ class Guardian extends BaseModel
         $builder->createManyToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->addJoinColumn('form_entry_id', 'id', true, false, 'cascade')->build();
         $builder->addField('name', 'string');
         $builder->addField('email_address', 'string');
+        $builder->addField('phone_number', 'string');
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
         $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian_id')->build();

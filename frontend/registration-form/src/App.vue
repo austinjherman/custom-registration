@@ -38,7 +38,7 @@
             </label>
           </div>
           <div v-for="n in numberOfStudents" v-bind:key="n">
-            <Student :vvScope="'student_' + n" :ref="'students'" />
+            <Student :vvScope="'student_' + n" :ref="'students'" :getParent="getParent" /> 
           </div>
         </fieldset>
 
@@ -49,16 +49,16 @@
               <legend class="fscr-input-label fscr-input-label-text">Are you the parent/guardian of all the students? <span class="fscr-asterisk--required">*</span></legend>
               <label class="fscr-input-label">
                 <span class="fscr-d-inline-block">Yes</span>
-                <input name="guestIsOnlyParent" type="radio" value="true" v-model="guestIsOnlyParent">
+                <input name="guestIsOnlyParent" type="radio" :value="true" v-model="guestIsOnlyParent">
               </label>
               <label class="fscr-input-label">
                 <span class="fscr-d-inline-block">No</span>
-                <input name="guestIsOnlyParent" type="radio" value="false" v-model="guestIsOnlyParent">
+                <input name="guestIsOnlyParent" type="radio" :value="false" v-model="guestIsOnlyParent">
               </label>
               <span class="fscr-d-block fscr-input-error">{{ this.validator.first('guestIsOnlyParent') }}</span>
             </fieldset>
           </div>
-          <div v-if="guestIsOnlyParent == 'false'">
+          <div v-if="guestIsOnlyParent == false">
             <div class="fscr-input-wrap">
               <label class="fscr-input-label">
                 <span class="fscr-d-block fscr-input-label-text">How many parents are you signing up? <span class="fscr-asterisk--required">*</span></span>
@@ -77,7 +77,7 @@
               </label>
             </div>
           </div>
-          <div v-if="guestIsOnlyParent == 'false'">
+          <div v-if="guestIsOnlyParent == false">
             <div v-for="n in numberOfParents" v-bind:key="n">
               <Parent :vvScope="'parent_' + (n-1)" ref="parents" :getStudent="getStudent"/>
             </div>
@@ -219,10 +219,11 @@
 
 <script>
   
+import GlobalState from './GlobalState'
 import Multiselect from 'vue-multiselect'
-import Guest from './components/Guest.vue'
-import Parent from './components/Parent.vue'
-import Student from './components/Student.vue'
+import Guest       from './components/Guest.vue'
+import Parent      from './components/Parent.vue'
+import Student     from './components/Student.vue'
 
 export default {
   
@@ -238,6 +239,7 @@ export default {
   data() {
     return {
       lessons: [],
+      globalState: GlobalState,
       promoCode: null,
       serverResponse: {
         form: {},
@@ -314,7 +316,7 @@ export default {
 
     /**
      * Handle the page 1 submission button.
-     * --------------------------------------
+     * 
      * If Form Entry / Guest haven't yet been saved, save them to DB.
      * If Form Entry / Guest have been saved already, update them if inputs have changed.
      *
@@ -323,7 +325,8 @@ export default {
      */
     async handleFirstPageSubmission() {
 
-      var guestValidated = await this.$refs.guest.validate();
+      var promises = [],
+          guestValidated = await this.$refs.guest.validate();
 
       if(guestValidated) {
 
@@ -331,14 +334,14 @@ export default {
         if(!this.$refs.guest.serverResponse.guest.hasOwnProperty('id')) {
 
           // save form to DB
-          if (!this.serverResponse.form.hasOwnProperty('id')) {
-            this.saveForm();
+          if (!this.globalState.serverResponse.form.hasOwnProperty('id')) {
+            promises.push(this.saveForm())
           }
 
-          // on successful form entry creation, save guest to DB
-          this.$on('form:create', () => {
-            this.$refs.guest.store(this.serverResponse.form.id);
-          });
+          // once the form saves, save the guest
+          Promise.all(promises).then(response => {
+            this.$refs.guest.store();
+          })
 
         }
 
@@ -347,14 +350,11 @@ export default {
 
           if(this.$refs.guest.isDirty() && guestValidated) {
 
-            this.$refs.guest.update(this.serverResponse.form.id);
+            this.$refs.guest.update();
             
             // if guest is parent then we need to update the parent
             if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
-              this.$refs.guest.updateAsParent(this.serverResponse.form.id)
-                .catch((error) => {
-                  console.log('error: ', error);
-                });
+              this.$refs.guest.updateAsParent()
             }
 
           }
@@ -368,23 +368,26 @@ export default {
 
     /**
      * Handle page 2 submission button.
-     * -----------------------------------
-     * If Form Entry / Guest haven't yet been saved, save them to DB.
-     * If Form Entry / Guest have been saved already, update them if inputs have changed.
+     * 
+     * If Guest is only parent, make a new parent with guest information. Additionally, delete
+     * any parents that have been saved to DB.
+     *
+     * If Guest is not only parent, make new parents with parent information. Additionally, 
+     * if a parent was created with guest information, delete it.
+     *
+     * Once parents have been sorted out, save students.
      *
      * @params none
      * @return void
      */
     async handleSecondPageSubmission() {
 
-      var savedForm    = this.serverResponse.form.hasOwnProperty('id'),
+      var savedForm    = this.globalState.serverResponse.form.hasOwnProperty('id'),
           savedGuest   = this.$refs.guest.serverResponse.guest.hasOwnProperty('id'),
           enrollingStudents = await this.$validator.validate('numberOfStudents'),
           parentsValidated  = false,
           studentsValidated = false,
-          parent  = {},
-          promise = null,
-          request = {};
+          promises = [];
 
       if(savedForm && savedGuest && enrollingStudents) {
 
@@ -394,18 +397,23 @@ export default {
 
           if(this.guestIsOnlyParent == true) {
 
-            // TODO 
             // remove/delete previously created parents
-            /* 
+            // these are parents that would have been created 
+            // via the parent component
+            if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
               this.$refs.parents.forEach(p => {
-                p.delete();
+                if(p.serverResponse.hasOwnProperty('id')) {
+                  p.delete();
+                }
               });
-            */
+            }
 
             // if the guest is not already the parent
+            // and guest hasn't already been saved,
             // create a new parent with guest info and save to DB
+            // once parent has been saved, create students
             if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
-              this.$refs.guest.saveAsParent(this.serverResponse.form.id);
+              promises.push(this.$refs.guest.saveAsParent());
             }
             
           }
@@ -414,13 +422,45 @@ export default {
           else {
 
             parentsValidated  = await this.validateParents();
-            studentsValidated = await this.validateStudents();
 
-            // TODO
             // remove/delete guest-parent if created
+            if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+              this.$refs.students.forEach(s => {
+                s.delete();
+              });
+              this.$refs.guest.deleteAsParent();
+            }
 
-
+            // save parents to DB
+            if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
+              var promises = [];
+              this.$refs.parents.forEach(p => {
+                // if hasn't been created yet, store
+                if(!p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
+                  promises.push(p.store());
+                }
+                // if has been created, update
+                else if(p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
+                  promises.push(p.update());
+                }
+              });
+            }
           }
+
+          // create students after all parent creation requests are resolved
+          Promise.all(promises).then(response => {
+            this.$refs.students.forEach(s => {
+              if(!s.serverResponse.hasOwnProperty('id') && s.isDirty()) {
+                s.store();
+              }
+              else if(s.serverResponse.hasOwnProperty('id') && s.isDirty()) {
+                s.update();
+              }
+            });
+          });
+
+          // go to the third page
+          this.goToPage(3);
 
         }
 
@@ -449,29 +489,16 @@ export default {
     },
 
     async validateParents() {
-      
-      var promises = [],
-          parentValidators = [];
-
-      for(var i=0; i < this.numberOfParents; i++) {
-        parentValidators = parentValidators.concat([
-          this.$validator.validate('parent_' + (i) + '.name'),
-          this.$validator.validate('parent_' + (i) + '.email'),
-          this.$validator.validate('parent_' + (i) + '.phone'),
-        ]);
-      }
-
-      promises = promises.concat([this.$validator.validate('numberOfParents')]);
-      promises = promises.concat(...parentValidators);
-
-      var validate = Promise.all(promises);
-
-      // await results of promise and ensure they are all true
-      var validated = await validate.then(result => validated = result.every(isValid => isValid));
-      if(validated) {
-        return true;
-      }
-      return false;
+      var promise = null,
+          results = [],
+          validate  = null,
+          validated = false;
+      this.$refs.parents.forEach( async (p) => {
+        results.push(...p.validate());
+      });
+      validate = Promise.all(results);
+      validated = await validate.then(result => validated = result.every(isValid => isValid));
+      return validated;
     },
 
     /**
@@ -484,43 +511,21 @@ export default {
      */
 
     saveForm() {
-      var request = {};
-      this.$http.post(this.API_BASE_URL + '/forms/create', request)
-        .then(response => {
-          this.$set(this.serverResponse, 'form', response.data.form);
-          this.$emit('form:create');
-        })
-        .catch(error => {
-          this.$set(this.serverResponse, 'form', JSON.stringify(error.data));
-          this.$emit('form:error');
-        });
-    },
 
-    saveParents(parentRequests) {
-      parentRequests.forEach(parentRequest => {
-        console.log('making the following request: ', parentRequest);
-        this.$http.post(this.API_BASE_URL + '/guardians/create', parentRequest)
+      var request = {};
+
+      return new Promise((resolve, reject) => {
+        this.$http.post(this.API_BASE_URL + '/forms/create', request)
           .then(response => {
-            this.apiResponse.parents.push(response.data.guardian);
-            var parentId = response.data.guardian.id;
-            parentRequest.students.forEach(id => {
-              var request = {},
-                  student = this.getStudent(id);
-              if(student) {
-                request.student_name = student.name;
-                request.student_date_of_birth = student.dob;
-                request.form_entry_id = this.apiResponse.form.success.id;
-                request.guardian_id = parentId;
-                this.saveStudent(request);
-              }
-            });
+            this.globalState.serverResponse.form = response.data.form;
+            resolve(response.data.form);
           })
           .catch(error => {
-            console.log('parent creation error', error.response);
-            this.apiResponse.parentsErrors.push({error: JSON.stringify(error.response)});
-            this.$emit('parent:create:error');
+            this.globalState.serverResponse.form = JSON.stringify(error.data);
+            reject(error);
           });
-      })
+      });
+
     },
 
     /**
@@ -566,13 +571,18 @@ export default {
      * @return Component parent
      */
     getParent(id) {
+      if(this.guestIsOnlyParent) {
+        return this.$refs.guest;
+      }
       var parent = null,
           parents = this.$refs.parents;
-      parents.forEach(p => {
-        if(p.id == id) {
-          parent = p;
-        }
-      });
+      if(typeof parents != 'undefined' && parents.length > 0) {
+        parents.forEach(p => {
+          if(p.id == id) {
+            parent = p;
+          }
+        });
+      }
       return parent;
     },
 

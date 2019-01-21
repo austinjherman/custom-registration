@@ -17,7 +17,7 @@
         <label class="fscr-input-label">
           <span class="fscr-d-block">Name <span class="fscr-asterisk--required">*</span></span>
           <input name="name" type="text" v-validate="'required'" v-model="name" :data-vv-scope="vvScope" class="fscr-input">
-          <span class="d-block">{{ validator.first('name', vvScope) }}</span>
+          <span class="fscr-d-block fscr-input-error">{{ validator.first('name', vvScope) }}</span>
         </label>
       </div>
 
@@ -25,7 +25,7 @@
         <label class="fscr-input-label">
           <span class="fscr-d-block">Email <span class="fscr-asterisk--required">*</span></span>
           <input name="email" type="email" v-validate="'required|email'" v-model="email" :data-vv-scope="vvScope" class="fscr-input">
-          <span class="d-block">{{ validator.first('email', vvScope) }}</span>
+          <span class="fscr-d-block fscr-input-error">{{ validator.first('email', vvScope) }}</span>
         </label>    
       </div>
 
@@ -33,7 +33,7 @@
         <label class="fscr-input-label">
           <span class="fscr-d-block">Phone <span class="fscr-asterisk--required">*</span></span>
           <input name="phone" type="tel" v-validate="'required|length:17'" v-model="phone" v-mask="['+1 (###) ###-####']" :data-vv-scope="vvScope" class="fscr-input">
-          <span class="d-block">{{ validator.first('phone', vvScope) }}</span>
+          <span class="fscr-d-block fscr-input-error">{{ validator.first('phone', vvScope) }}</span>
         </label>    
       </div>
 
@@ -44,12 +44,15 @@
 
 <script>
 
+  import GlobalState from '../GlobalState';
+
   export default {
 
     props: ['vvScope', 'getStudent'],
 
     data() {
       return {
+        globalState: GlobalState,
         id: null, 
         name: null,
         email: null,
@@ -63,12 +66,112 @@
       this.id = Number(this._uid);
     },
 
+    beforeDestroy() {
+      this.delete();
+    },
+
     methods: {
 
-      save() {
-        
+      /**
+       * Validate the parent input fields.
+       *
+       * @param none
+       * @return Array of Promises
+       */
+      validate() {
+        var promises  = [],
+            validate  = null,
+            validated = null;
+        promises.push(this.$validator.validate(this.vvScope + '.name'));
+        promises.push(this.$validator.validate(this.vvScope + '.email'));
+        promises.push(this.$validator.validate(this.vvScope + '.phone'));
+        return promises;
       },
 
+      /**
+       * Store this parent in the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      store() {
+
+        var request = {};
+        request.name = this.name;
+        request.email = this.email;
+        request.phone_number = this.phone;
+        request.form_entry_id = this.globalState.serverResponse.form.id;
+
+        return new Promise((resolve, reject) => {
+          this.$http.post(this.API_BASE_URL + '/guardians/create', request)
+            .then((response) => {
+              this.serverResponse = response.data.guardian;
+              resolve(this.serverResponse);
+            })
+            .catch((error) => {
+              reject(error);
+            })
+        });
+
+      },
+
+      /**
+       * Update this parent in the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      update() {
+
+        var request = {};
+        request.name = this.name;
+        request.email = this.email;
+        request.phone_number = this.phone;
+        request.form_entry_id = this.globalState.serverResponse.form.id;
+
+        return new Promise((resolve, reject) => {
+          this.$http.put(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.id, request)
+            .then((response) => {
+              this.serverResponse = response.data.guardian;
+              resolve(this.serverResponse);
+            })
+            .catch((error) => {
+              reject(error);
+            })
+        });
+
+      },
+
+      /**
+       * Delete this parent from the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      delete() {
+        return new Promise((resolve, reject) => {
+          this.$http.delete(this.API_BASE_URL + '/guardians/delete')
+            .then((response) => {
+              this.serverResponse = {};
+              resolve(response);
+            })
+            .catch((error) => {
+              reject(error);
+            })
+        });
+      },
+
+      /**
+       * Handle parent/student relationships on the frontend. 
+       * 
+       * The following function keeps track of which students belong to 
+       * which parents based on the student checkboxes within the parent component. 
+       * 
+       * No student can be selected more than once. 
+       *
+       * @param Event e
+       * @return void
+       */
       handleParentStudentRelationship(e) {
 
         var allParents        = this.$parent.$refs.parents,
@@ -135,6 +238,28 @@
           }
         }
         
+      },
+
+      /**
+       * Determines if parent fields are different than what they are on the server.
+       *
+       * @param none
+       * @return Boolean
+       */
+      isDirty() {
+
+        if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+
+          var isDirty = 
+            this.name  != this.serverResponse.name || 
+            this.email != this.serverResponse.email_address || 
+            this.phone != this.serverResponse.phone_number
+          console.log('parent ' + this.id + " is dirty: ", isDirty);
+          return isDirty;
+        }
+
+        return true;
+
       }
 
     }

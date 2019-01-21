@@ -24,11 +24,12 @@
 
 <script>
 
-  import Datepicker from 'vuejs-datepicker';
+  import GlobalState from '../GlobalState'
+  import Datepicker from 'vuejs-datepicker'
 
   export default {
 
-    props: ['vvScope'],
+    props: ['vvScope', 'getParent'],
 
     components: {
       Datepicker
@@ -36,6 +37,7 @@
 
     data() {
       return {
+        globalState: GlobalState,
         id: null,
         name: null,
         dob: null,
@@ -48,8 +50,18 @@
       this.id = this._uid;
     },
 
+    beforeDestroy() {
+      this.delete();
+    },
+
     methods: {
 
+      /**
+       * Validate the student input fields.
+       *
+       * @param none
+       * @return Array of Promises
+       */
       validate() {
         var promises  = [],
             validate  = null,
@@ -59,37 +71,117 @@
         return promises;
       },
 
-      store(obj) {
+      /**
+       * Store this student in the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      store() {
+
         var request = {};
         request.student_name = this.name;
-        request.student_date_of_birth = this.dob;
-        request.guardian_id = obj.guardian_id;
-        request.form_entry_id = obj.form_entry_id;
-        this.$http.post(this.API_BASE_URL + '/students/create', request)
-          .then(response => {
-            // update formEntry id so we know we have one
-            this.serverResponse = response.data.student;
-            this.$emit('student:create');
-          })
-          .catch(error => {
-            this.serverResponse = JSON.stringify(error.data);
-            this.$emit('student:create:error');
+        request.student_date_of_birth = this.dob.toISOString();
+        request.student_date_of_birth = request.student_date_of_birth.split('T')[0];
+        request.form_entry_id = this.globalState.serverResponse.form.id;
+        request.guardian_id = null;
+
+        var guardian = this.getParent(this.parent);
+        if(guardian && guardian.serverResponse.hasOwnProperty('parent')) {
+          request.guardian_id = guardian.serverResponse.parent.id;
+        }
+        else if (guardian && guardian.serverResponse.hasOwnProperty('id')) {
+          request.guardian_id = guardian.serverResponse.id;
+        }
+
+        return new Promise((resolve, reject) => {
+          this.$http.post(this.API_BASE_URL + '/students/create', request)
+            .then(response => {
+              this.serverResponse = response.data.student;
+              resolve(this.serverResponse);
+            })
+            .catch(error => {
+              this.serverResponse = JSON.stringify(error.data);
+              reject(error);
+            });
           });
       },
 
+      /**
+       * Update this student in the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      update() {
+
+        var request = {};
+        request.name = this.name;
+        request.date_of_birth = this.dob;
+
+        var guardian = this.getParent(this.parent);
+        if(guardian && guardian.serverResponse.hasOwnProperty('parent')) {
+          request.guardian_id = guardian.serverResponse.parent.id;
+        }
+        else if (guardian && guardian.serverResponse.hasOwnProperty('parent')) {
+          request.guardian_id = guardian.serverResponse.id;
+        }
+
+        return new Promise((resolve, reject) => {
+          this.$http.put(this.API_BASE_URL + '/students/update/' + this.serverResponse.id, request)
+            .then(response => {
+              this.serverResponse = response.data.student;
+              resolve(this.serverResponse);
+            })
+            .catch(error => {
+              this.serverResponse = JSON.stringify(error);
+              reject(error);
+            });
+          });
+      },
+
+      /**
+       * Delete this student from the database.
+       *
+       * @param none
+       * @return Promise
+       */
+      delete() {
+        return new Promise((resolve, reject) => {
+          this.$http.delete(this.API_BASE_URL + '/students/delete/' + this.serverResponse.id)
+            .then((response) => {
+              this.serverResponse = {};
+              resolve(response);
+            })
+            .catch((error) => {
+              reject(error);
+            })
+        });
+      },
+
+      /**
+       * Determines if parent fields are different than what they are on the server.
+       *
+       * @param none
+       * @return Boolean
+       */
       isDirty() {
 
         if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
 
           var isDirty = 
             this.name != this.serverResponse.name || 
-            new Date(this.dob).getTime() !== new Date(this.serverResponse.student_date_of_birth).getTime()
+            this.dob.toISOString().split('T')[0] !== new Date(this.serverResponse.date_of_birth.date).toISOString().split('T')[0];
           console.log('student ' + this.id + " is dirty: ", isDirty);
           return isDirty;
         }
 
         return true;
 
+      },
+
+      formatDate(date) {
+        return new Date(date).toISOString().split('T')[0];
       }
 
     }

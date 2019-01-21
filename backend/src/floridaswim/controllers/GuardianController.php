@@ -206,7 +206,6 @@ class GuardianController extends BaseController {
         ]
       ], 404);
     }
-  
     // remove guardian from storage
     $this->orm()->remove($guardian);
     $this->orm()->flush();

@@ -91,6 +91,7 @@ class StudentController extends BaseController {
 
     // create a new student
     $studentDob = new \DateTime($request->get_param('student_date_of_birth')); 
+    $studentDob = new \DateTime($studentDob->format('Y-m-d'));
     $student = new Student;
     $student->set('name', $request->get_param('student_name'));
     $student->set('date_of_birth', $studentDob);
@@ -149,6 +150,7 @@ class StudentController extends BaseController {
     // find student
     $id = $request->get_param('id');
     $student = $this->orm()->getRepository('FloridaSwim\Entities\Student')->find($id);
+
     if(!$student) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
@@ -159,26 +161,29 @@ class StudentController extends BaseController {
       ], 404);
     }
 
-    // validate request
-    $v = new Validator($request->get_json_params());
-    $v->rules([
-      'optional' => [
-        'date_of_birth'
-      ],
-      'date' => [
-        'date_of_birth'
-      ]
-    ]);
-    if (!$v->validate()) {
-      $response = new \WP_REST_Response(['errors' => $v->errors()], 400);
-    }
-
     // update student
     $incomingJson = $request->get_json_params();
+    if(isset($incomingJson['date_of_birth'])) {
+      $incomingJson['date_of_birth'] = new\DateTime(\DateTime::createFromFormat('D M d Y H:i:s e+', $incomingJson['date_of_birth']));
+    }
+    // find associated guardian
+    if(isset($incomingJson['guardian_id'])) {
+      $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($request->get_param('guardian_id'));
+      if(!$guardian) {
+        return new \WP_REST_Response(['errors' => ['guardian' => 'Please enter a valid guardian ID.']], 400);
+      }
+      $student->addGuardian($guardian);
+    }
     foreach($incomingJson as $key => $value) {
       // okay because set() will only set a value if its key already exists
-      $student->set($key, $value);
+      if($key !== 'guardian_id') {
+        $student->set($key, $value);
+      }
     }
+
+    $this->orm()->persist($student);
+    $this->orm()->flush();
+
     $arr = $student->toArray();
     return new \WP_REST_Response([
       "student" => $arr
