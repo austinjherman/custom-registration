@@ -149,6 +149,11 @@
        * @return Promise
        */
       delete() {
+        var student;
+        this.students.forEach(sId => {
+          student = this.getStudent(sId);
+          student.parent = null;
+        });
         return new Promise((resolve, reject) => {
           this.$http.delete(this.API_BASE_URL + '/guardians/delete')
             .then((response) => {

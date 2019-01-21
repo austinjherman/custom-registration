@@ -389,62 +389,47 @@ export default {
           studentsValidated = false,
           promises = [];
 
+      // check to make sure we have a form, guest, and students to enroll
       if(savedForm && savedGuest && enrollingStudents) {
 
+        // check to make sure student fields are valid
         studentsValidated = await this.validateStudents();
-
         if(studentsValidated) {
 
+          // check to see if the guest is the only parent
           if(this.guestIsOnlyParent == true) {
 
-            // remove/delete previously created parents
-            // these are parents that would have been created 
-            // via the parent component
-            if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
-              this.$refs.parents.forEach(p => {
-                if(p.serverResponse.hasOwnProperty('id')) {
-                  p.delete();
-                }
-              });
-            }
-
-            // if the guest is not already the parent
-            // and guest hasn't already been saved,
-            // create a new parent with guest info and save to DB
-            // once parent has been saved, create students
+            // if the guest hasn't already been saved, create a new parent with guest info and save to DB
+            // if the guest has already been saved, update is taken care of on previous page submit
             if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
               promises.push(this.$refs.guest.saveAsParent());
             }
             
           }
 
-          // if guest is not only parent
+          // if the guest is not the only parent
           else {
 
+            // check to see if parent fields are valid
             parentsValidated  = await this.validateParents();
+            if(parentsValidated) {
 
-            // remove/delete guest-parent if created
-            if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
-              this.$refs.students.forEach(s => {
-                s.delete();
-              });
-              this.$refs.guest.deleteAsParent();
-            }
+              // save/update parents in DB
+              if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
+                this.$refs.parents.forEach(p => {
+                  // if hasn't been created yet, store
+                  if(!p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
+                    promises.push(p.store());
+                  }
+                  // if has been created, update
+                  else if(p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
+                    promises.push(p.update());
+                  }
+                });
+              }
 
-            // save parents to DB
-            if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
-              var promises = [];
-              this.$refs.parents.forEach(p => {
-                // if hasn't been created yet, store
-                if(!p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
-                  promises.push(p.store());
-                }
-                // if has been created, update
-                else if(p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
-                  promises.push(p.update());
-                }
-              });
             }
+            
           }
 
           // create students after all parent creation requests are resolved

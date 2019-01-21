@@ -206,6 +206,13 @@ class GuardianController extends BaseController {
         ]
       ], 404);
     }
+
+    $students = $guardian->get('students');
+    foreach($students as $student) {
+      $student->set('guardian_id', null);
+      $student->set('guardian', null);
+    }
+
     // remove guardian from storage
     $this->orm()->remove($guardian);
     $this->orm()->flush();
