@@ -171,6 +171,7 @@
 
           var isDirty = 
             this.name != this.serverResponse.name || 
+            this.parent != this.serverResponse.guardian_id || 
             this.dob.toISOString().split('T')[0] !== new Date(this.serverResponse.date_of_birth.date).toISOString().split('T')[0];
           console.log('student ' + this.id + " is dirty: ", isDirty);
           return isDirty;

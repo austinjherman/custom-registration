@@ -32,6 +32,7 @@ class Student extends BaseModel
 
     protected $expose = [
         "id", 
+        "guardian_id",
         "name",
         "date_of_birth",
         "description",

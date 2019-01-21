@@ -164,7 +164,8 @@ class StudentController extends BaseController {
     // update student
     $incomingJson = $request->get_json_params();
     if(isset($incomingJson['date_of_birth'])) {
-      $incomingJson['date_of_birth'] = new\DateTime(\DateTime::createFromFormat('D M d Y H:i:s e+', $incomingJson['date_of_birth']));
+      $incomingJson['date_of_birth'] = new \DateTime($incomingJson['date_of_birth']); 
+      $incomingJson['date_of_birth'] = new \DateTime($incomingJson['date_of_birth']->format('Y-m-d'));
     }
     // find associated guardian
     if(isset($incomingJson['guardian_id'])) {

@@ -414,6 +414,12 @@ export default {
             parentsValidated  = await this.validateParents();
             if(parentsValidated) {
 
+              // TODO 
+              // delete the parent that was created with the guest information if it exists. 
+              if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+                promises.push(this.$refs.guest.deleteAsParent());
+              }
+
               // save/update parents in DB
               if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
                 this.$refs.parents.forEach(p => {
@@ -429,7 +435,7 @@ export default {
               }
 
             }
-            
+
           }
 
           // create students after all parent creation requests are resolved
