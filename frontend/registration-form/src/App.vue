@@ -414,9 +414,8 @@ export default {
             parentsValidated  = await this.validateParents();
             if(parentsValidated) {
 
-              // TODO 
               // delete the parent that was created with the guest information if it exists. 
-              if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+              if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
                 promises.push(this.$refs.guest.deleteAsParent());
               }
 
@@ -439,12 +438,15 @@ export default {
           }
 
           // create students after all parent creation requests are resolved
+          // the parent/student relations are handled via the handleParentStudentRelationship
+          // function on the parent component. These relationships are resolved when a 
+          // student checkbox is checked.
           Promise.all(promises).then(response => {
             this.$refs.students.forEach(s => {
-              if(!s.serverResponse.hasOwnProperty('id') && s.isDirty()) {
+              if(!s.serverResponse.hasOwnProperty('id')) {
                 s.store();
               }
-              else if(s.serverResponse.hasOwnProperty('id') && s.isDirty()) {
+              else if(s.serverResponse.hasOwnProperty('id')) {
                 s.update();
               }
             });

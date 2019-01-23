@@ -86,10 +86,16 @@
         request.form_entry_id = this.globalState.serverResponse.form.id;
         request.guardian_id = null;
 
+        // getParent will always return the guardian is the guestIsOnlyParent boolean
+        // is true
         var guardian = this.getParent(this.parent);
+
+        // if guest is only parent, then the guest component instance is returned
         if(guardian && guardian.serverResponse.hasOwnProperty('parent')) {
           request.guardian_id = guardian.serverResponse.parent.id;
         }
+
+        // otherwise a parent component instance is returned.
         else if (guardian && guardian.serverResponse.hasOwnProperty('id')) {
           request.guardian_id = guardian.serverResponse.id;
         }
@@ -118,13 +124,19 @@
         var request = {};
         request.name = this.name;
         request.date_of_birth = this.dob;
+        request.guardian_id = null;
 
-        var guardian = this.getParent(this.parent);
+        var guardian = this.getParent(this.parent),
+            parentId = null;
         if(guardian && guardian.serverResponse.hasOwnProperty('parent')) {
-          request.guardian_id = guardian.serverResponse.parent.id;
+          parentId = guardian.serverResponse.parent.id;
+          this.parent = parentId;
+          request.guardian_id = parentId;
         }
-        else if (guardian && guardian.serverResponse.hasOwnProperty('parent')) {
-          request.guardian_id = guardian.serverResponse.id;
+        else if (guardian && guardian.serverResponse.hasOwnProperty('id')) {
+          parentId = guardian.serverResponse.id;;
+          this.parent = parentId;
+          request.guardian_id = parentId;
         }
 
         return new Promise((resolve, reject) => {
@@ -171,7 +183,6 @@
 
           var isDirty = 
             this.name != this.serverResponse.name || 
-            this.parent != this.serverResponse.guardian_id || 
             this.dob.toISOString().split('T')[0] !== new Date(this.serverResponse.date_of_birth.date).toISOString().split('T')[0];
           console.log('student ' + this.id + " is dirty: ", isDirty);
           return isDirty;

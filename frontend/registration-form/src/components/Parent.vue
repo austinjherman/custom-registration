@@ -152,18 +152,22 @@
         var student;
         this.students.forEach(sId => {
           student = this.getStudent(sId);
-          student.parent = null;
+          if(student) {
+            student.update();
+          }
         });
-        return new Promise((resolve, reject) => {
-          this.$http.delete(this.API_BASE_URL + '/guardians/delete')
-            .then((response) => {
-              this.serverResponse = {};
-              resolve(response);
-            })
-            .catch((error) => {
-              reject(error);
-            })
-        });
+        if(this.serverResponse.hasOwnProperty('id')) {
+          return new Promise((resolve, reject) => {
+            this.$http.delete(this.API_BASE_URL + '/guardians/delete/' + this.serverResponse.id)
+              .then((response) => {
+                this.serverResponse = {};
+                resolve(response);
+              })
+              .catch((error) => {
+                reject(error);
+              })
+          });
+        }
       },
 
       /**
@@ -258,7 +262,7 @@
           var isDirty = 
             this.name  != this.serverResponse.name || 
             this.email != this.serverResponse.email_address || 
-            this.phone != this.serverResponse.phone_number
+            this.phone != this.serverResponse.phone_number;
           console.log('parent ' + this.id + " is dirty: ", isDirty);
           return isDirty;
         }
