@@ -42,7 +42,7 @@ class FormEntryController extends BaseController {
       //'args'                => $this->get_endpoint_args_for_item_schema( true ),
     ));
   }
-
+  
   /**
    * Display a listing of all FormEntry objects.
    *

@@ -9,6 +9,7 @@
           <span>{{ student.name }}</span>
         </label>
       </div>
+      <span class="fscr-d-block fscr-input-error">{{ studentsEmptyError }}</span>
     </fieldset>
 
     <div class="fscr-d-flex wrap">
@@ -58,7 +59,8 @@
         email: null,
         phone: null,
         students: [],
-        serverResponse: {}
+        serverResponse: {},
+        studentsEmptyError: null
       }
     }, 
 
@@ -79,9 +81,22 @@
        * @return Array of Promises
        */
       validate() {
+
         var promises  = [],
             validate  = null,
             validated = null;
+
+        var promise = new Promise((resolve, reject) => { 
+          if(this.students.length > 0) {
+            this.studentsEmptyError = null;
+            return true;
+          }
+          else {
+            this.studentsEmptyError = "Please at least one student.";
+            return false;
+          }
+        })
+        promises.push(promise);
         promises.push(this.$validator.validate(this.vvScope + '.name'));
         promises.push(this.$validator.validate(this.vvScope + '.email'));
         promises.push(this.$validator.validate(this.vvScope + '.phone'));
@@ -198,6 +213,8 @@
         // it's checked on another parent component
         if(e.target.checked) {
 
+          this.studentsEmptyError = null;
+
           // add student to this parent
           this.students.push({id: clickedStudentId});
 
@@ -234,17 +251,24 @@
         }
 
         else {
+
           index = null;
           var student = this.getStudent(clickedStudentId);
           student.parent = null;
           this.students.forEach((s, i) => {
             if(s.id == clickedStudentId) {
+              console.log("index: ", i);
               index = i;
             }
           });
           if(index !== null) {
             this.students.splice(index, 1);
           }
+
+          if(this.students.length < 1) {
+            this.studentsEmptyError = "Please at least one student.";
+          }
+
         }
         
       },

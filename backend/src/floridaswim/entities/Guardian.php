@@ -56,12 +56,12 @@ class Guardian extends BaseModel
         $builder->setTable(parent::tablePrefix() . "fwcr_guardians");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createManyToOne('form_entry', 'FloridaSwim\Entities\FormEntry')->addJoinColumn('form_entry_id', 'id', true, false, 'cascade')->build();
+        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian')->build();
         $builder->addField('name', 'string');
         $builder->addField('email_address', 'string');
         $builder->addField('phone_number', 'string');
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
-        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian')->build();
     }
 
 }

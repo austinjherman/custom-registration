@@ -99,20 +99,65 @@
           <legend>How long would you like each lesson to last for your student(s)?</legend>
           <label>
             <span class="d-block">30</span>
-            <input name="lessonDuration" type="radio" v-model="selectedLessonDuration" value="30" v-validate="'required'">
+            <input name="lessonDuration" type="radio" v-model="globalState.selectedLessonDuration" value="30" v-validate="'required'">
           </label>
           <label>
             <span class="d-block">60</span>
-            <input name="lessonDuration" type="radio" v-model="selectedLessonDuration" value="60" v-validate="'required'">
+            <input name="lessonDuration" type="radio" v-model="globalState.selectedLessonDuration" value="60" v-validate="'required'">
           </label>
         </fieldset>
         <fieldset class="fscr-fieldset">
-          <div v-for="lp in displayableLessonPackages">
+          <legend class="fscr-d-none">Lesson Packages</legend>
+            <ul class="fscr-lesson-package-list">
 
-          </div>
+              <li>
+                Learn to Swim Program
+                <div v-for="lesson in lessons">
+                  <div v-for="durationObj in lesson.durations">
+                    <div v-show="durationObj.hasOwnProperty(globalState.selectedLessonDuration) && lesson.name == 'Swimming Lesson'">
+                      <label span="d-block">
+                        <input type="radio" :value="JSON.stringify({id: lesson.id, duration: durationObj.id, qty: 8})" v-model="globalState.selectedLesson">
+                        {{ lesson.name }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+              <li>
+                Water Aerobics
+                <div v-for="lesson in lessons">
+                  <div v-for="durationObj in lesson.durations">
+                    <div v-show="durationObj.hasOwnProperty(globalState.selectedLessonDuration) && lesson.name == 'Water Aerobics'">
+                      <label span="d-block">
+                        <input type="radio" :value="JSON.stringify({id: lesson.id, duration: durationObj.id, qty: 1})" v-model="globalState.selectedLesson">
+                        {{ lesson.name }}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </li>
+
+            </ul>
+            
+            <!--
+            <div v-for="lesson in lessons">
+              <div v-for="durationObj in lesson.durations">
+                <div v-show="durationObj.hasOwnProperty(globalState.selectedLessonDuration)">
+                  <label span="d-block">
+                    <div v-if="lesson.name == 'Swimming Lesson'">
+                      <input type="radio" :value="JSON.stringify({id: lesson.id, duration: durationObj.id, qty:})" v-model="globalState.selectedLesson">
+                      {{ lesson.name }}
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            -->
+
         </fieldset>
         <hr>
-        <div class="fscrForm__btn-container">
+        <div class="fscr-d-flex fscr-justify-content-between">
           <button type="button" @click="goToPage(2)" class="fscr__button fscr__button--primary">Back</button>
           <button type="button" @click="handleThirdPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
         </div>
@@ -138,7 +183,7 @@
           <textarea></textarea>
         </label>
         <hr>
-        <div class="fscrForm__btn-container">
+        <div class="fscr-d-flex fscr-justify-content-between">
           <button type="button" @click="goToPage(3)" class="fscr__button fscr__button--primary">Back</button>
           <button type="button" @click="handleFourthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
         </div>
@@ -162,9 +207,9 @@
           <input name="customerReferredBy" type="text" v-model="customerReferredBy" v-validate="'required'">
         </label>
         <hr>
-        <div class="fscrForm__btn-container">
+        <div class="fscr-d-flex fscr-justify-content-between">
           <button type="button" @click="goToPage(4)" class="fscr__button fscr__button--primary">Back</button>
-          <button type="button" @click="handleFfifthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+          <button type="button" @click="handleFifthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
         </div>
       </fieldset>
     </div>
@@ -209,6 +254,14 @@
         </div>
 
         <button>Submit Payment</button>
+
+        <hr>
+
+        <div class="fscr-d-flex fscr-justify-content-between">
+          <button type="button" @click="goToPage(5)" class="fscr__button fscr__button--primary">Back</button>
+          <button type="button" @click="handleSixthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
+        </div>
+
       </form>
     </div>
 
@@ -241,11 +294,6 @@ export default {
       lessons: [],
       globalState: GlobalState,
       promoCode: null,
-      serverResponse: {
-        form: {},
-        parents: {},
-        students: {}
-      },
       activePage: 1,
       daysThatWork: null,
       numberOfParents: 0,
@@ -253,56 +301,25 @@ export default {
       guestIsOnlyParent: true,
       customerReferredBy: null,
       disclaimerAccepted: false,
-      selectedLessonDuration: 30,
       displayableLessonPackages: [],
       weekdayTimeRangeAvailability: null,
-      allLessonPackages: [
-        {
-          title: "Learn to Swim Program",
-          durations: [
-            {
-              duration: 30,
-              price: 45.00
-            },
-            {
-              duration: 60,
-              price: 70.00
-            }
-          ]
-        },
-        {
-          title: "Water Aerobics",
-          durations: [
-            {
-              duration: 60,
-              price: 70.00
-            }
-          ]
-        },
-      ],
     }
   },
 
   mounted() {
-    this.lessons = this.getLessonsFromApi();
-    this.displayableLessonPackages = this.getDisplayableLessonPackages();
+    this.getLessonsFromApi();
     if(this.getAllUrlParams().page) {
       this.goToPage(this.getAllUrlParams().page);
     }
   },
 
   watch: {
-    selectedLessonDuration: function(newDuration, oldDuration) {
-      this.displayableLessonPackages = this.getDisplayableLessonPackages();
-    }
   },
 
   methods: {
 
     // work these out
-    getLessonsFromApi() {},
     checkPromoCode() {},
-    getDisplayableLessonPackages() {},
 
     /**
      | ----------------------------------------------------------
@@ -415,6 +432,7 @@ export default {
             if(parentsValidated) {
 
               // delete the parent that was created with the guest information if it exists. 
+              // students are orphaned in backend when a parent is deleted
               if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
                 promises.push(this.$refs.guest.deleteAsParent());
               }
@@ -459,6 +477,66 @@ export default {
 
       }
     },
+
+    /**
+     * Handle page 3 submission button.
+     * 
+     * This page updates the students lesson, lesson duration, and lesson quantity.
+     *
+     * @params none
+     * @return void
+     */
+    handleThirdPageSubmission() {
+
+      // update student duration, lesson, and lesson quantity
+
+      this.goToPage(4);
+    },
+
+    /**
+     * Handle page 4 submission button.
+     * 
+     * This page creates or updates the student's schedule.
+     *
+     * @params none
+     * @return void
+     */
+    handleFourthPageSubmission() {
+
+      // update student schedule
+
+      this.goToPage(5);
+    },
+
+    /**
+     * Handle page 5 submission button.
+     * 
+     *
+     * @params none
+     * @return void
+     */
+    handleFifthPageSubmission() {
+      this.goToPage(6);
+    },
+
+    /**
+     | ----------------------------------------------------------
+     | Getters
+     | ----------------------------------------------------------
+     |
+     | The following functions get data from the API.
+     |
+     */
+     getLessonsFromApi() {
+      this.$http.get(this.API_BASE_URL + '/lessons/')
+        .then(response => {
+          this.lessons = response.data.lessons;
+        })
+        .catch(error => {
+          this.lessons = JSON.stringify(error.data);
+        });
+     },
+
 
     /**
      | ----------------------------------------------------------

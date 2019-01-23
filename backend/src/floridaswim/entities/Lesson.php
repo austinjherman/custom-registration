@@ -20,7 +20,9 @@ class Lesson extends BaseModel
     protected $updated_at;
 
     protected $expose = [
-        'name', 
+        'id',
+        'name',
+        'durations',
         'created_at',
         'updated_at'
     ];
@@ -39,10 +41,10 @@ class Lesson extends BaseModel
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_lessons");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
+        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('lesson')->build();
+        $builder->createOneToMany('durations', 'FloridaSwim\Entities\Duration')->mappedBy('lesson')->build();
         $builder->createOneToMany('promo_codes', 'FloridaSwim\Entities\PromoCode')->mappedBy('lesson')->build();
         $builder->addField('name', 'string');
-        $builder->createOneToMany('durations', 'FloridaSwim\Entities\Duration')->mappedBy('lesson')->build();
-        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('lesson')->build();
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
     }

@@ -42,7 +42,7 @@
         name: null,
         dob: null,
         parent: null,
-        serverResponse: {}
+        serverResponse: {},
       }
     }, 
 
@@ -86,7 +86,7 @@
         request.form_entry_id = this.globalState.serverResponse.form.id;
         request.guardian_id = null;
 
-        // getParent will always return the guardian is the guestIsOnlyParent boolean
+        // getParent will always return the guardian if the guestIsOnlyParent boolean
         // is true
         var guardian = this.getParent(this.parent);
 
@@ -125,6 +125,9 @@
         request.name = this.name;
         request.date_of_birth = this.dob;
         request.guardian_id = null;
+        request.duration = this.globalState.selectedLessonDuration;
+        request.lesson_id = this.globalState.selectedLesson;
+        request.lesson_qty = this.globalState.selectedLessonQty;
 
         var guardian = this.getParent(this.parent),
             parentId = null;
@@ -134,7 +137,7 @@
           request.guardian_id = parentId;
         }
         else if (guardian && guardian.serverResponse.hasOwnProperty('id')) {
-          parentId = guardian.serverResponse.id;;
+          parentId = guardian.serverResponse.id;
           this.parent = parentId;
           request.guardian_id = parentId;
         }
@@ -184,7 +187,6 @@
           var isDirty = 
             this.name != this.serverResponse.name || 
             this.dob.toISOString().split('T')[0] !== new Date(this.serverResponse.date_of_birth.date).toISOString().split('T')[0];
-          console.log('student ' + this.id + " is dirty: ", isDirty);
           return isDirty;
         }
 

@@ -162,6 +162,7 @@ class StudentController extends BaseController {
     }
 
     // update student
+    $student->set('updated_at', new \DateTime());
     $incomingJson = $request->get_json_params();
     if(isset($incomingJson['date_of_birth'])) {
       $incomingJson['date_of_birth'] = new \DateTime($incomingJson['date_of_birth']); 

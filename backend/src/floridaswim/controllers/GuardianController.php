@@ -171,6 +171,7 @@ class GuardianController extends BaseController {
     }
 
     // update guardian
+    $guardian->set('updated_at', new \DateTime());
     $incomingJson = $request->get_json_params();
     foreach($incomingJson as $key => $value) {
       // okay because set() will only set a value if its key already exists

@@ -9,6 +9,8 @@ use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 class Duration extends BaseModel {
 
     protected $id;
+    protected $lesson_id;
+    protected $lesson;
     protected $duration;
     protected $price;
     protected $created_at;
@@ -31,6 +33,7 @@ class Duration extends BaseModel {
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_durations");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
+        $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', true, false)->inversedBy('durations')->build();
         $builder->addField('duration', 'string');
         $builder->addField('price', 'decimal');
         $builder->addField('created_at', 'datetime');

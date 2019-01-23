@@ -176,6 +176,7 @@ class GuestController extends BaseController {
     }
 
     // update guest
+    $guest->set('updated_at', new \DateTime());
     $incomingJson = $request->get_json_params();
     foreach($incomingJson as $key => $value) {
       // ok because set() will only set a value if its key already exists
