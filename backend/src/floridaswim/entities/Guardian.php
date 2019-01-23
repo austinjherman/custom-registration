@@ -34,6 +34,7 @@ class Guardian extends BaseModel
     public function __construct() {
         $this->created_at = new \DateTime();
         $this->updated_at = new \DateTime();
+        $this->students = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function addFormEntry(FormEntry $formEntry) {
@@ -44,6 +45,10 @@ class Guardian extends BaseModel
     public function addStudent(Student $student) {
         $student->addGuardian($this);
         $this->students[] = $student;
+    }
+    
+    public function getStudents() {
+        return $this->students;
     }
 
     public static function loadMetadata(ClassMetadata $metadata) {
@@ -56,7 +61,7 @@ class Guardian extends BaseModel
         $builder->addField('phone_number', 'string');
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);
-        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian_id')->build();
+        $builder->createOneToMany('students', 'FloridaSwim\Entities\Student')->mappedBy('guardian')->build();
     }
 
 }

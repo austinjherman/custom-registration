@@ -197,6 +197,7 @@ class GuardianController extends BaseController {
     // find guardian
     $id = $request->get_param('id');
     $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($id);
+
     if(!$guardian) {
       return new \WP_REST_Response([
         "code" => "rest_no_route",
@@ -207,7 +208,7 @@ class GuardianController extends BaseController {
       ], 404);
     }
 
-    $students = $guardian->get('students');
+    $students = $guardian->getStudents()->getValues();
     foreach($students as $student) {
       $student->set('guardian_id', null);
       $student->set('guardian', null);
