@@ -35,7 +35,7 @@ class Duration extends BaseModel {
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', true, false)->inversedBy('durations')->build();
         $builder->addField('duration', 'string');
-        $builder->addField('price', 'decimal');
+        $builder->addField('price', 'decimal', ['scale' => 2]);
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime');
     }

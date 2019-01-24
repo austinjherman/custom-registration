@@ -2,9 +2,10 @@
 
 namespace FloridaSwim\Entities;
 
-use FloridaSwim\Entities\Guardian;
 use FloridaSwim\Entities\BaseModel;
+use FloridaSwim\Entities\Duration;
 use FloridaSwim\Entities\FormEntry;
+use FloridaSwim\Entities\Guardian;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Mapping\Builder\ClassMetadataBuilder;
 
@@ -33,6 +34,9 @@ class Student extends BaseModel
     protected $expose = [
         "id", 
         "guardian_id",
+        "duration_id",
+        "lesson_id",
+        "lesson_qty",
         "name",
         "date_of_birth",
         "description",
@@ -49,11 +53,23 @@ class Student extends BaseModel
 
     public function addFormEntry(FormEntry $formEntry) {
         $formEntry->addStudent($this);
+        $this->form_entry_id = $formEntry->get('id');
         $this->form_entry = $formEntry;
     }
 
     public function addGuardian(Guardian $guardian) {
+        $this->guardian_id = $guardian->get('id');
         $this->guardian = $guardian;
+    }
+
+    public function addDuration(Duration $duration) {
+        $this->duration_id = $duration->get('id');
+        $this->duration = $duration;
+    }
+
+    public function addLesson(Lesson $lesson) {
+        $this->lesson_id = $lesson->get('id');
+        $this->lesson = $lesson;
     }
 
     public function addSchedule(Schedule $schedule) {

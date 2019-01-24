@@ -95,65 +95,97 @@
     <div v-show="activePage==3">
       <fieldset class="fscr-fieldset">
         <legend class="fscr-page-title">Swim Lesson Package Selection</legend>
-        <fieldset class="fscr-fieldset">
-          <legend>How long would you like each lesson to last for your student(s)?</legend>
-          <label>
-            <span class="d-block">30</span>
-            <input name="lessonDuration" type="radio" v-model="globalState.selectedLessonDuration" value="30" v-validate="'required'">
-          </label>
-          <label>
-            <span class="d-block">60</span>
-            <input name="lessonDuration" type="radio" v-model="globalState.selectedLessonDuration" value="60" v-validate="'required'">
-          </label>
-        </fieldset>
-        <fieldset class="fscr-fieldset">
-          <legend class="fscr-d-none">Lesson Packages</legend>
-            <ul class="fscr-lesson-package-list">
-
-              <li>
-                Learn to Swim Program
-                <div v-for="lesson in lessons">
-                  <div v-for="durationObj in lesson.durations">
-                    <div v-show="durationObj.hasOwnProperty(globalState.selectedLessonDuration) && lesson.name == 'Swimming Lesson'">
-                      <label span="d-block">
-                        <input type="radio" :value="JSON.stringify({id: lesson.id, duration: durationObj.id, qty: 8})" v-model="globalState.selectedLesson">
-                        {{ lesson.name }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-              <li>
-                Water Aerobics
-                <div v-for="lesson in lessons">
-                  <div v-for="durationObj in lesson.durations">
-                    <div v-show="durationObj.hasOwnProperty(globalState.selectedLessonDuration) && lesson.name == 'Water Aerobics'">
-                      <label span="d-block">
-                        <input type="radio" :value="JSON.stringify({id: lesson.id, duration: durationObj.id, qty: 1})" v-model="globalState.selectedLesson">
-                        {{ lesson.name }}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </li>
-
-            </ul>
-            
-            <!--
-            <div v-for="lesson in lessons">
-              <div v-for="durationObj in lesson.durations">
-                <div v-show="durationObj.hasOwnProperty(globalState.selectedLessonDuration)">
-                  <label span="d-block">
-                    <div v-if="lesson.name == 'Swimming Lesson'">
-                      <input type="radio" :value="JSON.stringify({id: lesson.id, duration: durationObj.id, qty:})" v-model="globalState.selectedLesson">
-                      {{ lesson.name }}
-                    </div>
-                  </label>
-                </div>
-              </div>
+        <fieldset class="fscr-fieldset fscr-fieldset--durations">
+          <legend>How long would you like each lesson to last for your student<span v-if="numberOfStudents > 1">s</span>?</legend>
+          <span class="fscr-d-block fscr-input-error">{{ durationRadioError }}</span>
+          <div class="fscr-radio--durations">
+            <div class="fscr-radio--duration">
+              <label class="fscr-d-block">
+                <span class="fscr-d-block fscr-radio--duration__content">
+                  <span class="fscr-d-block fscr-radio--duration__duration">30</span>
+                  <span class="fscr-d-block fscr-radio--duration__duration-text">Minute Lessons</span>
+                </span>
+                <input name="lessonDuration" type="radio" @click="handleLessonDurationSelect" v-model="globalState.selectedLessonDuration" value="30" v-validate="'required'" class="fscr-d-none">
+                <span v-if="Number(globalState.selectedLessonDuration) !== 30" class="fscr-d-block fscr-radio--duration__select-text">Select</span>
+                <span v-if="Number(globalState.selectedLessonDuration) === 30" class="fscr-d-block fscr-radio--duration__select-text fscr-radio--duration__select-text--selected">OK!</span>
+              </label>
             </div>
-            -->
+            <div class="fscr-radio--duration">
+              <label class="fscr-d-block">
+                <span class="fscr-d-block fscr-radio--duration__content">
+                  <span class="d-block fscr-radio--duration__duration">60</span>
+                  <span class="fscr-d-block fscr-radio--duration__duration-text">Minute Lessons</span>
+                </span>
+                <input name="lessonDuration" type="radio" @click="handleLessonDurationSelect" v-model="globalState.selectedLessonDuration" value="60" v-validate="'required'" class="fscr-d-none">
+                <span v-if="Number(globalState.selectedLessonDuration) !== 60" class="fscr-d-block fscr-radio--duration__select-text">Select</span>
+                <span v-if="Number(globalState.selectedLessonDuration) === 60" class="fscr-d-block fscr-radio--duration__select-text fscr-radio--duration__select-text--selected">OK!</span>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset class="fscr-fieldset fscr-fieldset--lessons">
+          <legend class="fscr-d-none">Lesson Packages</legend>
+          <span class="fscr-d-block fscr-input-error">{{ lessonRadioError }}</span>
+          <ul class="fscr-d-flex fscr-lesson-package-list">
+            <li class="fscr-lesson-package-item">
+              <label class="fscr-d-block">
+                <div v-for="lesson in lessons">
+                  <div v-for="durationObj in lesson.durations">
+                    <div v-if="Number(durationObj.duration) === Number(globalState.selectedLessonDuration) && lesson.name == 'Swimming Lesson'"> 
+                      <div class="fscr-lesson-package-item-top">
+                        <span class="fscr-d-block">Learn to Swim Program</span>
+                        <!-- Using the duration ID here will allow us to grab the selected lesson in the backend -->
+                        <input type="radio" :value="durationObj.id" v-model="globalState.selectedLessonDurationServerId" class="fscr-d-none" @click="handleLessonSelect(lesson, 8)">
+                        <span class="fscr-d-block">{{ lesson.name }}</span>
+                        <span class="fscr-d-block">Lesson Quantity: 8</span>
+                        <span class="fscr-d-block">${{ durationObj.price }} / {{ durationObj.duration }} mins</span>
+                      </div>
+                      <div class="fscr-lesson-package-item-bottom">
+                        <div v-if="globalState.selectedLessonDurationServerId != durationObj.id">Select</div>
+                        <div v-if="globalState.selectedLessonDurationServerId == durationObj.id">OK!</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </li>
+
+            <li class="fscr-lesson-package-item">
+              <label class="fscr-d-block">
+                <div v-for="lesson in lessons">
+                  <div v-for="durationObj in lesson.durations">
+                    <div v-if="Number(durationObj.duration) === Number(globalState.selectedLessonDuration) && lesson.name == 'Water Aerobics'"> 
+                      <div class="fscr-lesson-package-item-top">
+                        <span class="fscr-d-block">Water Aerobics Lessons</span>
+                        <!-- Using the duration ID here will allow us to grab the selected lesson in the backend -->
+                        <input type="radio" :value="durationObj.id" v-model="globalState.selectedLessonDurationServerId" class="fscr-d-none" @click="handleLessonSelect(lesson, globalState.waterAerobicsLessonQty)">
+                        <span class="fscr-d-block">{{ lesson.name }}</span>
+                        <label>
+                          <span>Lesson Quantity: </span>
+                          <select v-model="globalState.waterAerobicsLessonQty" @change="handleWaterAerobicsQtyChange(durationObj, $event)">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                          </select>
+                        </label>
+                        <span class="fscr-d-block">${{ durationObj.price }} / {{ durationObj.duration }} mins</span>
+                      </div>
+                      <div class="fscr-lesson-package-item-bottom">
+                        <div v-if="globalState.selectedLessonDurationServerId != durationObj.id">Select</div>
+                        <div v-if="globalState.selectedLessonDurationServerId == durationObj.id">OK!</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </li>
+
+          </ul>
 
         </fieldset>
         <hr>
@@ -303,6 +335,8 @@ export default {
       disclaimerAccepted: false,
       displayableLessonPackages: [],
       weekdayTimeRangeAvailability: null,
+      durationRadioError: null,
+      lessonRadioError: null
     }
   },
 
@@ -350,7 +384,7 @@ export default {
         // if guest hasn't been saved in DB yet, we need to do that
         if(!this.$refs.guest.serverResponse.guest.hasOwnProperty('id')) {
 
-          // save form to DB
+          // if form hasn't been created yet, then we need to do that first
           if (!this.globalState.serverResponse.form.hasOwnProperty('id')) {
             promises.push(this.saveForm())
           }
@@ -455,7 +489,7 @@ export default {
 
           }
 
-          // create students after all parent creation requests are resolved
+          // create/update students after all parent creation requests are resolved
           // the parent/student relations are handled via the handleParentStudentRelationship
           // function on the parent component. These relationships are resolved when a 
           // student checkbox is checked.
@@ -488,7 +522,32 @@ export default {
      */
     handleThirdPageSubmission() {
 
-      // update student duration, lesson, and lesson quantity
+      var errors = false;
+
+      // update student duration and lesson quantity
+      if(Number(this.globalState.selectedLessonDuration) != 60 && Number(this.globalState.selectedLessonDuration) != 30) {
+        this.durationRadioError = "Please choose a valid lesson duration.";
+        errors = true;
+      }
+
+      if(this.globalState.selectedLessonDurationServerId === null) {
+        this.lessonRadioError = "Please choose a lesson plan.";
+        errors = true;
+      }
+
+      if(errors) {
+        return;
+      }
+
+      this.durationRadioError = null;
+
+      this.$refs.students.forEach(s => {
+        s.lessonDurationServerId = this.globalState.selectedLessonDurationServerId;
+        s.lessonQty = this.globalState.selectedLessonQty;
+        if(s.isDirty(3)) {
+          s.update();
+        }
+      });
 
       this.goToPage(4);
     },
@@ -527,7 +586,7 @@ export default {
      | The following functions get data from the API.
      |
      */
-     getLessonsFromApi() {
+    getLessonsFromApi() {
       this.$http.get(this.API_BASE_URL + '/lessons/')
         .then(response => {
           this.lessons = response.data.lessons;
@@ -535,7 +594,7 @@ export default {
         .catch(error => {
           this.lessons = JSON.stringify(error.data);
         });
-     },
+    },
 
 
     /**
@@ -655,6 +714,26 @@ export default {
         });
       }
       return parent;
+    },
+
+    handleLessonDurationSelect() {
+      if(this.durationRadioError !== null) {
+        this.durationRadioError = null;
+      }
+      this.globalState.selectedLessonDurationServerId = null;
+    },
+
+    handleLessonSelect(lesson, lessonQty) {
+      if(this.lessonRadioError !== null) {
+        this.lessonRadioError = null;
+      }
+      this.globalState.selectedLessonQty = lessonQty;
+    },
+
+    handleWaterAerobicsQtyChange(duration, $e) {
+      if(duration.id == this.globalState.selectedLessonDurationServerId && Number($e.target.value) !== Number(this.globalState.selectedLessonQty)) {
+        this.globalState.selectedLessonQty = $e.target.value;
+      }
     },
 
     /**
@@ -840,6 +919,65 @@ export default {
       margin: 0 0 25px 0;
       border: 1px dashed #222;
       padding: 15px;
+    }
+
+    .fscr-fieldset--durations {
+      margin: 25px 0;
+    }
+
+    .fscr-fieldset--durations legend {
+      margin-bottom: 15px;
+    }
+
+    .fscr-radio--durations {
+      display: flex;
+      justify-content: space-around;
+      margin: 0;
+    }
+
+    .fscr-radio--duration {
+      border: 1px solid #333;
+      flex: 0 1 30%;
+      text-align: center;
+    }
+
+    .fscr-radio--duration label:hover {
+      cursor: pointer;
+    }
+
+    .fscr-radio--duration__content {
+      padding: 15px;
+    }
+
+    .fscr-radio--duration__duration {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    .fscr-radio--duration__select-text {
+      border-top: 1px solid #333;
+      padding: 5px;
+    }
+
+    .fscr-fieldset--lessons {
+      margin: 25px 0;
+    }
+
+    .fscr-fieldset--lessons legend {
+      margin-bottom: 15px;
+    }
+
+    .fscr-lesson-package-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      justify-content: space-around;
+    }
+
+    .fscr-lesson-package-item {
+      border: 1px solid #333;
+      flex: 0 1 30%;
+      text-align: center;
     }
 
   }

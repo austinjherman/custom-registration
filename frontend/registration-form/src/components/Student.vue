@@ -125,8 +125,7 @@
         request.name = this.name;
         request.date_of_birth = this.dob;
         request.guardian_id = null;
-        request.duration = this.globalState.selectedLessonDuration;
-        request.lesson_id = this.globalState.selectedLesson;
+        request.duration_id = this.globalState.selectedLessonDurationServerId;
         request.lesson_qty = this.globalState.selectedLessonQty;
 
         var guardian = this.getParent(this.parent),
@@ -180,17 +179,22 @@
        * @param none
        * @return Boolean
        */
-      isDirty() {
+      isDirty(formPage) {
 
-        if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+        var isDirty = false;
 
-          var isDirty = 
-            this.name != this.serverResponse.name || 
-            this.dob.toISOString().split('T')[0] !== new Date(this.serverResponse.date_of_birth.date).toISOString().split('T')[0];
-          return isDirty;
+        if (formPage == 3) {
+          if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+            if (
+              this.globalState.selectedLessonDurationServerId != this.serverResponse.duration_id || 
+              this.globalState.selectedLessonQty != this.serverResponse.lesson_qty
+            ) {
+              isDirty = true;
+            }
+          }
         }
 
-        return true;
+        return isDirty;
 
       },
 

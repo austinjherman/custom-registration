@@ -3,7 +3,8 @@ export default {
     serverResponse: {
       form: {},
   },
-  selectedLesson: null,
+  selectedLessonDurationServerId: null,
   selectedLessonDuration: 30,
-  selectedLessonQty: null
+  selectedLessonQty: null,
+  waterAerobicsLessonQty: 1
 }

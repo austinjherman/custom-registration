@@ -164,11 +164,14 @@ class StudentController extends BaseController {
     // update student
     $student->set('updated_at', new \DateTime());
     $incomingJson = $request->get_json_params();
+
+    // make a PHP datetime object if updating DOB
     if(isset($incomingJson['date_of_birth'])) {
       $incomingJson['date_of_birth'] = new \DateTime($incomingJson['date_of_birth']); 
       $incomingJson['date_of_birth'] = new \DateTime($incomingJson['date_of_birth']->format('Y-m-d'));
     }
-    // find associated guardian
+
+    // find associated guardian if updating guardian
     if(isset($incomingJson['guardian_id'])) {
       $guardian = $this->orm()->getRepository('FloridaSwim\Entities\Guardian')->find($request->get_param('guardian_id'));
       if(!$guardian) {
@@ -176,9 +179,30 @@ class StudentController extends BaseController {
       }
       $student->addGuardian($guardian);
     }
+
+    // find associated duration if updating duration
+    // we can use the duration to get the attached lesson
+    if(isset($incomingJson['duration_id'])) {
+
+      // first get and add the duration to the student
+      $duration = $this->orm()->getRepository('FloridaSwim\Entities\Duration')->find($request->get_param('duration_id'));
+      $durationId = $duration->get('id');
+      if(!$duration) {
+        return new \WP_REST_Response(['errors' => ['duration_id' => 'Please enter a valid duration ID.']], 400);
+      }
+      $student->addDuration($duration);
+
+      // then get the lesson associated with the duration
+      $lesson = $duration->get('lesson');
+      if(!$lesson) {
+        return new \WP_REST_Response(['errors' => ['duration_id' => 'Please enter a duration that has an attached lesson']], 400);
+      }
+      $student->addLesson($lesson);
+    }
+
     foreach($incomingJson as $key => $value) {
       // okay because set() will only set a value if its key already exists
-      if($key !== 'guardian_id') {
+      if($key !== 'guardian_id' && $key !== 'duration_id') {
         $student->set($key, $value);
       }
     }

@@ -277,7 +277,6 @@
             this.phone      != this.serverResponse.guest.phone_number ||
             this.zip        != this.serverResponse.guest.zip_code ||
             this.poolAccess != this.serverResponse.guest.pool_access;
-          console.log('guest is dirty: ', isDirty);
           return isDirty;
         }
         return true;

@@ -89,10 +89,10 @@
         var promise = new Promise((resolve, reject) => { 
           if(this.students.length > 0) {
             this.studentsEmptyError = null;
-            return true;
+            return resolve(true);
           }
           else {
-            this.studentsEmptyError = "Please at least one student.";
+            this.studentsEmptyError = "Please choose at least one student.";
             return false;
           }
         })
