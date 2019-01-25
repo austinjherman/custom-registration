@@ -27,6 +27,7 @@ class Student extends BaseModel
     protected $description;
     protected $pool_address;
     protected $pool_type;
+    protected $schedule_id;
     protected $schedule;
     protected $created_at;
     protected $updated_at;
@@ -37,6 +38,7 @@ class Student extends BaseModel
         "duration_id",
         "lesson_id",
         "lesson_qty",
+        "schedule_id",
         "name",
         "date_of_birth",
         "description",
@@ -85,6 +87,7 @@ class Student extends BaseModel
         $builder->createManyToOne('lesson', 'FloridaSwim\Entities\Lesson')->addJoinColumn('lesson_id', 'id', true, false)->inversedBy('students')->build();
         $builder->addField('lesson_qty', 'integer', ['nullable' => true]);
         $builder->createManyToOne('duration', 'FloridaSwim\Entities\Duration')->addJoinColumn('duration_id', 'id', true, false)->build();
+        $builder->createOneToOne('schedule', 'FloridaSwim\Entities\Schedule')->mappedBy('student')->build();
         $builder->addField('name', 'string');
         $builder->addField('date_of_birth', 'datetime');
         $builder->addField('description', 'text', ['nullable' => true]);

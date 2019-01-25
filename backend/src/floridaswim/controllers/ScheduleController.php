@@ -4,8 +4,9 @@ namespace FloridaSwim\Controllers;
 
 use Valitron\Validator;
 use FloridaSwim\Entities\Schedule;
+use FloridaSwim\Controllers\BaseController;
 
-class ScheduleController extends \WP_REST_Controller {
+class ScheduleController extends BaseController {
 
   protected $namespace = '/fscr/v1';
   protected $resource_name = 'schedules';
@@ -68,11 +69,9 @@ class ScheduleController extends \WP_REST_Controller {
     $v = new Validator($request->get_json_params());
     $v->rules([
       'required' => [
-        'lesson_frequency_per_week', 
-        'lessons_begin', 'days_available', 'time_availability_weekdays',
-        'student_id'
+        'days_available', 'time_availability_weekdays', 'student_id'
       ],
-      'integer' => ['lesson_frequency_per_week', 'student_id']
+      'integer' => ['student_id']
     ]);
     if (!$v->validate()) {
       return new \WP_REST_Response(['errors' => $v->errors()], 400);
@@ -85,8 +84,6 @@ class ScheduleController extends \WP_REST_Controller {
 
     // create new schedule
     $schedule = new Schedule;
-    $schedule->set('lesson_frequency_per_week', $request->get_param('lesson_frequency_per_week'));
-    $schedule->set('lessons_begin', $request->get_param('lessons_begin'));
     $schedule->set('days_available', $request->get_param('days_available'));
     $schedule->set('time_availability_weekdays', $request->get_param('time_availability_weekdays'));
     $schedule->addStudent($student);

@@ -11,8 +11,6 @@ class Schedule extends BaseModel {
     protected $id;
     protected $student;
     protected $student_id;
-    protected $lesson_frequency_per_week;
-    protected $lessons_begin;
     protected $days_available;
     protected $time_availability_weekdays;
     protected $description;
@@ -20,8 +18,8 @@ class Schedule extends BaseModel {
     protected $updated_at;
 
     protected $expose = [
-        'lesson_frequency_per_week',
-        'lessons_begin',
+        'id',
+        'student_id',
         'days_available',
         'time_availability_weekdays',
         'description',
@@ -34,20 +32,16 @@ class Schedule extends BaseModel {
         $this->updated_at = new \DateTime();
     }
 
-    public function addStudent(Student $student) 
-    {
+    public function addStudent(Student $student) {
         $student->addSchedule($this);
         $this->student = $student;
     }
 
-    public static function loadMetadata(ClassMetadata $metadata)
-    {
+    public static function loadMetadata(ClassMetadata $metadata) {
         $builder = new ClassMetadataBuilder($metadata);
         $builder->setTable(parent::tablePrefix() . "fwcr_schedules");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createOneToOne('student', 'FloridaSwim\Entities\Student')->inversedBy('schedule')->addJoinColumn('student_id', 'id', false, false, 'cascade')->build();
-        $builder->addField('lesson_frequency_per_week', 'smallint');
-        $builder->addField('lessons_begin', 'string');
         $builder->addField('days_available', 'array');
         $builder->addField('time_availability_weekdays', 'array');
         $builder->addField('description', 'text', ['nullable' => true]);

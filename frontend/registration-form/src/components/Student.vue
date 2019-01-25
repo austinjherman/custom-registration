@@ -42,6 +42,10 @@
         name: null,
         dob: null,
         parent: null,
+        schedule: {
+          local: {},
+          server: {}
+        },
         serverResponse: {},
       }
     }, 

@@ -10,6 +10,7 @@ use FloridaSwim\Controllers\GuestController;
 use FloridaSwim\Controllers\LessonController;
 use FloridaSwim\Controllers\StudentController;
 use FloridaSwim\Controllers\GuardianController;
+use FloridaSwim\Controllers\ScheduleController;
 use Doctrine\ORM\Mapping\Driver\StaticPHPDriver;
 use FloridaSwim\Controllers\FormEntryController;
 
@@ -149,6 +150,8 @@ class FloridaSwimCustomRegistration {
     $guardianController->registerRoutes();
     $lessonController = new LessonController($this->orm());
     $lessonController->registerRoutes();
+    $scheduleController = new ScheduleController($this->orm());
+    $scheduleController->registerRoutes();
   }
 
   public function setStripeKeys(\stdClass $stripe) {

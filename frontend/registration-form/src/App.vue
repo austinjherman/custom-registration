@@ -49,16 +49,16 @@
               <legend class="fscr-input-label fscr-input-label-text">Are you the parent/guardian of all the students? <span class="fscr-asterisk--required">*</span></legend>
               <label class="fscr-input-label">
                 <span class="fscr-d-inline-block">Yes</span>
-                <input name="guestIsOnlyParent" type="radio" :value="true" v-model="guestIsOnlyParent">
+                <input name="guestIsOnlyParent" type="radio" :value="true" v-model="globalState.guestIsOnlyParent">
               </label>
               <label class="fscr-input-label">
                 <span class="fscr-d-inline-block">No</span>
-                <input name="guestIsOnlyParent" type="radio" :value="false" v-model="guestIsOnlyParent">
+                <input name="guestIsOnlyParent" type="radio" :value="false" v-model="globalState.guestIsOnlyParent">
               </label>
               <span class="fscr-d-block fscr-input-error">{{ this.validator.first('guestIsOnlyParent') }}</span>
             </fieldset>
           </div>
-          <div v-if="guestIsOnlyParent == false">
+          <div v-if="globalState.guestIsOnlyParent == false">
             <div class="fscr-input-wrap">
               <label class="fscr-input-label">
                 <span class="fscr-d-block fscr-input-label-text">How many parents are you signing up? <span class="fscr-asterisk--required">*</span></span>
@@ -77,7 +77,7 @@
               </label>
             </div>
           </div>
-          <div v-if="guestIsOnlyParent == false">
+          <div v-if="globalState.guestIsOnlyParent == false">
             <div v-for="n in numberOfParents" v-bind:key="n">
               <Parent :vvScope="'parent_' + (n-1)" ref="parents" :getStudent="getStudent"/>
             </div>
@@ -200,20 +200,26 @@
     <div v-show="activePage==4">
       <fieldset class="fscr-fieldset">
         <legend class="fscr-page-title">Preferred Schedule</legend>
-        <label>
-          <span class="d-block">What days work for you?</span>
-          <multiselect name="daysThatWork" v-model="daysThatWork" :options="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
-            <span class="d-block">{{ validator.first('daysThatWork') }}</span>
-        </label>
-        <label>
-          <span class="d-block">Select your time range availability for weekdays.</span>
-          <multiselect name="weekdayTimeRangeAvailability" v-model="weekdayTimeRangeAvailability" :options="['Morning (8am - 12pm)', 'Afternoon (12pm - 4pm)', 'Evening (4pm - 8pm)']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
-          <span class="d-block">{{ validator.first('weekdayTimeRangeAvailability') }}</span>
-        </label>
-        <label>
-          <span class="d-block">Additional scheduling information, if any.</span>
-          <textarea></textarea>
-        </label>
+        <div class="fscr-multiselect-wrapper">
+          <label>
+            <span class="d-block">What days work for you?</span>
+            <multiselect name="daysThatWork" v-model="globalState.daysThatWork" :options="['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
+            <span class="fscr-d-block fscr-input-error">{{ validator.first('daysThatWork') }}</span>
+          </label>
+        </div>
+        <div class="fscr-multiselect-wrapper">
+          <label>
+            <span class="d-block">Select your time range availability for weekdays.</span>
+            <multiselect name="weekdayTimeRangeAvailability" v-model="globalState.weekdayTimeRangeAvailability" :options="['Morning (8am - 12pm)', 'Afternoon (12pm - 4pm)', 'Evening (4pm - 8pm)']" :multiple="true" v-validate="'required'" :vv-validate-on="'input|close'"></multiselect>
+            <span class="fscr-d-block fscr-input-error">{{ validator.first('weekdayTimeRangeAvailability') }}</span>
+          </label>
+        </div>
+        <div class="fscr-schedule-additional-info-wrapper">
+          <label>
+            <span class="fscr-d-block">Additional scheduling information, if any.</span>
+            <textarea rows="12"></textarea>
+          </label>
+        </div>
         <hr>
         <div class="fscr-d-flex fscr-justify-content-between">
           <button type="button" @click="goToPage(3)" class="fscr__button fscr__button--primary">Back</button>
@@ -327,14 +333,10 @@ export default {
       globalState: GlobalState,
       promoCode: null,
       activePage: 1,
-      daysThatWork: null,
       numberOfParents: 0,
       numberOfStudents: 0,
-      guestIsOnlyParent: true,
       customerReferredBy: null,
       disclaimerAccepted: false,
-      displayableLessonPackages: [],
-      weekdayTimeRangeAvailability: null,
       durationRadioError: null,
       lessonRadioError: null
     }
@@ -448,7 +450,7 @@ export default {
         if(studentsValidated) {
 
           // check to see if the guest is the only parent
-          if(this.guestIsOnlyParent == true) {
+          if(this.globalState.guestIsOnlyParent == true) {
 
             // if the guest hasn't already been saved, create a new parent with guest info and save to DB
             // if the guest has already been saved, update is taken care of on previous page submit
@@ -515,7 +517,7 @@ export default {
     /**
      * Handle page 3 submission button.
      * 
-     * This page updates the students lesson, lesson duration, and lesson quantity.
+     * This page updates the students' lessons, lesson durations, and lesson quantities.
      *
      * @params none
      * @return void
@@ -524,12 +526,13 @@ export default {
 
       var errors = false;
 
-      // update student duration and lesson quantity
+      // make sure we have a valid lesson duration selected
       if(Number(this.globalState.selectedLessonDuration) != 60 && Number(this.globalState.selectedLessonDuration) != 30) {
         this.durationRadioError = "Please choose a valid lesson duration.";
         errors = true;
       }
 
+      // make sure we have a valid lesson plan selected
       if(this.globalState.selectedLessonDurationServerId === null) {
         this.lessonRadioError = "Please choose a lesson plan.";
         errors = true;
@@ -539,8 +542,11 @@ export default {
         return;
       }
 
+      // reset errors if validation passes
+      this.lessonRadioError = null;
       this.durationRadioError = null;
 
+      // update students;
       this.$refs.students.forEach(s => {
         s.lessonDurationServerId = this.globalState.selectedLessonDurationServerId;
         s.lessonQty = this.globalState.selectedLessonQty;
@@ -560,11 +566,52 @@ export default {
      * @params none
      * @return void
      */
-    handleFourthPageSubmission() {
+    async handleFourthPageSubmission() {
 
-      // update student schedule
+      // validate fields
+      var promises    = [],
+          fieldsValid = false;
+      promises.push(this.$validator.validate('daysThatWork'));
+      promises.push(this.$validator.validate('weekdayTimeRangeAvailability'));
+      fieldsValid = await Promise.all(promises).then(result => fieldsValid = result.every(v => v == true));
+      if(!fieldsValid) return
+
+      // create schedules
+      var request  = {},
+          requests = [];
+
+      // set up each request
+      request.days_available = this.globalState.daysThatWork;
+      request.time_availability_weekdays = this.globalState.weekdayTimeRangeAvailability;
+      this.$refs.students.forEach(s => {
+        
+        request.student_id = s.serverResponse.id;
+        requests.push(request);
+        s.schedule.local = request;
+
+        var isDirty = 
+          !s.schedule.server.hasOwnProperty('id') && (
+          s.schedule.local.days_available != s.schedule.server.days_available ||
+          s.schedule.local.time_availability_weekdays != s.schedule.server.time_availability_weekdays)
+
+        if(isDirty) {
+          return new Promise((resolve, reject) => {
+            this.$http.post(this.API_BASE_URL + '/schedules/create', request)
+              .then(response => {
+                s.schedule.server = response.data.schedule;
+                resolve(response.data.schedule);
+              })
+              .catch(error => {
+                s.schedule.server = JSON.stringify(error.data);
+                reject(error);
+              });
+          });
+        }
+
+      });
 
       this.goToPage(5);
+
     },
 
     /**
@@ -701,7 +748,7 @@ export default {
      * @return Component parent
      */
     getParent(id) {
-      if(this.guestIsOnlyParent) {
+      if(this.globalState.guestIsOnlyParent) {
         return this.$refs.guest;
       }
       var parent = null,
@@ -978,6 +1025,56 @@ export default {
       border: 1px solid #333;
       flex: 0 1 30%;
       text-align: center;
+    }
+
+    .fscr-multiselect-wrapper {
+      margin: 15px 0;
+      width: 50%;
+    }
+
+    .fscr-schedule-additional-info-wrapper {
+      margin: 15px 0;
+    }
+
+    .fscr-schedule-additional-info-wrapper textarea {
+      margin-top: 10px;
+      margin-bottom: 25px;
+      width: 50%;
+    }
+
+    .multiselect {
+      margin-top: 10px;
+    }
+
+    .multiselect__option--highlight {
+      background: #333;
+    }
+
+    .multiselect__tag {
+      background: #333;
+    }
+
+    .multiselect__tag-icon:focus, 
+    .multiselect__tag-icon:hover {
+      background-color: #aaa;
+    }
+
+    .multiselect__tag-icon:focus:after, 
+    .multiselect__tag-icon:hover:after {
+      color: #333;
+    }
+
+    .multiselect__tag-icon:after {
+      color: #fff;
+    }
+
+    .multiselect__option--selected.multiselect__option--highlight:after {
+      background: #aaa;
+    }
+
+    .multiselect__option--highlight:after {
+      background: #aaa;
+      color: #333;
     }
 
   }

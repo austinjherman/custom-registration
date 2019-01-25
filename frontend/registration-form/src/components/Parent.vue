@@ -257,7 +257,6 @@
           student.parent = null;
           this.students.forEach((s, i) => {
             if(s.id == clickedStudentId) {
-              console.log("index: ", i);
               index = i;
             }
           });
