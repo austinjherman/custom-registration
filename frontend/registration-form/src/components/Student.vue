@@ -44,9 +44,15 @@
         parent: null,
         schedule: {
           local: {},
-          server: {}
+          server: {
+            error: null,
+            success: {}
+          }
         },
-        serverResponse: {},
+        serverResponse: {
+          error: null,
+          success: {}
+        },
       }
     }, 
 
@@ -87,7 +93,7 @@
         request.student_name = this.name;
         request.student_date_of_birth = this.dob.toISOString();
         request.student_date_of_birth = request.student_date_of_birth.split('T')[0];
-        request.form_entry_id = this.globalState.serverResponse.form.id;
+        request.form_entry_id = this.globalState.serverResponse.form.success.id;
         request.guardian_id = null;
 
         // getParent will always return the guardian if the guestIsOnlyParent boolean
@@ -96,22 +102,22 @@
 
         // if guest is only parent, then the guest component instance is returned
         if(guardian && guardian.serverResponse.hasOwnProperty('parent')) {
-          request.guardian_id = guardian.serverResponse.parent.id;
+          request.guardian_id = guardian.serverResponse.parent.success.id;
         }
 
         // otherwise a parent component instance is returned.
-        else if (guardian && guardian.serverResponse.hasOwnProperty('id')) {
-          request.guardian_id = guardian.serverResponse.id;
+        else if (guardian && guardian.serverResponse.success.hasOwnProperty('id')) {
+          request.guardian_id = guardian.serverResponse.success.id;
         }
 
         return new Promise((resolve, reject) => {
           this.$http.post(this.API_BASE_URL + '/students/create', request)
             .then(response => {
-              this.serverResponse = response.data.student;
+              this.$set(this.serverResponse, 'success', response.data.student);
               resolve(this.serverResponse);
             })
             .catch(error => {
-              this.serverResponse = JSON.stringify(error.data);
+              this.$set(this.serverResponse, 'error', error.data);
               reject(error);
             });
           });
@@ -135,24 +141,24 @@
         var guardian = this.getParent(this.parent),
             parentId = null;
         if(guardian && guardian.serverResponse.hasOwnProperty('parent')) {
-          parentId = guardian.serverResponse.parent.id;
+          parentId = guardian.serverResponse.parent.success.id;
           this.parent = parentId;
           request.guardian_id = parentId;
         }
-        else if (guardian && guardian.serverResponse.hasOwnProperty('id')) {
-          parentId = guardian.serverResponse.id;
+        else if (guardian && guardian.serverResponse.success.hasOwnProperty('id')) {
+          parentId = guardian.serverResponse.success.id;
           this.parent = parentId;
           request.guardian_id = parentId;
         }
 
         return new Promise((resolve, reject) => {
-          this.$http.put(this.API_BASE_URL + '/students/update/' + this.serverResponse.id, request)
+          this.$http.put(this.API_BASE_URL + '/students/update/' + this.serverResponse.success.id, request)
             .then(response => {
-              this.serverResponse = response.data.student;
+              this.$set(this.serverResponse, 'success', response.data.student);
               resolve(this.serverResponse);
             })
             .catch(error => {
-              this.serverResponse = JSON.stringify(error);
+              this.$set(this.serverResponse, 'data', error.data);
               reject(error);
             });
           });
@@ -166,12 +172,13 @@
        */
       delete() {
         return new Promise((resolve, reject) => {
-          this.$http.delete(this.API_BASE_URL + '/students/delete/' + this.serverResponse.id)
+          this.$http.delete(this.API_BASE_URL + '/students/delete/' + this.serverResponse.success.id)
             .then((response) => {
-              this.serverResponse = {};
+              this.$set(this.serverResponse, 'success', {});
               resolve(response);
             })
             .catch((error) => {
+              this.$set(this.serverResponse, 'error', error.data);
               reject(error);
             })
         });
@@ -185,15 +192,18 @@
        */
       isDirty(formPage) {
 
-        var isDirty = false;
+        var isDirty = true;
 
         if (formPage == 3) {
-          if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+          if(Object.keys(this.serverResponse.success).length !== 0 && this.serverResponse.success.hasOwnProperty('id')) {
             if (
               this.globalState.selectedLessonDurationServerId != this.serverResponse.duration_id || 
               this.globalState.selectedLessonQty != this.serverResponse.lesson_qty
             ) {
               isDirty = true;
+            }
+            else {
+              isDirty = false;
             }
           }
         }

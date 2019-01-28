@@ -1,12 +1,16 @@
 export default {
   guestIsOnlyParent: true,
   serverResponse: {
-    form: {},
+    form: {
+      error: null,
+      success: {}
+    },
   },
   selectedLessonDurationServerId: null,
   selectedLessonDuration: 30,
   selectedLessonQty: null,
   waterAerobicsLessonQty: 1,
   daysThatWork: [],
-  weekdayTimeRangeAvailability: null
+  weekdayTimeRangeAvailability: null,
+  scheduleDescription: null
 }

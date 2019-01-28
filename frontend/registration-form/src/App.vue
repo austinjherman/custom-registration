@@ -217,7 +217,7 @@
         <div class="fscr-schedule-additional-info-wrapper">
           <label>
             <span class="fscr-d-block">Additional scheduling information, if any.</span>
-            <textarea rows="12"></textarea>
+            <textarea rows="12" v-model="globalState.scheduleDescription"></textarea>
           </label>
         </div>
         <hr>
@@ -230,26 +230,41 @@
 
     <!-- Page 5 -->
     <div v-show="activePage==5">
+
       <fieldset class="fscr-fieldset">
         <legend class="fscr-page-title">Order Summary</legend>
-        <label>
-          <span class="d-block">Apply a promo code.</span>
-          <input type="text" v-model="promoCode">
-        </label>
-        <button type="button" @click="checkPromoCode">Apply</button>
+
+        <div class="fscr-promo-section">
+          <label>
+            <span class="d-block">Apply a promo code.</span>
+            <input type="text" v-model="promoCode">
+          </label>
+          <button type="button" @click="checkPromoCode">Apply</button>
+        </div>
+
+        <hr>
+        
+        
         <section>
           <h1>Lesson Package Cost Breakdown</h1>
         </section>
+
+        <hr>
+  
         <label>
-          <span class="d-block">How did you hear about us?</span>
+          <span class="fscr-d-block">How did you hear about us?</span>
           <input name="customerReferredBy" type="text" v-model="customerReferredBy" v-validate="'required'">
         </label>
+
         <hr>
+
         <div class="fscr-d-flex fscr-justify-content-between">
           <button type="button" @click="goToPage(4)" class="fscr__button fscr__button--primary">Back</button>
           <button type="button" @click="handleFifthPageSubmission()" class="fscr__button fscr__button--primary">Next</button>
         </div>
+
       </fieldset>
+
     </div>
 
     <!-- Page 6 -->
@@ -379,41 +394,57 @@ export default {
     async handleFirstPageSubmission() {
 
       var promises = [],
-          guestValidated = await this.$refs.guest.validate();
+          guestValidated = await this.$refs.guest.validate(),
+          formCreated  = false,
+          guestCreated = false,
+          guestUpdated = false,
+          guestUpdateAsParent = false;
 
       if(guestValidated) {
 
         // if guest hasn't been saved in DB yet, we need to do that
-        if(!this.$refs.guest.serverResponse.guest.hasOwnProperty('id')) {
+        if(!this.$refs.guest.serverResponse.guest.success.hasOwnProperty('id')) {
 
           // if form hasn't been created yet, then we need to do that first
-          if (!this.globalState.serverResponse.form.hasOwnProperty('id')) {
-            promises.push(this.saveForm())
+          if (!this.globalState.serverResponse.form.success.hasOwnProperty('id')) {
+            formCreated = await this.saveForm();
           }
 
-          // once the form saves, save the guest
-          Promise.all(promises).then(response => {
-            this.$refs.guest.store();
-          })
+          // when the form is created, create the guest
+          if(formCreated) {
+            guestCreated = await this.$refs.guest.store();
+          }
+
+          // when the guest is created, go to next page
+          if(guestCreated) {
+            this.activePage += 1;
+          }
 
         }
 
         // otherwise we need to update the guest
         else {
 
+          // if the guest inputs do not match the server and they are valid
           if(this.$refs.guest.isDirty() && guestValidated) {
 
-            this.$refs.guest.update();
+            // update the guest
+            promises.push(this.$refs.guest.update());
             
             // if guest is parent then we need to update the parent
             if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
-              this.$refs.guest.updateAsParent()
+              promises.push(this.$refs.guest.updateAsParent());
             }
 
           }
-        }
 
-        this.activePage += 1;
+          // when guest is updated (and, if applicable, the parent is updated)
+          // go to next page
+          Promise.all(promises).then(result => {
+            this.activePage += 1;
+          });
+
+        }
 
       }
 
@@ -435,11 +466,12 @@ export default {
      */
     async handleSecondPageSubmission() {
 
-      var savedForm    = this.globalState.serverResponse.form.hasOwnProperty('id'),
-          savedGuest   = this.$refs.guest.serverResponse.guest.hasOwnProperty('id'),
+      var savedForm    = this.globalState.serverResponse.form.success.hasOwnProperty('id'),
+          savedGuest   = this.$refs.guest.serverResponse.guest.success.hasOwnProperty('id'),
           enrollingStudents = await this.$validator.validate('numberOfStudents'),
           parentsValidated  = false,
           studentsValidated = false,
+          studentPromises   = [],
           promises = [];
 
       // check to make sure we have a form, guest, and students to enroll
@@ -454,7 +486,7 @@ export default {
 
             // if the guest hasn't already been saved, create a new parent with guest info and save to DB
             // if the guest has already been saved, update is taken care of on previous page submit
-            if(!this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
+            if(!this.$refs.guest.serverResponse.parent.success.hasOwnProperty('id')) {
               promises.push(this.$refs.guest.saveAsParent());
             }
             
@@ -469,6 +501,7 @@ export default {
 
               // delete the parent that was created with the guest information if it exists. 
               // students are orphaned in backend when a parent is deleted
+              // we will be resassigning their parents
               if(this.$refs.guest.serverResponse.parent.hasOwnProperty('id')) {
                 promises.push(this.$refs.guest.deleteAsParent());
               }
@@ -477,11 +510,11 @@ export default {
               if(typeof this.$refs.parents != 'undefined' && this.$refs.parents.length > 0) {
                 this.$refs.parents.forEach(p => {
                   // if hasn't been created yet, store
-                  if(!p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
+                  if(!p.serverResponse.success.hasOwnProperty('id') && p.isDirty()) {
                     promises.push(p.store());
                   }
                   // if has been created, update
-                  else if(p.serverResponse.hasOwnProperty('id') && p.isDirty()) {
+                  else if(p.serverResponse.success.hasOwnProperty('id') && p.isDirty()) {
                     promises.push(p.update());
                   }
                 });
@@ -497,17 +530,17 @@ export default {
           // student checkbox is checked.
           Promise.all(promises).then(response => {
             this.$refs.students.forEach(s => {
-              if(!s.serverResponse.hasOwnProperty('id')) {
-                s.store();
+              if(!s.serverResponse.success.hasOwnProperty('id')) {
+                studentPromises.push(s.store());
               }
-              else if(s.serverResponse.hasOwnProperty('id')) {
-                s.update();
+              else if(s.serverResponse.success.hasOwnProperty('id')) {
+                studentPromises.push(s.update());
               }
             });
+            Promise.all(studentPromises).then(result => {
+              this.goToPage(3);
+            });
           });
-
-          // go to the third page
-          this.goToPage(3);
 
         }
 
@@ -524,7 +557,8 @@ export default {
      */
     handleThirdPageSubmission() {
 
-      var errors = false;
+      var errors = false,
+          promises = [];
 
       // make sure we have a valid lesson duration selected
       if(Number(this.globalState.selectedLessonDuration) != 60 && Number(this.globalState.selectedLessonDuration) != 30) {
@@ -551,11 +585,14 @@ export default {
         s.lessonDurationServerId = this.globalState.selectedLessonDurationServerId;
         s.lessonQty = this.globalState.selectedLessonQty;
         if(s.isDirty(3)) {
-          s.update();
+          promises.push(s.update());
         }
       });
 
-      this.goToPage(4);
+      Promise.all(promises).then(result => {
+        this.goToPage(4);
+      });
+
     },
 
     /**
@@ -577,40 +614,44 @@ export default {
       if(!fieldsValid) return
 
       // create schedules
-      var request  = {},
-          requests = [];
+      var request   = {},
+          responses = [];
 
-      // set up each request
-      request.days_available = this.globalState.daysThatWork;
-      request.time_availability_weekdays = this.globalState.weekdayTimeRangeAvailability;
       this.$refs.students.forEach(s => {
-        
-        request.student_id = s.serverResponse.id;
-        requests.push(request);
-        s.schedule.local = request;
 
-        var isDirty = 
-          !s.schedule.server.hasOwnProperty('id') && (
-          s.schedule.local.days_available != s.schedule.server.days_available ||
-          s.schedule.local.time_availability_weekdays != s.schedule.server.time_availability_weekdays)
+        request = {};
+        request.days_available = this.globalState.daysThatWork;
+        request.time_availability_weekdays = this.globalState.weekdayTimeRangeAvailability;
+        request.student_id = Number(s.serverResponse.success.id);
+        request.description = this.globalState.scheduleDescription;
+        s.$set(s.schedule, 'local', request);
 
-        if(isDirty) {
-          return new Promise((resolve, reject) => {
-            this.$http.post(this.API_BASE_URL + '/schedules/create', request)
-              .then(response => {
-                s.schedule.server = response.data.schedule;
-                resolve(response.data.schedule);
-              })
-              .catch(error => {
-                s.schedule.server = JSON.stringify(error.data);
-                reject(error);
-              });
-          });
+        // if we need to save
+        if(!s.schedule.server.success.hasOwnProperty('id')) {
+          responses.push(this.saveSchedule(s));
+        }
+
+        // else we need to update
+        else {
+
+          // first determine if the local schedule is synced with DB
+          var isDirty = 
+            !s.schedule.server.success.hasOwnProperty('id') || (
+            s.schedule.local.days_available != s.schedule.server.success.days_available ||
+            s.schedule.local.time_availability_weekdays != s.schedule.server.success.time_availability_weekdays)
+
+          // proceed if we need to update a schedule
+          if(isDirty) {
+            responses.push(this.updateSchedule(s));
+          }
+
         }
 
       });
 
-      this.goToPage(5);
+      Promise.all(responses).then(result => {
+        this.goToPage(5);
+      });
 
     },
 
@@ -694,15 +735,43 @@ export default {
       return new Promise((resolve, reject) => {
         this.$http.post(this.API_BASE_URL + '/forms/create', request)
           .then(response => {
-            this.globalState.serverResponse.form = response.data.form;
+            this.globalState.serverResponse.form.success = response.data.form;
             resolve(response.data.form);
           })
           .catch(error => {
-            this.globalState.serverResponse.form = JSON.stringify(error.data);
+            this.globalState.serverResponse.form.error = JSON.stringify(error);
             reject(error);
           });
       });
 
+    },
+
+    saveSchedule(student) {
+      return new Promise((resolve, reject) => {
+        this.$http.post(this.API_BASE_URL + '/schedules/create', student.schedule.local)
+          .then(response => {
+            student.$set(student.schedule.server, 'success', response.data.schedule);
+            resolve(response.data.schedule);
+          })
+          .catch(error => {
+            student.$set(student.schedule.server, 'error', error.data);
+            reject(error);
+          });
+      });
+    },
+
+    updateSchedule(student) {
+      return new Promise((resolve, reject) => {
+        this.$http.put(this.API_BASE_URL + '/schedules/update/' + student.schedule.server.success.id, student.schedule.local)
+          .then(response => {
+            student.$set(student.schedule.server, 'success', response.data.schedule);
+            resolve(response.data.schedule);
+          })
+          .catch(error => {
+            student.$set(student.schedule.server, 'error', error.data);
+            reject(error);
+          });
+      });
     },
 
     /**

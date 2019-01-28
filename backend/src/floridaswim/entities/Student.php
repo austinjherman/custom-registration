@@ -22,13 +22,13 @@ class Student extends BaseModel
     protected $lesson_qty;
     protected $duration_id;
     protected $duration;
+    protected $schedule_id;
+    protected $schedule;
     protected $name;
     protected $date_of_birth;
     protected $description;
     protected $pool_address;
     protected $pool_type;
-    protected $schedule_id;
-    protected $schedule;
     protected $created_at;
     protected $updated_at;
 

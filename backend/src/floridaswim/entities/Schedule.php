@@ -35,6 +35,7 @@ class Schedule extends BaseModel {
     public function addStudent(Student $student) {
         $student->addSchedule($this);
         $this->student = $student;
+        $this->student_id = $student->get('id');
     }
 
     public static function loadMetadata(ClassMetadata $metadata) {
@@ -42,8 +43,8 @@ class Schedule extends BaseModel {
         $builder->setTable(parent::tablePrefix() . "fwcr_schedules");
         $builder->createField('id', 'integer')->isPrimaryKey()->generatedValue()->build();
         $builder->createOneToOne('student', 'FloridaSwim\Entities\Student')->inversedBy('schedule')->addJoinColumn('student_id', 'id', false, false, 'cascade')->build();
-        $builder->addField('days_available', 'array');
-        $builder->addField('time_availability_weekdays', 'array');
+        $builder->addField('days_available', 'text');
+        $builder->addField('time_availability_weekdays', 'text');
         $builder->addField('description', 'text', ['nullable' => true]);
         $builder->addField('created_at', 'datetime');
         $builder->addField('updated_at', 'datetime', ['nullable' => true]);

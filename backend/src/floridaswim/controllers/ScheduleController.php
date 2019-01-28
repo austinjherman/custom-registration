@@ -84,11 +84,19 @@ class ScheduleController extends BaseController {
 
     // create new schedule
     $schedule = new Schedule;
-    $schedule->set('days_available', $request->get_param('days_available'));
-    $schedule->set('time_availability_weekdays', $request->get_param('time_availability_weekdays'));
+    $schedule->set('days_available', implode(",", $request->get_param('days_available')));
+    $schedule->set('time_availability_weekdays', implode(",", $request->get_param('time_availability_weekdays')));
+    $schedule->set('description', $request->get_param('description'));
     $schedule->addStudent($student);
     $this->orm()->persist($schedule);
-    $this->orm()->flush();
+    
+    try {
+      $this->orm()->flush();
+    }
+    catch (\Exception $e) {
+      return new \WP_REST_Response(['errors' => ['schdule' => $e->getMessage()]], 400);
+    }
+
     if(!$schedule->get('id')) {
       return new \WP_REST_Response(['message' => 'Sorry, something went wrong.'], 500);
     }
@@ -165,6 +173,10 @@ class ScheduleController extends BaseController {
       // okay because set() will only set a value if its key already exists
       $schedule->set($key, $value);
     }
+
+    $this->orm()->persist($schedule);
+    $this->orm()->flush();
+
     $arr = $schedule->toArray();
     return new \WP_REST_Response([
       "schedule" => $arr

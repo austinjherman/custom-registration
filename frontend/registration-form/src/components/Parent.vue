@@ -59,7 +59,10 @@
         email: null,
         phone: null,
         students: [],
-        serverResponse: {},
+        serverResponse: {
+          error: null,
+          success: {}
+        },
         studentsEmptyError: null
       }
     }, 
@@ -115,15 +118,16 @@
         request.name = this.name;
         request.email = this.email;
         request.phone_number = this.phone;
-        request.form_entry_id = this.globalState.serverResponse.form.id;
+        request.form_entry_id = this.globalState.serverResponse.form.success.id;
 
         return new Promise((resolve, reject) => {
           this.$http.post(this.API_BASE_URL + '/guardians/create', request)
             .then((response) => {
-              this.serverResponse = response.data.guardian;
+              this.$set(this.serverResponse, 'success', response.data.guardian);
               resolve(this.serverResponse);
             })
             .catch((error) => {
+              this.$set(this.serverResponse, 'error', error.data);
               reject(error);
             })
         });
@@ -142,15 +146,16 @@
         request.name = this.name;
         request.email = this.email;
         request.phone_number = this.phone;
-        request.form_entry_id = this.globalState.serverResponse.form.id;
+        request.form_entry_id = this.globalState.serverResponse.form.success.id;
 
         return new Promise((resolve, reject) => {
-          this.$http.put(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.id, request)
+          this.$http.put(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.success.id, request)
             .then((response) => {
-              this.serverResponse = response.data.guardian;
+              this.$set(this.serverResponse, 'success', response.data.guardian);
               resolve(this.serverResponse);
             })
             .catch((error) => {
+              this.$set(this.serverResponse, 'error', error.data);
               reject(error);
             })
         });
@@ -171,14 +176,15 @@
             student.update();
           }
         });
-        if(this.serverResponse.hasOwnProperty('id')) {
+        if(this.serverResponse.success.hasOwnProperty('id')) {
           return new Promise((resolve, reject) => {
-            this.$http.delete(this.API_BASE_URL + '/guardians/delete/' + this.serverResponse.id)
+            this.$http.delete(this.API_BASE_URL + '/guardians/delete/' + this.serverResponse.success.id)
               .then((response) => {
-                this.serverResponse = {};
+                this.$set(this.serverResponse, 'success', {});
                 resolve(response);
               })
               .catch((error) => {
+                this.$set(this.serverResponse, 'error', error.data);
                 reject(error);
               })
           });
@@ -280,12 +286,12 @@
        */
       isDirty() {
 
-        if(Object.keys(this.serverResponse).length !== 0 && this.serverResponse.hasOwnProperty('id')) {
+        if(Object.keys(this.serverResponse.success).length !== 0 && this.serverResponse.success.hasOwnProperty('id')) {
 
           var isDirty = 
-            this.name  != this.serverResponse.name || 
-            this.email != this.serverResponse.email_address || 
-            this.phone != this.serverResponse.phone_number;
+            this.name  != this.serverResponse.success.name || 
+            this.email != this.serverResponse.success.email_address || 
+            this.phone != this.serverResponse.success.phone_number;
           console.log('parent ' + this.id + " is dirty: ", isDirty);
           return isDirty;
         }

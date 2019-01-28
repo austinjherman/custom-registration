@@ -29,6 +29,7 @@ class FormEntry extends BaseModel
     public function __construct() {
         $this->created_at = new \DateTime();
         $this->updated_at = new \DateTime();
+        $this->students = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function addGuest(Guest $guest) {

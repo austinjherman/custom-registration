@@ -6,6 +6,7 @@ use Valitron\Validator;
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\SchemaTool;
+use FloridaSwim\Controllers\OrderController;
 use FloridaSwim\Controllers\GuestController;
 use FloridaSwim\Controllers\LessonController;
 use FloridaSwim\Controllers\StudentController;
@@ -152,6 +153,8 @@ class FloridaSwimCustomRegistration {
     $lessonController->registerRoutes();
     $scheduleController = new ScheduleController($this->orm());
     $scheduleController->registerRoutes();
+    $orderController = new OrderController($this->orm());
+    $orderController->registerRoutes();
   }
 
   public function setStripeKeys(\stdClass $stripe) {

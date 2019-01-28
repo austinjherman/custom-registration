@@ -86,8 +86,14 @@
         zip: null,
         poolAccess: null,
         serverResponse: {
-          guest: {},
-          parent: {}
+          guest: {
+            error: null,
+            success: {}
+          },
+          parent: {
+            error: null,
+            success: {}
+          }
         }
       }
     },
@@ -142,16 +148,16 @@
         request.phone_number = this.phone;
         request.zip_code = this.zip;
         request.pool_access = this.poolAccess;
-        request.form_entry_id = this.globalState.serverResponse.form.id;
+        request.form_entry_id = this.globalState.serverResponse.form.success.id;
 
         return new Promise((resolve, reject) => {
           this.$http.post(this.API_BASE_URL + '/guests/create', request)
             .then(response => {
-              this.serverResponse.guest = response.data.guest;
+              this.$set(this.serverResponse.guest, 'success', response.data.guest);
               resolve(response.data.guest);
             })
             .catch(error => {
-              this.serverResponse.guest = JSON.stringify(error.data);
+              this.$set(this.serverResponse.guest, 'error', error.data);
               reject(error);
             });
         });
@@ -173,16 +179,16 @@
         request.phone_number = this.phone;
         request.zip_code = this.zip;
         request.pool_access = this.poolAccess;
-        request.form_entry_id = this.globalState.serverResponse.form.id;
+        request.form_entry_id = this.globalState.serverResponse.form.success.id;
 
         return new Promise((resolve, reject) => {
-          this.$http.put(this.API_BASE_URL + '/guests/update/' + this.serverResponse.guest.id, request)
+          this.$http.put(this.API_BASE_URL + '/guests/update/' + this.serverResponse.guest.success.id, request)
             .then(response => {
-              this.serverResponse.guest = response.data.guest;
+              this.$set(this.serverResponse.guest, 'success', response.data.guest);
               resolve(response.data.guest);
             })
             .catch(error => {
-              this.serverResponse.guest = JSON.stringify(error.data);
+              this.$set(this.serverResponse.guest, 'error', error.data);
               reject(error);
             });
         });
@@ -201,15 +207,16 @@
         parent.name = this.firstName + " " + this.lastName;
         parent.email = this.email;
         parent.phone_number = this.phone;
-        parent.form_entry_id = this.globalState.serverResponse.form.id;
+        parent.form_entry_id = this.globalState.serverResponse.form.success.id;
 
         return new Promise((resolve, reject) => {
           this.$http.post(this.API_BASE_URL + '/guardians/create', parent)
             .then((response) => {
-              this.$set(this.serverResponse, 'parent', response.data.guardian);
-              resolve(this.serverResponse.parent);
+              this.$set(this.serverResponse.parent, 'success', response.data.guardian);
+              resolve(response.data.guardian);
             })
             .catch((error) => {
+              this.$set(this.serverResponse.parent, 'error', error.data);
               reject(error);
             })
         });
@@ -228,15 +235,16 @@
         parent.name = this.firstName + " " + this.lastName;
         parent.email = this.email;
         parent.phone_number = this.phone;
-        parent.form_entry_id = this.globalState.serverResponse.form.id;
+        parent.form_entry_id = this.globalState.serverResponse.form.success.id;
 
         return new Promise((resolve, reject) => {
-          this.$http.post(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.parent.id, parent)
+          this.$http.post(this.API_BASE_URL + '/guardians/update/' + this.serverResponse.parent.success.id, parent)
             .then((response) => {
-              this.$set(this.serverResponse, 'parent', response.data.guardian);
-              resolve(this.serverResponse.parent);
+              this.$set(this.serverResponse.parent, 'success', response.data.guardian);
+              resolve(response.data.guardian);
             })
             .catch((error) => {
+              this.$set(this.serverResponse.parent, 'error', error.data);
               reject(error);
             })
         });
@@ -253,10 +261,11 @@
         return new Promise((resolve, reject) => {
           this.$http.delete(this.API_BASE_URL + '/guardians/delete/' + this.serverResponse.parent.id)
           .then((response) => {
-            this.$set(this.serverResponse, 'parent', {});
-            resolve(this.serverResponse.parent);
+            this.$set(this.serverResponse.parent, 'success', {});
+            resolve(this.serverResponse.parent.success);
           })
           .catch((error) => {
+            this.$set(this.serverResponse.parent, 'error', error);
             reject(error);
           })
         });
